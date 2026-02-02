@@ -20,9 +20,9 @@ import com.sysu.edu.databinding.PreferenceFilterBinding;
 public class FilterPreference extends ListPreference {
 
 
+    final MutableLiveData<String> valueLiveData = new MutableLiveData<>();
     boolean isFilter;
     boolean canEdit;
-    final MutableLiveData<String> valueLiveData = new MutableLiveData<>();
     TextWatcher textWatcher;
 
     public FilterPreference(@NonNull Context context) {
@@ -57,14 +57,18 @@ public class FilterPreference extends ListPreference {
         PreferenceFilterBinding binding = PreferenceFilterBinding.bind(holder.itemView);
         binding.textInputLayout.setStartIconDrawable(getIcon());
         binding.textInputLayout.setHint(getTitle());
-        // binding.textField.setText((getValue() == null || getValue().isEmpty()) && !binding.textField.is() ? "" : valueLiveData.getValue(), isFilter);
+        binding.textField.setText(valueLiveData.getValue(), isFilter);
         binding.textField.setInputType(canEdit ? InputType.TYPE_CLASS_TEXT : InputType.TYPE_NULL);
         binding.textField.setSelection(binding.textField.getText().length());
         if (getEntries() != null)
             binding.textField.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, getEntries()));
-        binding.textField.setOnItemClickListener((parent, view, position, id) -> setValueIndex(position));
+        binding.textField.setOnItemClickListener((parent, view, position, id) -> {
+            setValueIndex(position);
+            valueLiveData.setValue(getEntries()[position].toString());
+        });
+        /*
         if (binding.textField.isFocused())
-            binding.textField.showDropDown();
+            binding.textField.showDropDown();*/
         if (textWatcher == null) {
             textWatcher = new TextWatcher() {
                 @Override
@@ -83,10 +87,6 @@ public class FilterPreference extends ListPreference {
             };
             binding.textField.addTextChangedListener(textWatcher);
         }
-        /*binding.getRoot().setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus && (getValue() == null || getValue().isEmpty()))
-                binding.textField.setText("");
-        });*/
         binding.getRoot().setOnClickListener(v -> binding.textField.showDropDown());
 
     }
@@ -99,11 +99,6 @@ public class FilterPreference extends ListPreference {
     public MutableLiveData<String> getValueLiveData() {
         return valueLiveData;
     }
-
-    /*@Override
-    public String getValue() {
-        return valueLiveData.getValue();
-    }*/
 
     public void setIsFilter(boolean filter) {
         isFilter = filter;

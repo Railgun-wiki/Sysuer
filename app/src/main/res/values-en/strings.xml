@@ -454,7 +454,7 @@
     <string name="classroom">Classroom</string>
     <string name="course_name">Course Name</string>
     <string name="course_type">Course Type</string>
-    <string name="year_semester">Year and Term</string>
+    <string name="year_term">Year and Term</string>
     <string name="min_grade">Min Grade</string>
     <string name="class_name">Class Name</string>
     <string name="teaching_class">Teaching Class</string>
@@ -466,4 +466,35 @@
     <string name="teaching_type">Teaching Type</string>
     <string name="copy">Copy</string>
 
+    <string name="export">Export</string>
+    <string name="week_range">Week Section</string>
+    <string name="class_range">Section</string>
+    <string name="query_type">Query Type</string>
+    <string name="class_begin">Class from</string>
+    <string name="class_end">Class to</string>
+    <string name="week_begin">Week from</string>
+    <string name="week_end">Week to</string>
+    <string name="week_time">Single or Double Week</string>
+    <string name="room_query">Classroom Query</string>
+    <string name="seat_count">Seat Count</string>
+    <string name="classroom_id">Classroom ID</string>
+    <string name="floor">Floor</string>
+    <string name="classroom_number">Classroom Number</string>
+    <string name="teaching_building_number">Teaching Building Number</string>
+    <string name="first_section">Section 1</string>
+    <string name="second_section">Section 2</string>
+    <string name="third_section">Section 3</string>
+    <string name="fourth_section">Section 4</string>
+    <string name="fifth_section">Section 5</string>
+    <string name="sixth_section">Section 6</string>
+    <string name="seventh_section">Section 7</string>
+    <string name="eighth_section">Section 8</string>
+    <string name="ninth_section">Section 9</string>
+    <string name="tenth_section">Section 10</string>
+    <string name="eleventh_section">Section 11</string>
+    <string name="twelfth_section">Section 12</string>
+    <string name="thirteenth_section">Section 13</string>
+    <string name="fourteenth_section">Section 14</string>
+    <string name="fifteenth_section">Section 15</string>
+    <string name="sixteenth_section">Section 16</string>
 </resources>

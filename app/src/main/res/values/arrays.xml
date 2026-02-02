@@ -201,5 +201,29 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+    <string-array name="occupy_sources">
+        <item />
+        <item>USC临时借用</item>
+        <item>考试占用</item>
+        <item>普通排课</item>
+        <item>教学进度</item>
+        <item>调停课</item>
+        <item>教室占用</item>
+        <item>研究生排课</item>
+        <item>研究生调停课</item>
+        <item>研究生排考</item>
+    </string-array>
+    <string-array name="occupy_source_values">
+        <item />
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
 
 </resources>

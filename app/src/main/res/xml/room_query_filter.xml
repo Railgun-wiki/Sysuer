@@ -15,12 +15,19 @@
             app:persistent="false"
             app:title="@string/office"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.sysu.edu.preference.FilterPreference
+            app:allowDividerAbove="false"
+            app:canEdit="true"
             app:icon="@drawable/location"
+            app:isFilter="false"
             app:key="classroom"
             app:persistent="false"
             app:title="@string/classroom"
             app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+    <PreferenceCategory app:title="@string/query">
+        F
         <rikka.preference.SimpleMenuPreference
             app:entries="@array/check_types"
             app:entryValues="@array/check_type_values"
@@ -28,6 +35,20 @@
             app:key="queryType"
             app:persistent="false"
             app:title="@string/query_type"
+            app:useSimpleSummaryProvider="true" />
+        <rikka.preference.SimpleMenuPreference
+            app:entries="@array/occupy_sources"
+            app:entryValues="@array/occupy_source_values"
+            app:icon="@drawable/info"
+            app:key="occupySource"
+            app:persistent="false"
+            app:title="@string/occupy_source"
+            app:useSimpleSummaryProvider="true" />
+        <com.sysu.edu.preference.EditPreference
+            app:icon="@drawable/edit"
+            app:key="occupyReason"
+            app:persistent="false"
+            app:title="@string/occupy_reason"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/time">
@@ -68,7 +89,7 @@
             app:icon="@drawable/course"
             app:key="yearSemester"
             app:persistent="false"
-            app:title="@string/year_semester"
+            app:title="@string/year_term"
             app:useSimpleSummaryProvider="true" />
         <com.sysu.edu.preference.SliderPreference
             android:max="25"
@@ -99,6 +120,7 @@
             app:title="@string/week_time"
             app:useSimpleSummaryProvider="true" />
         <MultiSelectListPreference
+            app:defaultValue="@array/week_values"
             app:entries="@array/weeks"
             app:entryValues="@array/week_values"
             app:icon="@drawable/calendar"

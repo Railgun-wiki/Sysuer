@@ -6,7 +6,7 @@
             app:icon="@drawable/calendar"
             app:key="yearSemester"
             app:persistent="false"
-            app:title="@string/year_semester"
+            app:title="@string/year_term"
             app:useSimpleSummaryProvider="true" />
         <rikka.preference.SimpleMenuPreference
             app:key="endYear"

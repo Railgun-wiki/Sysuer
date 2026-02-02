@@ -141,11 +141,13 @@ public class StaggeredFragment extends Fragment {
     }
 
     public String toTable() {
-        StringBuilder markdown = new StringBuilder();
         int itemCount = staggeredAdapter.getItemCount();
-        markdown.append("序号|").append(String.join("|", staggeredAdapter.getKeys(0))).append("\n")
-                .append("---|".repeat(staggeredAdapter.getKeys(0).size() + 1)).append("\n");
-        IntStream.range(0, itemCount).forEach(i -> markdown.append(i + 1).append("|").append(String.join("|", staggeredAdapter.getValues(i))).append("\n"));
+        StringBuilder markdown = new StringBuilder();
+        if (itemCount > 0) {
+            markdown.append("序号|").append(String.join("|", staggeredAdapter.getKeys(0))).append("\n")
+                    .append("---|".repeat(staggeredAdapter.getKeys(0).size() + 1)).append("\n");
+            IntStream.range(0, itemCount).forEach(i -> markdown.append(i + 1).append("|").append(String.join("|", staggeredAdapter.getValues(i))).append("\n"));
+        }
         return markdown.toString();
     }
 
