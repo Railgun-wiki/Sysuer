@@ -260,6 +260,11 @@
         "id": 714,
         "name": "Level Grades",
         "description": "Level grade inquiry system, with functions such as level grade inquiry, GPA calculation, and transcript printing"
+      },
+      {
+        "id": 715,
+        "name": "Classrooms",
+        "description": "Classroom inquiry system, with functions such as available classrooms, class schedule, and room capacity inquiry"
       }
     ]
   },

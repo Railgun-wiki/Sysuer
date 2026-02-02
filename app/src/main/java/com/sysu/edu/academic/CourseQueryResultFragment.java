@@ -15,6 +15,7 @@ import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.databinding.FragmentCourseQueryResultBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +25,19 @@ public class CourseQueryResultFragment extends StaggeredFragment {
     HttpManager http;
     int page = 1;
     int total = -1;
+    FragmentCourseQueryResultBinding courseQueryResultBinding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
+        courseQueryResultBinding = FragmentCourseQueryResultBinding.inflate(inflater, container, false);
+        courseQueryResultBinding.getRoot().addView(super.onCreateView(inflater, courseQueryResultBinding.getRoot(), savedInstanceState),-1,-1);
         params = new Params(requireActivity());
         params.setCallback(this, () -> {
             reset();
             getCourses();
         });
+        courseQueryResultBinding.fab.setOnClickListener(v -> export(courseQueryResultBinding.fab, getString(R.string.course)));
         Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -73,7 +77,7 @@ public class CourseQueryResultFragment extends StaggeredFragment {
         });
         clear();
         getCourses();
-        return view;
+        return courseQueryResultBinding.getRoot();
     }
 
     void getCourses() {

@@ -43,16 +43,16 @@ public class CETActivity extends AppCompatActivity {
         page=0;
         binding = ActivityListBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        StaggeredFragment fr = binding.list.getFragment();
+        StaggeredFragment fragment = binding.list.getFragment();
         params = new Params(this);
         cookie = params.getCookie();
         params.setCallback(() -> {
                 page=0;
-                fr.clear();
+                fragment.clear();
                 cookie = params.getCookie();
                 getExchange();
         });
-
+        fragment.viewTable(binding.toolbar);
         binding.toolbar.setNavigationOnClickListener(v->supportFinishAfterTransition());
         handler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -72,7 +72,7 @@ public class CETActivity extends AppCompatActivity {
                                 for(int i=0;i<keyName.length;i++){
                                     values.add(((JSONObject)a).getString(new String[]{"examYear","thePastOrNextHalfYearName","languageLevel","stuNum","stuName","writtenExaminationTime","writtenExaminationNumber","writtenExaminationTotalScore","hearingScore","readingScore","comprehensiveScore","writingScore","oralExamTime","oralExamNumber","oralExamAchievement","schoolName","collegeName","professionName","grade","stuClassName","writtenExaminationSubject","writtenExaminationApplyNumber","writtenExaminationApplySchool","writtenExaminationApplyCampus","whetherMissingTest","whetherViolation","violationType","whetherHearingObstacle","oralExamSubject","oralExamApplyNumber","oralExamApplySchool","oralExamApplyCampus"}[i]));
                                 }
-                                fr.add(CETActivity.this,String.valueOf(order),List.of(keyName), values);
+                                fragment.add(CETActivity.this,String.valueOf(order),List.of(keyName), values);
                             });
                             if(total/10>page-1){
                                 getExchange();

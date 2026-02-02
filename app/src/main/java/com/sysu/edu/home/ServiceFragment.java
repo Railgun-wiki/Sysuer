@@ -40,6 +40,7 @@ import com.sysu.edu.academic.LeaveReturnRegistrationActivity;
 import com.sysu.edu.academic.MajorInfo;
 import com.sysu.edu.academic.PhysicalFitnessTestResultActivity;
 import com.sysu.edu.academic.RegisterInfo;
+import com.sysu.edu.academic.RoomQueryActivity;
 import com.sysu.edu.academic.SchoolEnrollmentActivity;
 import com.sysu.edu.academic.SchoolWorkWarning;
 import com.sysu.edu.academic.TrainingSchedule;
@@ -61,12 +62,11 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 
 public class ServiceFragment extends Fragment {
-    // 创建HashMap来存储actions，使用id作为key
+
     final Map<Integer, View.OnClickListener> actionMap = new HashMap<>();
     final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-            }
+            result -> {}
     );
     FragmentServiceBinding binding;
     Params params;
@@ -173,6 +173,7 @@ public class ServiceFragment extends Fragment {
         actionMap.put(712, newActivity(CourseSelectedActivity.class));                  // 已选课程
         actionMap.put(713, newActivity(AssistantInfoActivity.class));       // 助教信息
         actionMap.put(714, newActivity(GradeForLevelActivity.class));           // 等级制成绩
+        actionMap.put(715, newActivity(RoomQueryActivity.class));           // 教室
 
 
         // 学习平台 (id: 8xx)

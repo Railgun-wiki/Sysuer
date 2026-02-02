@@ -185,12 +185,12 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                     }
                 }
             };
-            staggeredAdapter.setListener(new StaggeredListener() {
+            staggeredAdapter.setListener(new AdapterListener() {
                 @Override
-                public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int position) {
-                    staggeredAdapter.getTwoColumnsAdapter(position).setListener(new StaggeredListener() {
+                public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                    staggeredAdapter.getTwoColumnsAdapter(position).setListener(new AdapterListener() {
                         @Override
-                        public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int pos) {
+                        public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int pos) {
 
                             holder.itemView.setOnClickListener(v -> {
                                 if (position == 1) {
@@ -199,18 +199,18 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                         List.of("离校", "留校").forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(item -> {
                                             //value.set(pos, i);
                                             isStay = i.equals("离校") ? "0" : "1";
-                                            ((TwoColumnsAdapter) a).setValue(i.equals("离校") ? leave : stay);
-                                            ((TwoColumnsAdapter) a).setKey(i.equals("离校") ? leaveKeys : stayKeys);
+                                            ((TwoColumnsAdapter) adapter).setValue(i.equals("离校") ? leave : stay);
+                                            ((TwoColumnsAdapter) adapter).setKey(i.equals("离校") ? leaveKeys : stayKeys);
                                             return true;
                                         }));
                                         menu.show();
                                     }
-                                    if (a.getItemCount() == 6) {
+                                    if (adapter.getItemCount() == 6) {
                                         if (pos == 3 || pos == 4) {
                                             PopupMenu menu = new PopupMenu(requireContext(), holder.itemView);
                                             (pos == 4 ? transportation : destination).forEach(e -> menu.getMenu().add(((JSONObject) e).getString("label")).setOnMenuItemClickListener(item -> {
                                                 leave.set(pos, ((JSONObject) e).getString("label"));
-                                                ((TwoColumnsAdapter) a).setValue(leave);
+                                                ((TwoColumnsAdapter) adapter).setValue(leave);
                                                 return true;
                                             }));
                                             menu.show();
@@ -222,23 +222,23 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
 
                                             calendar.addOnPositiveButtonClickListener(aLong -> {
                                                 leave.set(pos, calendar.getHeaderText());
-                                                ((TwoColumnsAdapter) a).setValue(leave);
+                                                ((TwoColumnsAdapter) adapter).setValue(leave);
                                                 (pos == 2 ? returnDate : leaveDate).setValue(aLong);
                                             });
                                         } else if (pos == 5) {
                                             regionDialog.show();
                                             dialogRegionBinding.confirm.setOnClickListener(view -> {
                                                 leave.set(pos, countryAdapter.getResult() + " " + provinceAdapter.getResult() + " " + cityAdapter.getResult());
-                                                ((TwoColumnsAdapter) a).setValue(leave);
+                                                ((TwoColumnsAdapter) adapter).setValue(leave);
                                                 regionDialog.dismiss();
                                             });
                                         }
-                                    } else if (a.getItemCount() == 2) {
+                                    } else if (adapter.getItemCount() == 2) {
                                         if (pos == 1) {
                                             PopupMenu menu = new PopupMenu(requireContext(), holder.itemView);
                                             List.of(getResources().getStringArray(R.array.registration_info_keys)).forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(item -> {
                                                 stay.set(pos, i);
-                                                ((TwoColumnsAdapter) a).setValue(stay);
+                                                ((TwoColumnsAdapter) adapter).setValue(stay);
                                                 return true;
                                             }));
                                             menu.show();
@@ -249,7 +249,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                         }
 
                         @Override
-                        public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                        public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
 
                         }
                     });
@@ -258,7 +258,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                 }
 
                 @Override
-                public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
                     MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
                     button.setId(R.id.button);
                     LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

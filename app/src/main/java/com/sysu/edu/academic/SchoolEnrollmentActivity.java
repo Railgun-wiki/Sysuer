@@ -270,7 +270,6 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
         handler = new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-
                 if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
                 } else {

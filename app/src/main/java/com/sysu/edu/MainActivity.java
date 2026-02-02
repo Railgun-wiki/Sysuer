@@ -188,12 +188,43 @@ public class MainActivity extends AppCompatActivity {
             manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     System.currentTimeMillis() + 2 * 1000, piMorning);
         }*/
-       /* ClassIsland.sendCourseFocusNotification(
-                this,
-                "高等数学",           // 课程名称
-                "10分钟",            // 剩余时间
-                "逸夫楼301"          // 教室
-        );*/
+//        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
+//            }
+//        } else {
+////            ClassIsland.sendCourseNotification(
+////                    this,
+////                    "高等数学",           // 课程名称
+////                    "10分钟",            // 剩余时间
+////                    "逸夫楼301"          // 教室
+////            );
+//        }
+        /*handler.postAtTime(() -> {
+            ClassIsland.sendCourseNotification(
+                    this,
+                    "高等数学",           // 课程名称
+                    "9分钟",            // 剩余时间
+                    "逸夫楼301"          // 教室
+            );
+        },  SystemClock.uptimeMillis() + 4 * 1000);*/
+//        Intent service = new Intent(this, CourseService.class);
+//        ContextCompat.startForegroundService(this, service);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                ClassIsland.sendCourseNotification(
+                        this,
+                        "高等数学",           // 课程名称
+                        "10分钟",            // 剩余时间
+                        "逸夫楼301"          // 教室
+                );
+            }
+        }
     }
 
     void checkUpdate() {

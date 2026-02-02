@@ -3,23 +3,26 @@ package com.sysu.edu.academic;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.sysu.edu.R;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ItemCardBinding;
@@ -38,7 +41,7 @@ public class StaggeredFragment extends Fragment {
     final MutableLiveData<Runnable> scrollBottom = new MutableLiveData<>();
     final MutableLiveData<Boolean> nestedScrollingEnabled = new MutableLiveData<>(true);
     final MutableLiveData<Boolean> hideNull = new MutableLiveData<>(false);
-    final MutableLiveData<StaggeredListener> staggeredListener = new MutableLiveData<>();
+    final MutableLiveData<AdapterListener> staggeredListener = new MutableLiveData<>();
     public int position;
     protected Params params;
     protected StaggeredAdapter staggeredAdapter;
@@ -104,7 +107,7 @@ public class StaggeredFragment extends Fragment {
         hideNull.setValue(hide);
     }
 
-    public void setListener(StaggeredListener v) {
+    public void setListener(AdapterListener v) {
         staggeredListener.setValue(v);
     }
 
@@ -146,19 +149,23 @@ public class StaggeredFragment extends Fragment {
         return markdown.toString();
     }
 
-    /*public void viewTable(MaterialToolbar toolbar) {
-        toolbar.getMenu().add("导出").setIcon(R.drawable.export).setOnMenuItemClickListener(item -> {
-            startActivity(new Intent(requireContext(), MarkdownViewActivity.class).putExtra("content", toTable()).putExtra("title", toolbar.getTitle()),
-                    ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), toolbar, "miniapp").toBundle());
+    public void viewTable(MaterialToolbar toolbar) {
+        toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setOnMenuItemClickListener(item -> {
+            export(toolbar, toolbar.getTitle().toString());
             return false;
         }).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-    }*/
+    }
+
+    public void export(View view, String title) {
+        startActivity(new Intent(requireContext(), MarkdownViewActivity.class).putExtra("content", toTable()).putExtra("title", title),
+                ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle());
+    }
 
     public static class TwoColumnsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final boolean hideNull;
         public List<String> value;
         List<String> key;
-        StaggeredListener rowListener;
+        AdapterListener rowListener;
         Integer itemCount;
 
         public TwoColumnsAdapter(List<String> data, List<String> value, boolean hideNull) {
@@ -223,7 +230,7 @@ public class StaggeredFragment extends Fragment {
             }
         }
 
-        public void setListener(StaggeredListener listener) {
+        public void setListener(AdapterListener listener) {
             this.rowListener = listener;
         }
 
@@ -241,7 +248,7 @@ public class StaggeredFragment extends Fragment {
         final ArrayList<List<String>> values = new ArrayList<>();
         final ArrayList<TwoColumnsAdapter> twoColumnsAdapters = new ArrayList<>();
 
-        StaggeredListener staggeredListener;
+        AdapterListener adapterListener;
         boolean hideNull;
 
         public StaggeredAdapter(Context c) {
@@ -254,8 +261,8 @@ public class StaggeredFragment extends Fragment {
             this.hideNull = hideNull;
         }
 
-        public void setListener(StaggeredListener listener) {
-            this.staggeredListener = listener;
+        public void setListener(AdapterListener listener) {
+            this.adapterListener = listener;
         }
 
         public void add(String title, List<String> keys, List<String> values, Integer icon) {
@@ -283,8 +290,8 @@ public class StaggeredFragment extends Fragment {
             list.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
             list.setNestedScrollingEnabled(false);
             item.card.addView(list);
-            if (staggeredListener != null) {
-                staggeredListener.onCreate(this, item);
+            if (adapterListener != null) {
+                adapterListener.onCreate(this, item);
             }
             return new RecyclerView.ViewHolder(item.getRoot()) {
             };
@@ -297,12 +304,6 @@ public class StaggeredFragment extends Fragment {
         public List<String> getValues(int pos) {
             return values.get(pos);
         }
-
-        /*public void addRow(int pos, String key, String value) {
-            this.keys.get(pos).add(key);
-            this.values.get(pos).add(value);
-
-        }*/
 
         public TwoColumnsAdapter getTwoColumnsAdapter(int pos) {
             return twoColumnsAdapters.get(pos);
@@ -325,7 +326,7 @@ public class StaggeredFragment extends Fragment {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemCardBinding item = ItemCardBinding.bind(holder.itemView);
             if (icons.get(position) != null) {
-                item.title.setCompoundDrawablePadding(new Params((FragmentActivity) context).dpToPx(8));
+                item.title.setCompoundDrawablePadding(24);
                 Drawable icon = AppCompatResources.getDrawable(context, icons.get(position));
                 if (icon != null) {
                     icon.setBounds(0, 0, 72, 72);
@@ -345,9 +346,8 @@ public class StaggeredFragment extends Fragment {
             if (twoColumnsAdapters.size() <= position || twoColumnsAdapters.get(position) == null)
                 twoColumnsAdapters.add(position, twoColumnsAdapter);
 
-            if (staggeredListener != null) {
-                staggeredListener.onBind(this, holder, position);
-            }
+            if (adapterListener != null)
+                adapterListener.onBind(this, holder, position);
         }
 
         @Override

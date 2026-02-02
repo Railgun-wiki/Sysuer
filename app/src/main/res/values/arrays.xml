@@ -170,4 +170,36 @@
         <item>3286160</item>
         <item>3286161</item>
     </string-array>
+    <string-array name="week_values">
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+        <item>日</item>
+    </string-array>
+    <string-array name="check_types">
+        <item />
+        <item>被占用教室</item>
+        <item>空闲教室</item>
+    </string-array>
+    <string-array name="check_type_values">
+        <item />
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="week_times">
+        <item />
+        <item>每周</item>
+        <item>单周</item>
+        <item>双周</item>
+    </string-array>
+    <string-array name="week_time_values">
+        <item />
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
 </resources>

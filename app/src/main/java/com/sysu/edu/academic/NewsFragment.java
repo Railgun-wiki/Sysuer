@@ -45,7 +45,7 @@ public class NewsFragment extends Fragment {
         adp.add(json);
     }
 
-    public void setListener(Context context, StaggeredListener l) {
+    public void setListener(Context context, AdapterListener l) {
         if (adp == null) {
             adp = new NewsAdp(context);
         }
@@ -61,7 +61,7 @@ public class NewsFragment extends Fragment {
     public static class NewsAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public final ArrayList<JSONObject> data = new ArrayList<>();
         final Context context;
-        StaggeredListener listener;
+        AdapterListener listener;
         // String cookie;
 
         public NewsAdp(Context context) {
@@ -81,7 +81,7 @@ public class NewsFragment extends Fragment {
             notifyItemInserted(getItemCount() - 1);
         }
 
-        public void setListener(StaggeredListener l) {
+        public void setListener(AdapterListener l) {
             this.listener = l;
         }
 

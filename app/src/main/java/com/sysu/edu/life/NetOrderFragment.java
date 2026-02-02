@@ -19,8 +19,8 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
+import com.sysu.edu.academic.AdapterListener;
 import com.sysu.edu.academic.StaggeredFragment;
-import com.sysu.edu.academic.StaggeredListener;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemCardBinding;
 
@@ -83,15 +83,15 @@ public class NetOrderFragment extends StaggeredFragment {
                                             if (actionMatcher.find()) {
                                                 String leftDay = actionMatcher.group(2);
                                                 orderDetail.set(9, leftDay);
-                                                staggeredAdapter.setListener(new StaggeredListener() {
+                                                staggeredAdapter.setListener(new AdapterListener() {
 
                                                     @Override
-                                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int position) {
+                                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
 
                                                     }
 
                                                     @Override
-                                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
                                                         MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
                                                         button.setText(action.group(3));
                                                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

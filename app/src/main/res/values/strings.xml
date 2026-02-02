@@ -464,5 +464,15 @@
     <string name="end_year">结束学年</string>
     <string name="teaching_type">教学类型</string>
     <string name="copy">复制</string>
+    <string name="export">导出</string>
+    <string name="week_range">周次</string>
+    <string name="class_range">节次</string>
+    <string name="query_type">查询类别</string>
+    <string name="class_begin">开始节次</string>
+    <string name="class_end">结束节次</string>
+    <string name="week_begin">开始周次</string>
+    <string name="week_end">结束周次</string>
+    <string name="week_time">单双周</string>
+    <string name="room_query">教室查询</string>
 
 </resources>

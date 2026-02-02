@@ -4,8 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> <!-- <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> -->
     <queries>
         <package android:name="com.tencent.wework" />
 
@@ -29,8 +30,21 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="36">
         <activity
+            android:name=".academic.RoomQueryActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true" />
+
+        <service
+            android:name=".CourseService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="specialUse"
+            android:permission="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+        <activity
             android:name=".academic.MarkdownViewActivity"
-            android:exported="false" />
+            android:configChanges="orientation|screenSize"
+            android:exported="true" />
         <activity
             android:name=".academic.GradeForLevelActivity"
             android:configChanges="orientation|screenSize"

@@ -30,7 +30,7 @@
             app:persistent="false"
             app:seekBarIncrement="1"
             app:showSeekBarValue="true"
-            app:title="周次"
+            app:title="@string/week_range"
             app:useSimpleSummaryProvider="true"
             app:valueFrom="0"
             app:valueTo="0" />
@@ -41,7 +41,7 @@
             app:persistent="false"
             app:seekBarIncrement="1"
             app:showSeekBarValue="true"
-            app:title="节次"
+            app:title="@string/class_range"
             app:useSimpleSummaryProvider="true"
             app:valueFrom="0"
             app:valueTo="0" />
@@ -78,7 +78,7 @@
             app:title="@string/course_name"
             app:useSimpleSummaryProvider="true" />
         <com.sysu.edu.preference.EditPreference
-            app:icon="@drawable/calendar"
+            app:icon="@drawable/id"
             app:key="courseNumber"
             app:persistent="false"
             app:title="@string/course_number"
@@ -86,13 +86,13 @@
         <rikka.preference.SimpleMenuPreference
             app:entries="@array/course_type_entries"
             app:entryValues="@array/course_type_values"
-            app:icon="@drawable/calendar"
+            app:icon="@drawable/book"
             app:key="courseType"
             app:persistent="false"
             app:title="@string/course_type"
             app:useSimpleSummaryProvider="true" />
         <rikka.preference.SimpleMenuPreference
-            app:icon="@drawable/calendar"
+            app:icon="@drawable/card"
             app:key="teachingType"
             app:persistent="false"
             app:title="@string/teaching_type"
@@ -100,7 +100,7 @@
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/teaching_class">
         <com.sysu.edu.preference.EditPreference
-            app:icon="@drawable/language"
+            app:icon="@drawable/font"
             app:key="className"
             app:persistent="false"
             app:title="@string/class_name"

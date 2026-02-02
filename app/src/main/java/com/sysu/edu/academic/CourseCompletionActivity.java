@@ -69,17 +69,17 @@ public class CourseCompletionActivity extends AppCompatActivity {
                                     for (String key : new String[]{"courseCategoryName", "trainingCredit", "exemptCredit", "actualCredit", "earnedCredit"}) {
                                         values.add(((JSONObject) a).getString(key));
                                     }
-                                    ((StaggeredFragment) adp.getItem(0)).staggeredAdapter.setListener(new StaggeredListener() {
+                                    ((StaggeredFragment) adp.getItem(0)).staggeredAdapter.setListener(new AdapterListener() {
                                         @Override
-                                        public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int position) {
-                                            List<String> item = ((StaggeredFragment.StaggeredAdapter) a).values.get(position);
+                                        public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                                            List<String> item = ((StaggeredFragment.StaggeredAdapter) adapter).values.get(position);
                                             LinearProgressIndicator progress = holder.itemView.findViewById(R.id.progress);
                                             progress.setMax((int) Float.parseFloat(item.get(3)));
                                             progress.setProgress((int) Float.parseFloat(item.get(4)));
                                         }
 
                                         @Override
-                                        public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                                        public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
                                             LinearProgressIndicator progress = new LinearProgressIndicator(CourseCompletionActivity.this);
                                             progress.setId(R.id.progress);
                                             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);

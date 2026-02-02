@@ -53,18 +53,18 @@ public class AcademyNotification extends AppCompatActivity {
         Pager2Adapter adp = new Pager2Adapter(this);
         NewsFragment f1 = new NewsFragment();
         NewsFragment f2 = new NewsFragment();
-        StaggeredListener l = new StaggeredListener() {
+        AdapterListener l = new AdapterListener() {
             @Override
-            public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int position) {
+            public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                 holder.itemView.setOnClickListener(v -> {
-                    JSONObject item = ((NewsFragment.NewsAdp) a).data.get(position);
+                    JSONObject item = ((NewsFragment.NewsAdp) adapter).data.get(position);
                     dialog.setTitle(item.getString("title"));
                     getContent(item.getString("id"));
                 });
             }
 
             @Override
-            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
 
             }
         };

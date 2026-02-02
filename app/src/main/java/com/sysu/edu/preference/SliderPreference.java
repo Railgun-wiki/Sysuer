@@ -33,6 +33,10 @@ public class SliderPreference extends SeekBarPreference {
     @Override
     public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
         PreferenceSliderBinding binding = PreferenceSliderBinding.bind(holder.itemView);
+        binding.seekbar.setEnabled(isEnabled());
+        binding.title.setEnabled(isEnabled());
+        binding.seekbarValue.setEnabled(isEnabled());
+        binding.getRoot().setEnabled(isEnabled());
         binding.seekbar.setStepSize(getSeekBarIncrement());
         binding.seekbar.setValueTo(getMax());
         binding.seekbar.setValueFrom(getMin());
@@ -54,4 +58,5 @@ public class SliderPreference extends SeekBarPreference {
     public int getValue() {
         return super.getValue() == 0 ? getMin() : super.getValue();
     }
+
 }

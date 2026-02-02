@@ -66,9 +66,9 @@ public class LeaveReturnListFragment extends StaggeredFragment {
                                         value.add(((JSONObject) e).getString(i));
                                     add(((JSONObject) e).getString("gzmc"), ((JSONObject) e).getInteger("gzztm") == 1 ? R.drawable.uncheck : R.drawable.check, List.of(getResources().getStringArray(R.array.registration_keys)), value);
                                 });
-                                staggeredAdapter.setListener(new StaggeredListener() {
+                                staggeredAdapter.setListener(new AdapterListener() {
                                     @Override
-                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int position) {
+                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                                         boolean isRegistering = json.getJSONArray("data").getJSONObject(position).getInteger("gzztm") == 1;
                                         String status = json.getJSONArray("data").getJSONObject(position).getString("zt");
                                         MaterialButton button = holder.itemView.findViewById(R.id.button);
@@ -87,7 +87,7 @@ public class LeaveReturnListFragment extends StaggeredFragment {
                                     }
 
                                     @Override
-                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
                                         MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
                                         button.setId(R.id.button);
                                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);

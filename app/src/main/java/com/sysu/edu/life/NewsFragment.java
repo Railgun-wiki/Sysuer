@@ -77,8 +77,8 @@ public class NewsFragment extends Fragment {
                     super.onScrolled(recyclerView, dx, dy);
                 }
             });
-            NewsAdp newsAdp = new NewsAdp(requireActivity());
-            list.setAdapter(newsAdp);
+            NewsAdapter newsAdapter = new NewsAdapter(requireActivity());
+            list.setAdapter(newsAdapter);
             handler = new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
@@ -112,7 +112,7 @@ public class NewsFragment extends Fragment {
                                                 image = cover.getJSONObject(0).getString("outLink");
                                             }
                                         }
-                                        newsAdp.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
                                     });
                                     break;
                                 case 3:
@@ -123,7 +123,7 @@ public class NewsFragment extends Fragment {
                                         if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null) {
                                             image = cover.getJSONObject(0).getString("outLink");
                                         }
-                                        newsAdp.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
                                     });
                                     break;
                                 case 4:
@@ -134,7 +134,7 @@ public class NewsFragment extends Fragment {
                                         if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null) {
                                             image = cover.getJSONObject(0).getString("outLink");
                                         }
-                                        newsAdp.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
                                     });
                                     //通知
                                     break;
@@ -146,7 +146,7 @@ public class NewsFragment extends Fragment {
                                         if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null) {
                                             image = cover.getJSONObject(0).getString("outLink");
                                         }
-                                        newsAdp.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
                                     });
                                     break;
                             }
@@ -171,7 +171,7 @@ public class NewsFragment extends Fragment {
         if (!params.getAuthorization().isEmpty()) {
             run.run();
         } else {
-            params.gotoLogin(getView(), TargetUrl.NEWS);
+            params.gotoLogin(binding.getRoot(), TargetUrl.NEWS);
         }
         //getAuthorization();
         return binding.getRoot();
@@ -330,12 +330,11 @@ public class NewsFragment extends Fragment {
 //    }
 }
 
-class NewsAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     final ArrayList<HashMap<String, String>> data = new ArrayList<>();
     final FragmentActivity context;
-    //String cookie;
 
-    public NewsAdp(FragmentActivity context) {
+    public NewsAdapter(FragmentActivity context) {
         super();
         this.context = context;
     }

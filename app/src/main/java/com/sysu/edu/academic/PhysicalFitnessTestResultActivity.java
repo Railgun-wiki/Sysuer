@@ -75,14 +75,14 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                     Matcher matcher2 = Pattern.compile("<a class=\"weui-cell weui-cell_access\" href=\"(.+?)\">", Pattern.DOTALL).matcher(matcher.group());
                                     if (matcher2.find()) urls.add(matcher2.group(1));
                                 }
-                                page.setListener(new StaggeredListener() {
+                                page.setListener(new AdapterListener() {
                                     @Override
-                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int position) {
-                                        page.staggeredAdapter.getTwoColumnsAdapter(position).setListener(new StaggeredListener() {
+                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                                        page.staggeredAdapter.getTwoColumnsAdapter(position).setListener(new AdapterListener() {
                                             @Override
-                                            public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> a, RecyclerView.ViewHolder holder, int p) {
+                                            public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int p) {
                                                 holder.itemView.setOnClickListener(v -> {
-                                                    if (a.getItemCount() == 1 && num != 2) {
+                                                    if (adapter.getItemCount() == 1 && num != 2) {
                                                         if (num == 0) getDetail(urls.get(position));
                                                         if (num == 1)
                                                             getCreditDetail(urls.get(position));
@@ -92,14 +92,14 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                             }
 
                                             @Override
-                                            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                                            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
 
                                             }
                                         });
                                     }
 
                                     @Override
-                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> a, ViewBinding binding) {
+                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
 
                                     }
                                 });
