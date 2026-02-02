@@ -473,7 +473,7 @@
     <string name="week_begin">开始周次</string>
     <string name="week_end">结束周次</string>
     <string name="week_time">单双周</string>
-    <string name="room_query">教室查询</string>
+    <string name="classroom_occupation_query">教室占用查询</string>
     <string name="seat_count">座位数</string>
     <string name="classroom_id">教室ID</string>
     <string name="floor">楼层</string>

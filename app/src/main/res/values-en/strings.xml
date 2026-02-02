@@ -475,7 +475,7 @@
     <string name="week_begin">Week from</string>
     <string name="week_end">Week to</string>
     <string name="week_time">Single or Double Week</string>
-    <string name="room_query">Classroom Query</string>
+    <string name="classroom_occupation_query">Classroom Query</string>
     <string name="seat_count">Seat Count</string>
     <string name="classroom_id">Classroom ID</string>
     <string name="floor">Floor</string>
@@ -497,4 +497,6 @@
     <string name="fourteenth_section">Section 14</string>
     <string name="fifteenth_section">Section 15</string>
     <string name="sixteenth_section">Section 16</string>
+    <string name="occupy_source">Occupation Source</string>
+    <string name="occupy_reason">Occupation Reason</string>
 </resources>

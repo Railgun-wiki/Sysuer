@@ -16,7 +16,7 @@
             android:transitionName="miniapp"
             app:layout_scrollFlags="scroll|enterAlways"
             app:navigationIcon="?homeAsUpIndicator"
-            app:title="@string/room_query" />
+            app:title="@string/classroom_occupation_query" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
