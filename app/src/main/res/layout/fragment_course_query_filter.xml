@@ -14,7 +14,7 @@
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="@dimen/fab_margin"
         android:contentDescription="@string/search"
-        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         app:srcCompat="@drawable/search" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
