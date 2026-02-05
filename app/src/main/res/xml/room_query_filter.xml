@@ -119,7 +119,7 @@
             app:persistent="false"
             app:title="@string/week_time"
             app:useSimpleSummaryProvider="true" />
-        <MultiSelectListPreference
+        <com.sysu.edu.preference.MutiListPreference
             app:defaultValue="@array/week_values"
             app:entries="@array/weeks"
             app:entryValues="@array/week_values"

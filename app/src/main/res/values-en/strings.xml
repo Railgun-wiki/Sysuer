@@ -499,4 +499,7 @@
     <string name="sixteenth_section">Section 16</string>
     <string name="occupy_source">Occupation Source</string>
     <string name="occupy_reason">Occupation Reason</string>
+    <string name="click_for_grade">Click to see the total grade</string>
+    <string name="download_complete">Download Complete</string>
+    <string name="sponsor_appreciation">Thanks for your sponsor 🤑</string>
 </resources>

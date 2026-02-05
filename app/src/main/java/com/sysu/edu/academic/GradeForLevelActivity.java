@@ -144,7 +144,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
                             }
                             MutableLiveData<String> realLiveDataValue = List.of(trainType, year, courseType).get(what);
                             MaterialButton button = List.of(binding.trainType, binding.year, binding.courseType).get(what);
-                            menu.add(0, 0, 0, "重置").setOnMenuItemClickListener(item -> {
+                            menu.add(0, 0, 0, R.string.reset).setOnMenuItemClickListener(item -> {
                                 button.setText(List.of(R.string.train_type, R.string.year, R.string.course_type).get(what));
                                 realLiveDataValue.setValue("");
                                 return true;

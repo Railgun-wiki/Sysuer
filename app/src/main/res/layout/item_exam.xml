@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/box_background"
+    android:background="?attr/selectableItemBackground"
     android:padding="8dp">
 
     <com.google.android.material.textview.MaterialTextView
@@ -19,7 +19,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_location"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_location"
@@ -29,7 +29,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_date"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_date"
@@ -39,7 +39,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_duration"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_duration"
@@ -49,7 +49,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_time"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_time"
@@ -59,7 +59,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_class_time"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_class"
@@ -69,7 +69,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_mode"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_mode"
@@ -79,7 +79,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/exam_stage"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
+        style="@style/Widget.Material3Expressive.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_stage"

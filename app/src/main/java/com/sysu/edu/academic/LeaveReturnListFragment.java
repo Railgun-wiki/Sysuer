@@ -120,6 +120,7 @@ public class LeaveReturnListFragment extends StaggeredFragment {
     }
 
     void sendRequest(String url, int what) {
+        System.out.println(baseUrl);
         http.newCall(new Request.Builder().url(baseUrl + url)
                 .header("Cookie", params.getCookie())
                 .build()).enqueue(new Callback() {

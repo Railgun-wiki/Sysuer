@@ -30,20 +30,15 @@ import androidx.preference.PreferenceManager;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationBarView;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.SysuerPreferenceManager;
 import com.sysu.edu.databinding.ActivityMainBinding;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 import io.noties.markwon.Markwon;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     Handler handler;
@@ -51,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     File file;
     ActivityResultLauncher<Intent> detailLauncher;
     BroadcastReceiver receiver;
+    Params params;
+    HttpManager http;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,13 +98,13 @@ public class MainActivity extends AppCompatActivity {
         SysuerPreferenceManager spm = new ViewModelProvider(this).get(SysuerPreferenceManager.class);
         spm.setPM(PreferenceManager.getDefaultSharedPreferences(this));
         spm.initLiveData();
-        AlertDialog dialog = new MaterialAlertDialogBuilder(this).setTitle("用户协议和隐私政策")
-                .setMessage(" ")
-                .setPositiveButton("同意", (dialogInterface, i) -> {
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this).setTitle(R.string.user_agreement_and_privacy_policy)
+                .setMessage("")
+                .setPositiveButton(R.string.agree, (dialogInterface, i) -> {
                     spm.setIsAgree(true);
                     spm.setIsAgreeLiveData(false);
                 })
-                .setNegativeButton("不同意", (dialogInterface, i) -> {
+                .setNegativeButton(R.string.disagree, (dialogInterface, i) -> {
                     spm.setIsAgree(false);
                     supportFinishAfterTransition();
                 })
@@ -116,13 +113,13 @@ public class MainActivity extends AppCompatActivity {
         spm.getIsAgreeLiveData().observe(this, aBoolean -> {
             if (aBoolean) {
                 dialog.show();
-                Markwon.builder(this).build().setMarkdown(Objects.requireNonNull(dialog.findViewById(android.R.id.message)), "请阅读[用户协议](https://sysu-tang.github.io/#/zh-cn/agreement/%E7%94%A8%E6%88%B7%E5%8D%8F%E8%AE%AE)和[隐私政策](https://sysu-tang.github.io/#/zh-cn/agreement/%E9%9A%90%E7%A7%81%E6%94%BF%E7%AD%96)");
+                Markwon.builder(this).build().setMarkdown(Objects.requireNonNull(dialog.findViewById(android.R.id.message)), "请阅读[用户协议](https://sysu-tang.github.io/sysuer-website/docs/userAgreement)和[隐私政策](https://sysu-tang.github.io/sysuer-website/docs/privacyPolicy)");
             } else if (spm.getUpdate()) {
                 checkUpdate();
             }
         });
         spm.setIsFirstLaunch(false);
-        Params params = new Params(this);
+        params = new Params(this);
         handler = new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -137,17 +134,6 @@ public class MainActivity extends AppCompatActivity {
                             AlertDialog updateDialog = new MaterialAlertDialogBuilder(MainActivity.this).setMessage("").setTitle("发现新版本").setPositiveButton("更新", (dialogInterface, i) -> {
                                 file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "sysuer.apk");
                                 downloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(new DownloadManager.Request(Uri.parse(response.getString("link"))).setDestinationUri(Uri.fromFile(file)).setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED));
-//                                DownloadManager.Query query = new DownloadManager.Query();
-//                                query.setFilterById(downloadId);
-//                                Cursor cursor = downloadManager.query(query);
-//                                if (cursor.moveToFirst()) {
-//                                    int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
-//                                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
-//                                        String filePath = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
-//                                        System.out.println("文件路径: " + filePath);
-//                                    }
-//                                }
-//                                cursor.close();
                             }).setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
                             }).setCancelable(response.getBoolean("enforce")).create();
                             updateDialog.show();
@@ -155,18 +141,19 @@ public class MainActivity extends AppCompatActivity {
                         } else if (version < response.getInteger("version")) {
                             params.toast("本APP已被篡改");
                         }
-                    } catch (PackageManager.NameNotFoundException e) {
-                        throw new RuntimeException(e);
+                    } catch (PackageManager.NameNotFoundException ignored) {
                     }
                 }
             }
         };
+        http = new HttpManager(handler);
+        http.setParams(params);
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
                     if (intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1) == downloadId) {
-                        params.toast("完成下载");
+                        params.toast(getString(R.string.download_complete));
                         startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(FileProvider.getUriForFile(context, getPackageName() + ".fileProvider", file), "application/*"));
                     }
                 }
@@ -217,33 +204,20 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PackageManager.PERMISSION_GRANTED) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                ClassIsland.sendCourseNotification(
-                        this,
-                        "高等数学",           // 课程名称
-                        "10分钟",            // 剩余时间
-                        "逸夫楼301"          // 教室
-                );
+//                ClassIsland.sendCourseNotification(
+//                        this,
+//                        "高等数学",           // 课程名称
+//                        "10分钟",            // 剩余时间
+//                        "逸夫楼301"          // 教室
+//                );
+
+                params.toast(R.string.permission_granted);
             }
         }
     }
 
     void checkUpdate() {
-        new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://sysu-tang.github.io/latest.json").build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 0;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.getRequest("https://sysu-tang.github.io/latest.json", 0);
     }
 
     @Override

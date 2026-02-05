@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,6 +15,7 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.alibaba.fastjson2.JSONObject;
@@ -56,7 +56,6 @@ public class AboutActivity extends AppCompatActivity {
                     getPreferences(Context.MODE_PRIVATE).edit().putBoolean("developer", true).apply();
                     click.clear();
                 } else {
-                    //params.toast("请再点击"+(4-click.size())+"次");
                     click.add(System.currentTimeMillis());
                 }
             } else {
@@ -77,17 +76,6 @@ public class AboutActivity extends AppCompatActivity {
                             new MaterialAlertDialogBuilder(AboutActivity.this).setMessage(response.getString("description")).setTitle("发现新版本").setPositiveButton("更新", (dialogInterface, i) -> {
                                 file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "sysuer.apk");
                                 downloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(new DownloadManager.Request(Uri.parse(response.getString("link"))).setDestinationUri(Uri.fromFile(file)).setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED));
-//                                DownloadManager.Query query = new DownloadManager.Query();
-//                                query.setFilterById(downloadId);
-//                                Cursor cursor = downloadManager.query(query);
-//                                if (cursor.moveToFirst()) {
-//                                    int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
-//                                    if (status == DownloadManager.STATUS_SUCCESSFUL) {
-//                                        String filePath = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
-//                                        System.out.println("文件路径: " + filePath);
-//                                    }
-//                                }
-//                                cursor.close();
                             }).setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
                             }).setCancelable(response.getBoolean("enforce")).create().show();
                         } else if (version < response.getInteger("version")) {
@@ -112,11 +100,7 @@ public class AboutActivity extends AppCompatActivity {
                 }
             }
         };
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED);
-        } else {
-            registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-        }
+        ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     public void checkUpdate() {

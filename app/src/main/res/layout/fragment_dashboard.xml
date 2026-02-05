@@ -10,18 +10,9 @@
         android:layout_height="match_parent"
         android:paddingBottom="8dp">
 
-        <!--        <androidx.constraintlayout.helper.widget.Grid
-                    android:layout_width="match_parent"
-                    app:grid_columns="1"
-                    app:grid_rowWeights="1,1,1"
-                    app:grid_rows="0"
-                    app:grid_orientation="horizontal"
-                    app:constraint_referenced_ids="course_group,exam_group,todo_group"
-                    android:layout_height="match_parent"/>-->
-
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progress"
-            style="@style/Widget.Material3.LinearProgressIndicator"
+            style="@style/Widget.Material3Expressive.LinearProgressIndicator"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent" />
@@ -119,8 +110,8 @@
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/next_class"
                 android:layout_width="match_parent"
-                android:lineSpacingMultiplier="1.25"
                 android:layout_height="wrap_content"
+                android:lineSpacingMultiplier="1.25"
                 android:textIsSelectable="true" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -141,16 +132,16 @@
                     style="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?colorPrimary"
                     android:layout_marginTop="0dp"
                     android:layout_marginBottom="2sp"
+                    android:textColor="?colorPrimary"
                     android:textIsSelectable="true" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/time"
-                    android:layout_height="wrap_content"
                     style="@style/TextAppearance.Material3.BodyMedium"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:textIsSelectable="true" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -161,7 +152,7 @@
             android:layout_height="wrap_content"
             android:drawablePadding="8dp"
             android:text="@string/course"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
             app:drawableLeftCompat="@drawable/course" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
@@ -174,13 +165,13 @@
 
             <Button
                 android:id="@+id/today"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/today" />
 
             <Button
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/last" />
@@ -213,7 +204,7 @@
             android:layout_height="wrap_content"
             android:drawablePadding="8dp"
             android:text="@string/exam"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
             app:drawableLeftCompat="@drawable/exam" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
@@ -225,16 +216,16 @@
 
             <Button
                 android:id="@+id/week_18"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/week18" />
 
             <Button
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:id="@+id/week_19"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/week_19"
                 android:text="@string/week19" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -265,7 +256,7 @@
             android:layout_height="wrap_content"
             android:drawablePadding="8dp"
             android:text="@string/todo"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
             app:drawableLeftCompat="@drawable/todo" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
@@ -278,14 +269,14 @@
 
             <Button
                 android:id="@+id/filter_todo"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/todo" />
 
             <Button
                 android:id="@+id/filter_done"
-                style="@style/Widget.Material3.Button.OutlinedButton"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/finished" />

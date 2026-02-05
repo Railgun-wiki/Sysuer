@@ -24,14 +24,14 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/last"
-                style="@style/Widget.Material3.Button.IconButton.Outlined"
+                style="@style/Widget.Material3Expressive.Button.IconButton.Outlined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:icon="?attr/homeAsUpIndicator" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/term"
-                style="@style/Widget.Material3.Button.OutlinedButton.Icon"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
@@ -41,7 +41,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/weekTime"
-                style="@style/Widget.Material3.Button.OutlinedButton.Icon"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
@@ -51,7 +51,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/next"
-                style="@style/Widget.Material3.Button.IconButton.Outlined"
+                style="@style/Widget.Material3Expressive.Button.IconButton.Outlined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:rotation="180"

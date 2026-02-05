@@ -18,6 +18,7 @@
     </declare-styleable>
     <attr name="value" format="string" />
     <attr name="isFilter" format="boolean" />
+    <attr name="dialogPreferenceStyle" format="reference" />
     <declare-styleable name="FullscreenAttrs">
         <attr name="fullscreenBackgroundColor" format="color" />
         <attr name="fullscreenTextColor" format="color" />

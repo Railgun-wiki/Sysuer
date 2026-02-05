@@ -17,6 +17,7 @@ import com.sysu.edu.databinding.ActivityLeaveReturnRegistrationBinding;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -30,6 +31,7 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
     Handler handler;
     Params params;
     String baseUrl = "https://xgxt.sysu.edu.cn";
+    boolean isAccessible = true;
 
 
     @Override
@@ -49,9 +51,9 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                 } else if (msg.what == 0) {
                     int code = msg.getData().getInt("code");
                     if (code == 200) {
-                        //System.out.println(msg.getData().getString("response"));
+                        String response = msg.getData().getString("response");
                         if (msg.getData().getBoolean("isJSON")) {
-                            JSONObject json = JSONObject.parse(msg.getData().getString("response"));
+                            JSONObject json = JSONObject.parse(response);
                             JSONArray data;
                             if (json != null && json.getInteger("code") == 200 && (data = json.getJSONArray("data")) != null && !data.isEmpty()) {
                                 ArrayList<String> years = new ArrayList<>();
@@ -63,11 +65,15 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                             } else {
                                 params.toast(msg.getData().getString("message"));
                             }
-                        } else {
+                        } else if (getAccessibility(response)) {
+                            isAccessible = false;
                             params.toast(R.string.educational_wifi_warning);
                             baseUrl = "https://xgxt-443.webvpn.sysu.edu.cn";
                             getYears();
                             //params.gotoLogin(binding.toolbar, TargetUrl.XGXT_WEBVPN);
+                        } else if (getAuthorization(response)) {
+                            params.toast(R.string.login_warning);
+                            params.gotoLogin(binding.toolbar, isAccessible ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                         }
                     } else if (code == 302) {
                         params.gotoLogin(binding.toolbar, TargetUrl.XGXT_WEBVPN);
@@ -108,5 +114,14 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                 handler.sendMessage(msg);
             }
         });
+    }
+
+    boolean getAccessibility(String content) {
+        return Pattern.compile("Access Forbidden").matcher(content).find();
+    }
+
+    boolean getAuthorization(String content) {
+        return Pattern.compile("中山大学统一身份认证").matcher(content).find();
+
     }
 }

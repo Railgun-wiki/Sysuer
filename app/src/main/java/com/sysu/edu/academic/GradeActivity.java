@@ -402,7 +402,7 @@ public class GradeActivity extends AppCompatActivity {
                     info.getString("examCharacter"),
                     info.getString("scoCourseNumber"),
                     info.getString("teachClassNumber"),
-                    (info.getString("originalScore") == null ? "点击查看总成绩" : Objects.requireNonNull(grade.getValue()) + "=" + info.getString("originalScore"))));
+                    (info.getString("originalScore") == null ? binding.getRoot().getContext().getString(R.string.click_for_grade) : Objects.requireNonNull(grade.getValue()) + "=" + info.getString("originalScore"))));
         }
 
         public void add(JSONObject a) {

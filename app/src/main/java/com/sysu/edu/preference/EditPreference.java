@@ -15,7 +15,8 @@ import com.sysu.edu.R;
 import com.sysu.edu.databinding.PreferenceEditBinding;
 
 public class EditPreference extends Preference {
-    String mValue;
+
+    private String mValue;
 
     public EditPreference(@NonNull Context context) {
         this(context, null);
@@ -34,10 +35,7 @@ public class EditPreference extends Preference {
         setLayoutResource(R.layout.preference_edit);
         try (TypedArray a = context.obtainStyledAttributes(
                 attrs, R.styleable.editPreferenceStyle, defStyleAttr, defStyleRes)) {
-            mValue = a.getString(R.styleable.editPreferenceStyle_value);
-            if (mValue == null) {
-                mValue = "";
-            }
+            setValue(a.getString(R.styleable.editPreferenceStyle_value));
             a.recycle();
         } catch (Exception e) {
 //            throw new RuntimeException(e);
@@ -63,11 +61,10 @@ public class EditPreference extends Preference {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mValue = s.toString();
+                setValue(s.toString());
             }
         });
     }
-
 
     public String getValue() {
         return mValue;
@@ -75,6 +72,6 @@ public class EditPreference extends Preference {
 
     public void setValue(String value) {
         mValue = value;
-        notifyChanged();
+        persistString(value);
     }
 }

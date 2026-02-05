@@ -232,4 +232,5 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
             params.put(value, preference.getValue());
         }
     }
+
 }

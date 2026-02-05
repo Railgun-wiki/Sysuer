@@ -23,7 +23,7 @@
                 android:layout_height="128dp"
                 android:layout_gravity="center"
                 android:scaleType="fitCenter"
-                android:src="@mipmap/ic_launcher"
+                android:src="@mipmap/icon"
                 app:layout_collapseMode="parallax" />
 
             <com.google.android.material.appbar.MaterialToolbar

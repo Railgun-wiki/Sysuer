@@ -3,6 +3,7 @@ package com.sysu.edu.academic;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -51,7 +53,6 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
         });
         cookie = params.getCookie();
         setContentView(binding.getRoot());
-
         data = Map.of(
                 getString(R.string.school_enrollment_personal_info), List.of(
                         getString(R.string.school_enrollment_student_number),
@@ -256,15 +257,13 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
         pager2Adapter = new Pager2Adapter(this);
         binding.pager.setAdapter(pager2Adapter);
         binding.toolbar.setTitle(R.string.school_enroll);
+        binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(item -> {
+            int currentItem = binding.pager.getCurrentItem();
+            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            return true;
+        });
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(new String[]{
-                getString(R.string.school_enrollment_basic_info),
-                getString(R.string.school_enrollment_family_info),
-                getString(R.string.school_enrollment_education_info),
-                getString(R.string.school_enrollment_exchange_info),
-                getString(R.string.school_enrollment_change_info),
-                getString(R.string.school_enrollment_major_info),
-                getString(R.string.school_enrollment_register_info),
-                getString(R.string.school_enrollment_punish_info)
+                getString(R.string.school_enrollment_basic_info), getString(R.string.school_enrollment_family_info), getString(R.string.school_enrollment_education_info), getString(R.string.school_enrollment_exchange_info), getString(R.string.school_enrollment_change_info), getString(R.string.school_enrollment_major_info), getString(R.string.school_enrollment_register_info), getString(R.string.school_enrollment_punish_info)
         }[position])).attach();
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
         handler = new Handler(getMainLooper()) {
@@ -280,12 +279,7 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
                             if (msg.what == 0) {
                                 data.forEach((title, keyName) -> {
                                     ArrayList<String> values = new ArrayList<>();
-                                    int key = List.of(
-                                            getString(R.string.school_enrollment_personal_info),
-                                            getString(R.string.school_enrollment_roll_info),
-                                            getString(R.string.school_enrollment_contact_info)
-                                    ).indexOf(title);
-                                    keys.get(key).forEach(c -> values.add(d.getString(c)));
+                                    keys.get(List.of(getString(R.string.school_enrollment_personal_info), getString(R.string.school_enrollment_roll_info), getString(R.string.school_enrollment_contact_info)).indexOf(title)).forEach(c -> values.add(d.getString(c)));
                                     ((StaggeredFragment) pager2Adapter.getItem(0)).add(title, null, keyName, values);
                                 });
                                 addNextPage(msg.what + 1);
@@ -378,9 +372,6 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
         };
         addNextPage(0);
     }
-
-    // ... existing code ...
-
 
     void addNextPage(int what) {
         if (what >= 8 || pager2Adapter.getItemCount() > what) {

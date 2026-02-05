@@ -47,14 +47,14 @@
             app:title="@string/submit_issues">
             <intent android:data="https://github.com/SYSU-Tang/Sysuer/issues" />
         </Preference>
-        <rikka.preference.SimpleMenuPreference
-            app:entries="@array/sponsors"
-            app:entryValues="@array/values_3"
+        <Preference
             app:icon="@drawable/money"
             app:key="sponsor"
             app:persistent="false"
-            app:summary="3Q"
-            app:title="@string/sponsor" />
+            app:summary="@string/sponsor_appreciation"
+            app:title="@string/sponsor" >
+            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/sponsor"/>
+        </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/permission">
         <Preference
@@ -131,6 +131,12 @@
             app:summary="https://github.com/RikkaApps/RikkaX"
             app:title="RikkaX">
             <intent android:data="https://github.com/RikkaApps/RikkaX" />
+        </Preference>
+        <Preference
+            app:icon="@drawable/version"
+            app:summary="https://github.com/noties/Markwon"
+            app:title="Markwon">
+            <intent android:data="https://github.com/noties/Markwon" />
         </Preference>
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

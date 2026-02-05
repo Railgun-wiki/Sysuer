@@ -235,11 +235,9 @@ public class DashboardFragment extends Fragment {
                                     break;
                                 }
                                 for (int i = 0; i < dataArray.size(); i++) {
-                                    JSONObject e = dataArray.getJSONObject(i);
                                     LinkedList<JSONObject> exams = List.of(thisWeekExams, nextWeekExams).get(i);
-                                    JSONObject timetable = e.getJSONObject("timetable");
                                     TreeMap<Integer, JSONArray> sortedTimetable = new TreeMap<>();
-                                    timetable.forEach((s, t) -> {
+                                    dataArray.getJSONObject(i).getJSONObject("timetable").forEach((s, t) -> {
                                         if (t != null) {
                                             sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
                                         }
@@ -276,8 +274,8 @@ public class DashboardFragment extends Fragment {
             };
             SysuerPreferenceManager spm = new ViewModelProvider(requireActivity()).get(SysuerPreferenceManager.class);
             spm.setPM(PreferenceManager.getDefaultSharedPreferences(requireActivity()));
-            spm.getIsAgreeLiveData().observe(getViewLifecycleOwner(), aBoolean -> {
-                if (!aBoolean) {
+            spm.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {
+                if (!a) {
                     getTerm();
                 }
             });
@@ -490,9 +488,10 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public void set(LinkedList<JSONObject> examData) {
-        clear();
+        int temp = getItemCount();
+        data.clear();
         data.addAll(examData);
-        notifyItemRangeInserted(0, getItemCount());
+        notifyItemRangeChanged(0, Math.max(temp, getItemCount()));
     }
 
     public void clear() {

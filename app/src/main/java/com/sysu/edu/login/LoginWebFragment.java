@@ -76,10 +76,10 @@ public class LoginWebFragment extends Fragment {
                     web.evaluateJavascript("(function(){var needLogin = document.querySelector('" + element + "');if(needLogin!=null){needLogin.click();};return needLogin!=null;})()", s -> {
                         System.out.println(s);
                         if (!Boolean.parseBoolean(s)) {
-                            handler.postDelayed(() -> {
+//                            handler.postDelayed(() -> {
                                 model.setCookie(CookieManager.getInstance().getCookie(url));
                                 model.setLogin(true);
-                            }, 0);
+//                            }, 0);
                         }
                     });
                 }

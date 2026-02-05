@@ -497,5 +497,12 @@
     <string name="sixteenth_section">第十六节</string>
     <string name="occupy_source">占用来源</string>
     <string name="occupy_reason">占用原因</string>
+    <string name="click_for_grade">点击查看总成绩</string>
+    <string name="download_complete">完成下载</string>
+    <string name="sponsor_appreciation">感谢你的捐赠 🤑</string>
+    <string name="permission_granted">权限已获取</string>
+    <string name="agree">同意</string>
+    <string name="disagree">不同意</string>
+    <string name="user_agreement_and_privacy_policy">用户协议和隐私政策</string>
 
 </resources>
