@@ -68,7 +68,6 @@ public class AgendaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAgendaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         params = new Params(this);
         params.setCallback(() -> {
             cookie = params.getCookie();
@@ -257,7 +256,7 @@ public class AgendaActivity extends AppCompatActivity {
         getAvailableTerms();
     }
 
-    public void getAvailableWeeks(String academicYear) {
+    void getAvailableWeeks(String academicYear) {
         getResponse("https://jwxt.sysu.edu.cn/jwxt/base-info/school-calender/weekly?academicYear=" + academicYear, 5);
     }
 
@@ -291,13 +290,7 @@ public class AgendaActivity extends AppCompatActivity {
         detailBinding.classTime.setText(classTime);
         detailBinding.assistant.setText(assistant);
     }
-//    void setDetail(String course,String location,String teacher,String classTime){
 
-    /// /        ((MaterialTextView) findViewById(R.id.course)).setText(course);
-    /// /        ((MaterialTextView) findViewById(R.id.location)).setText(location);
-    /// /        ((MaterialTextView) findViewById(R.id.teacher)).setText(teacher);
-    /// /        ((MaterialTextView) findViewById(R.id.classTime)).setText(classTime);
-//    }
     void changeWeek(int newWeek) {
         if (newWeek >= 0 && newWeek < weeks.size()) {
             int currentWeek = weeks.get(newWeek);
