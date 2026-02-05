@@ -144,7 +144,7 @@ public class GradeActivity extends AppCompatActivity {
                 params.toast(R.string.grade_fetching);
             } else {
                 String level = adp.getLevel(position);
-                int minGrade = gradeMap.getOrDefault(level.substring(0, 1), 0) - (level.length() == 2 ? 0 : 6);
+                int minGrade = Objects.requireNonNull(gradeMap.getOrDefault(level.substring(0, 1), 0)) - (level.length() == 2 ? 0 : 6);
                 gradeManager.getGrade(adp.getClassNumber(position), position, minGrade);
             }
         });
