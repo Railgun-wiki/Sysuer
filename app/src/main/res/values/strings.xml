@@ -510,5 +510,6 @@
     <string name="delete_success">删除成功</string>
     <string name="cancel_collect">取消收藏</string>
     <string name="cancel_collect_success">取消收藏成功</string>
+    <string name="service_order">排序</string>
 
 </resources>

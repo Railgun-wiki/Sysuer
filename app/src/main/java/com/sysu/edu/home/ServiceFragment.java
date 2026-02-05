@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -17,6 +18,9 @@ import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -48,6 +52,7 @@ import com.sysu.edu.academic.SchoolWorkWarning;
 import com.sysu.edu.academic.TrainingSchedule;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.DialogServiceActionBinding;
+import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentServiceBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemServiceBoxBinding;
@@ -59,6 +64,8 @@ import com.sysu.edu.life.SchoolBus;
 import com.sysu.edu.todo.TodoActivity;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -76,9 +83,12 @@ public class ServiceFragment extends Fragment {
     );
     FragmentServiceBinding binding;
     Params params;
-    BottomSheetDialog dialog;
+    BottomSheetDialog actionDialog;
     AppCollection dbHelper;
     DialogServiceActionBinding actionBinding;
+    BottomSheetDialog orderDialog;
+    CollectionAdapter collectionAdapter;
+    DialogServiceOrderBinding orderBinding;
 
     @Nullable
     @Override
@@ -88,9 +98,40 @@ public class ServiceFragment extends Fragment {
             params = new Params(requireActivity());
             // 初始化actions HashMap
             initializeActionMap();
-            dialog = new BottomSheetDialog(requireContext());
+
+            actionDialog = new BottomSheetDialog(requireContext());
+            orderDialog = new BottomSheetDialog(requireContext());
+            orderBinding = DialogServiceOrderBinding.inflate(inflater);
+            orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+            collectionAdapter = new CollectionAdapter();
+            orderBinding.recyclerView.setAdapter(collectionAdapter);
+            orderBinding.confirm.setOnClickListener(v -> {
+                update();
+                orderDialog.dismiss();
+            });
+            orderDialog.setContentView(orderBinding.getRoot());
+            new ItemTouchHelper(new ItemTouchHelper.Callback() {
+                @Override
+                public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                    int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+                    int swipeFlags = 0;
+                    return makeMovementFlags(dragFlags, swipeFlags);
+                }
+
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
+                    collectionAdapter.swap(source.getBindingAdapterPosition(), target.getBindingAdapterPosition());
+                    return true;
+                }
+
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+                }
+            }).attachToRecyclerView(orderBinding.recyclerView);
             actionBinding = DialogServiceActionBinding.inflate(inflater);
-            dialog.setContentView(actionBinding.getRoot());
+            actionBinding.order.setOnClickListener(v -> orderDialog.show());
+            actionDialog.setContentView(actionBinding.getRoot());
             JSONReader reader = JSONReader.of(getResources().openRawResource(R.raw.service), StandardCharsets.UTF_8);
             JSONArray array = reader.readJSONArray();
             reader.close();
@@ -104,24 +145,28 @@ public class ServiceFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private void addCollection(@NonNull LayoutInflater inflater) {
-        Cursor cursor = dbHelper.getWritableDatabase().query("service_collection", null, null, null, null, null, null);
+    void addCollection(@NonNull LayoutInflater inflater) {
+        Cursor cursor = dbHelper.getWritableDatabase().query("service_collection", null, null, null, null, null, "position ASC");
         JSONArray collection = new JSONArray();
-        while (cursor.moveToNext())
-            collection.add(JSONObject.parse(cursor.getString(cursor.getColumnIndexOrThrow("serviceJson"))));
+        collectionAdapter.clear();
+        while (cursor.moveToNext()) {
+            JSONObject serviceJson = JSONObject.parse(cursor.getString(cursor.getColumnIndexOrThrow("serviceJson")));
+            collection.add(serviceJson);
+            collectionAdapter.add(serviceJson);
+        }
         cursor.close();
-        ViewGroup container = initBoxWithHashMap(inflater, "收藏", collection);
+        ViewGroup container = initBoxWithHashMap(inflater, getString(R.string.collect), collection);
         if (collection.isEmpty())
             container.setVisibility(View.GONE);
         if (binding.serviceContainer.getChildCount() > 0)
             binding.serviceContainer.removeViewAt(0);
+        container.getChildAt(0).setOnClickListener(v -> orderDialog.show());
         binding.serviceContainer.addView(container, 0);
-
     }
 
 
     // 初始化actions HashMap
-    private void initializeActionMap() {
+    void initializeActionMap() {
         // 学术服务 (id: 1xx)
         actionMap.put(101, newActivity(SchoolEnrollmentActivity.class));           // 学籍
         actionMap.put(102, newActivity(CETActivity.class));          // 四六级
@@ -236,13 +281,11 @@ public class ServiceFragment extends Fragment {
             JSONObject item = items.getJSONObject(index);
             int itemId = item.getIntValue("id");
             ItemActionChipBinding chip = ItemActionChipBinding.inflate(inflater, binding.serviceBoxItems, false);
-
             View.OnClickListener action = actionMap.get(itemId);
             chip.getRoot().setOnClickListener(
                     action != null ? action : v -> params.toast(R.string.undevelop)
             );
             chip.getRoot().setOnLongClickListener(v -> {
-
                 MutableLiveData<Boolean> isCollected = new MutableLiveData<>(dbHelper.isCollected(itemId));
                 actionBinding.collect.setText(Boolean.TRUE.equals(isCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
                 actionBinding.collect.setOnClickListener(w -> {
@@ -251,7 +294,7 @@ public class ServiceFragment extends Fragment {
                         params.toast(R.string.cancel_collect_success);
                         addCollection(inflater);
                     } else {
-                        dbHelper.addService(itemId, item.toJSONString());
+                        dbHelper.addService(itemId, item.toJSONString(), collectionAdapter.getItemCount());
                         params.toast(R.string.collect_success);
                         addCollection(inflater);
                     }
@@ -260,7 +303,7 @@ public class ServiceFragment extends Fragment {
                 });
                 actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
                 Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
-                dialog.show();
+                actionDialog.show();
                 return true;
             });
             chip.getRoot().setText(item.getString("name"));
@@ -275,5 +318,55 @@ public class ServiceFragment extends Fragment {
 
     View.OnClickListener newActivity(Class<?> activity_class) {
         return view -> launcher.launch(new Intent(view.getContext(), activity_class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp"));
+    }
+
+    void update() {
+        IntStream.range(0, collectionAdapter.getItemCount()).forEach(i -> {
+            collectionAdapter.getItem(i);
+            dbHelper.updateServicePosition(collectionAdapter.getItem(i).getInteger("id"), i);
+        });
+        addCollection(getLayoutInflater());
+    }
+}
+
+class CollectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    ArrayList<JSONObject> serviceNames = new ArrayList<>();
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {
+        };
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ((TextView) holder.itemView).setText(serviceNames.get(position).getString("name"));
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return serviceNames.size();
+    }
+
+    public void add(JSONObject service) {
+        serviceNames.add(service);
+        notifyItemInserted(serviceNames.size() - 1);
+    }
+
+    public void swap(int position1, int position2) {
+        Collections.swap(serviceNames, position1, position2);
+        notifyItemMoved(position1, position2);
+    }
+
+    public void clear() {
+        int tmp = getItemCount();
+        serviceNames.clear();
+        notifyItemRangeRemoved(0, tmp);
+    }
+
+    public JSONObject getItem(int position) {
+        return serviceNames.get(position);
     }
 }
