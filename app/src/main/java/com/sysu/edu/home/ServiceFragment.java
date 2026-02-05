@@ -2,12 +2,12 @@ package com.sysu.edu.home;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -15,11 +15,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.preference.PreferenceManager;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.AcademyNotification;
 import com.sysu.edu.academic.AgendaActivity;
@@ -45,6 +47,7 @@ import com.sysu.edu.academic.SchoolEnrollmentActivity;
 import com.sysu.edu.academic.SchoolWorkWarning;
 import com.sysu.edu.academic.TrainingSchedule;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.databinding.DialogServiceActionBinding;
 import com.sysu.edu.databinding.FragmentServiceBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemServiceBoxBinding;
@@ -61,15 +64,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import io.noties.markwon.Markwon;
+
 public class ServiceFragment extends Fragment {
 
     final Map<Integer, View.OnClickListener> actionMap = new HashMap<>();
     final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {}
+            result -> {
+            }
     );
     FragmentServiceBinding binding;
     Params params;
+    BottomSheetDialog dialog;
+    AppCollection dbHelper;
+    DialogServiceActionBinding actionBinding;
 
     @Nullable
     @Override
@@ -79,17 +88,37 @@ public class ServiceFragment extends Fragment {
             params = new Params(requireActivity());
             // 初始化actions HashMap
             initializeActionMap();
-
+            dialog = new BottomSheetDialog(requireContext());
+            actionBinding = DialogServiceActionBinding.inflate(inflater);
+            dialog.setContentView(actionBinding.getRoot());
             JSONReader reader = JSONReader.of(getResources().openRawResource(R.raw.service), StandardCharsets.UTF_8);
             JSONArray array = reader.readJSONArray();
-
+            reader.close();
+            dbHelper = new AppCollection(requireContext());
+            addCollection(inflater);
             IntStream.range(0, array.size()).forEach(i -> {
                 JSONObject serviceGroup = array.getJSONObject(i);
-                initBoxWithHashMap(inflater, serviceGroup.getString("name"), serviceGroup.getJSONArray("items"));
+                this.binding.serviceContainer.addView(initBoxWithHashMap(inflater, serviceGroup.getString("name"), serviceGroup.getJSONArray("items")));
             });
         }
         return binding.getRoot();
     }
+
+    private void addCollection(@NonNull LayoutInflater inflater) {
+        Cursor cursor = dbHelper.getWritableDatabase().query("service_collection", null, null, null, null, null, null);
+        JSONArray collection = new JSONArray();
+        while (cursor.moveToNext())
+            collection.add(JSONObject.parse(cursor.getString(cursor.getColumnIndexOrThrow("serviceJson"))));
+        cursor.close();
+        ViewGroup container = initBoxWithHashMap(inflater, "收藏", collection);
+        if (collection.isEmpty())
+            container.setVisibility(View.GONE);
+        if (binding.serviceContainer.getChildCount() > 0)
+            binding.serviceContainer.removeViewAt(0);
+        binding.serviceContainer.addView(container, 0);
+
+    }
+
 
     // 初始化actions HashMap
     private void initializeActionMap() {
@@ -200,7 +229,7 @@ public class ServiceFragment extends Fragment {
         actionMap.put(1003, browse("https://xgxw.sysu.edu.cn/aicounsellor/agents/outlink/sunyatsenuniversity")); // 学工君
     }
 
-    void initBoxWithHashMap(LayoutInflater inflater, String box_title, JSONArray items) {
+    ViewGroup initBoxWithHashMap(LayoutInflater inflater, String box_title, JSONArray items) {
         ItemServiceBoxBinding binding = ItemServiceBoxBinding.inflate(inflater);
         binding.serviceBoxTitle.setText(box_title);
         IntStream.range(0, items.size()).forEach(index -> {
@@ -208,16 +237,36 @@ public class ServiceFragment extends Fragment {
             int itemId = item.getIntValue("id");
             ItemActionChipBinding chip = ItemActionChipBinding.inflate(inflater, binding.serviceBoxItems, false);
 
-            // 从HashMap中获取对应的action，如果没有则显示"未开发"
             View.OnClickListener action = actionMap.get(itemId);
             chip.getRoot().setOnClickListener(
-                    action != null ? action : v -> Toast.makeText(v.getContext(), "未开发", Toast.LENGTH_LONG).show()
+                    action != null ? action : v -> params.toast(R.string.undevelop)
             );
+            chip.getRoot().setOnLongClickListener(v -> {
 
+                MutableLiveData<Boolean> isCollected = new MutableLiveData<>(dbHelper.isCollected(itemId));
+                actionBinding.collect.setText(Boolean.TRUE.equals(isCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
+                actionBinding.collect.setOnClickListener(w -> {
+                    if (Boolean.TRUE.equals(isCollected.getValue())) {
+                        dbHelper.deleteService(itemId);
+                        params.toast(R.string.cancel_collect_success);
+                        addCollection(inflater);
+                    } else {
+                        dbHelper.addService(itemId, item.toJSONString());
+                        params.toast(R.string.collect_success);
+                        addCollection(inflater);
+                    }
+                    actionBinding.collect.setText(Boolean.TRUE.equals(isCollected.getValue()) ? R.string.collect : R.string.cancel_collect);
+                    isCollected.setValue(!Boolean.TRUE.equals(isCollected.getValue()));
+                });
+                actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+                Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
+                dialog.show();
+                return true;
+            });
             chip.getRoot().setText(item.getString("name"));
             binding.serviceBoxItems.addView(chip.getRoot());
         });
-        this.binding.serviceContainer.addView(binding.getRoot());
+        return binding.getRoot();
     }
 
     View.OnClickListener browse(String url) {

@@ -504,5 +504,11 @@
     <string name="agree">同意</string>
     <string name="disagree">不同意</string>
     <string name="user_agreement_and_privacy_policy">用户协议和隐私政策</string>
+    <string name="collect">收藏</string>
+    <string name="undevelop">未开发</string>
+    <string name="collect_success">成功收藏</string>
+    <string name="delete_success">删除成功</string>
+    <string name="cancel_collect">取消收藏</string>
+    <string name="cancel_collect_success">取消收藏成功</string>
 
 </resources>

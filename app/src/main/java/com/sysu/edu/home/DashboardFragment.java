@@ -33,6 +33,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.AgendaActivity;
 import com.sysu.edu.academic.CourseDetailActivity;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.SysuerPreferenceManager;
 import com.sysu.edu.api.TargetUrl;
@@ -46,7 +47,6 @@ import com.sysu.edu.todo.info.TodoInfo;
 import org.commonmark.node.Heading;
 import org.commonmark.node.Node;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,13 +65,6 @@ import io.noties.markwon.Markwon;
 import io.noties.markwon.MarkwonSpansFactory;
 import io.noties.markwon.MarkwonVisitor;
 import io.noties.markwon.core.CoreProps;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 
 public class DashboardFragment extends Fragment {
@@ -80,8 +73,9 @@ public class DashboardFragment extends Fragment {
     final ArrayList<JSONObject> tomorrowCourse = new ArrayList<>();
     final LinkedList<JSONObject> thisWeekExams = new LinkedList<>();
     final LinkedList<JSONObject> nextWeekExams = new LinkedList<>();
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    Handler handler;
+    //    final OkHttpClient http = new OkHttpClient.Builder().build();
+    HttpManager http;
+    //    Handler handler;
     String cookie;
     Params params;
     FragmentDashboardBinding binding;
@@ -120,13 +114,6 @@ public class DashboardFragment extends Fragment {
             binding.courseList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.examList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.examList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    binding.time.setText(new SimpleDateFormat("hh:mm:ss", Locale.CHINESE).format(new Date()));
-                    handler.postDelayed(this, 500);
-                }
-            });
             params = new Params(requireActivity());
             cookie = params.getCookie();
             params.setCallback(this, () -> {
@@ -152,7 +139,7 @@ public class DashboardFragment extends Fragment {
             });
             binding.date.setText(String.format("%s/星期%s", new SimpleDateFormat("M月dd日", Locale.CHINESE).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
 
-            handler = new Handler(Looper.getMainLooper()) {
+            Handler handler = new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
@@ -173,9 +160,8 @@ public class DashboardFragment extends Fragment {
                                     jsonObject.put("time", jsonObject.get("startTime") + "~" + jsonObject.get("endTime"));
                                     jsonObject.put("course", "第" + jsonObject.get("startClassTimes") + "~" + jsonObject.get("endClassTimes") + "节课");
                                     String flag = (String) jsonObject.get("useflag");
-                                    if (flag.equals("TD")) {
+                                    if (flag.equals("TD"))
                                         (Objects.equals(status, "before") ? beforeArray : afterArray).add(jsonObject);
-                                    }
                                     (flag.equals("TD") ? todayCourse : tomorrowCourse).add(jsonObject);
 //                                    addCourse(flag.equals("TD") ? todayCourse : tomorrowCourse, (String) ((JSONObject) e).get("courseName"), (String) ((JSONObject) e).get("teachingPlace"), ((JSONObject) e).get("startTime") + "~" + ((JSONObject) e).get("endTime")
 //                                            , "第" + ((JSONObject) e).get("startClassTimes") + "~" + ((JSONObject) e).get("endClassTimes") + "节课", (String) ((JSONObject) e).get("teacherName"), flag);
@@ -188,9 +174,8 @@ public class DashboardFragment extends Fragment {
                                     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
                                         super.configureSpansFactory(builder);
                                         builder.appendFactory(Heading.class, (heading, configuration) -> {
-                                            if (CoreProps.HEADING_LEVEL.require(configuration) == 3) {
+                                            if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
                                                 return new ForegroundColorSpan(Color.parseColor("#6750a4"));
-                                            }
                                             return null;
                                         });
                                     }
@@ -255,7 +240,7 @@ public class DashboardFragment extends Fragment {
                                 break;
                             case 3:
                                 String term = response.getJSONObject("data").getString("acadYearSemester");
-                                binding.date.setText(String.format("第%s学期\n%s\n星期%s", term, new SimpleDateFormat("M月dd日", Locale.CHINESE).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                                binding.date.setText(String.format("第%s学期\n%s\n星期%s", term, new SimpleDateFormat("M月dd日", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
                                 getTodayCourses(term);
                                 getExams(term);
                                 getWeek(term);
@@ -272,12 +257,20 @@ public class DashboardFragment extends Fragment {
                     }
                 }
             };
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    binding.time.setText(new SimpleDateFormat("hh:mm:ss", Locale.CHINESE).format(new Date()));
+                    handler.postDelayed(this, 500);
+                }
+            });
+            http = new HttpManager(handler);
+            http.setParams(params);
+
             SysuerPreferenceManager spm = new ViewModelProvider(requireActivity()).get(SysuerPreferenceManager.class);
             spm.setPM(PreferenceManager.getDefaultSharedPreferences(requireActivity()));
             spm.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {
-                if (!a) {
-                    getTerm();
-                }
+                if (!a) getTerm();
             });
             spm.initLiveData();
 
@@ -296,79 +289,31 @@ public class DashboardFragment extends Fragment {
             binding.toggle3.check(R.id.filter_todo);
             spm.getDashboardLiveData().observe(getViewLifecycleOwner(), s -> {
                 HashSet<String> visible = new HashSet<>(List.of("0", "1", "2", "3", "4", "5"));
-                if (!s.isEmpty()) {
-                    visible.removeAll(s);
-                }
+                if (!s.isEmpty()) visible.removeAll(s);
                 visible.forEach(i -> List.of(binding.shortcutGroup, binding.nextClassCard, binding.timeCard, binding.courseGroup, binding.examGroup, binding.todoGroup).get(Integer.parseInt(i)).setVisibility(View.GONE));
             });
-
         }
         return binding.getRoot();
     }
 
     void getTerm() {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist")
-                .header("Cookie", cookie)
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt//yd/classSchedule/").build()
-        ).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 3;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt//yd/classSchedule/");
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist", 3);
     }
 
     void getWeek(String term) {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/timetable-search/classTableInfo/getDateWeekly?academicYear=" + term)
-                .header("Cookie", cookie)
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/yd/index/").build()
-        ).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 4;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/yd/index/");
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/timetable-search/classTableInfo/getDateWeekly?academicYear=" + term, 4);
     }
 
     void getTodayCourses(String term) {
-        new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/timetable-search/classTableInfo/queryTodayStudentClassTable?academicYear=" + term)
-                .header("Cookie", cookie)
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
+        http.setReferrer(null);
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/timetable-search/classTableInfo/queryTodayStudentClassTable?academicYear=" + term, 1);
+    }
 
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 1;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+    void getExams(String term) {
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo?code=jwxsd_ksxxck" + term,String.format("{\"acadYear\":\"%s\",\"examWeekId\":\"1928284621349085186\",\"examWeekName\":\"18-19周期末考\",\"examDate\":\"\"}", term), 2);
     }
 
     String getTimePosition(String from, String to) {
@@ -377,32 +322,9 @@ public class DashboardFragment extends Fragment {
             Date fromDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(from);
             Date toDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(to);
             return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+        } catch (ParseException ignored) {
         }
-    }
-
-    void getExams(String term) {
-        new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo?code=jwxsd_ksxxck")
-                .header("Cookie", cookie)
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/")
-                .post(RequestBody.create(String.format("{\"acadYear\":\"%s\",\"examWeekId\":\"1928284621349085186\",\"examWeekName\":\"18-19周期末考\",\"examDate\":\"\"}", term), MediaType.parse("application/json")))
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 2;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        return "before";
     }
 }
 
@@ -416,7 +338,6 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         super();
         this.context = context;
         this.params = new Params((FragmentActivity) context);
-
     }
 
     public void set(ArrayList<JSONObject> d) {
@@ -466,7 +387,6 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         boolean isBefore = Objects.equals(data.get(position).getString("status"), "before");
         binding.courseTitle.setTextAppearance(isBefore ? com.google.android.material.R.style.TextAppearance_Material3_TitleMedium : com.google.android.material.R.style.TextAppearance_Material3_TitleMedium_Emphasized);
         holder.itemView.getBackground().setTint(Objects.equals(data.get(position).getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
-        //((GradientDrawable) ((RippleDrawable) holder.itemView.getBackground()).getDrawable(1)).setColor(Objects.equals(data.get(position).getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
         binding.item.setAlpha(isBefore ? 0.64f : 1.0f);
     }
 
@@ -488,10 +408,9 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public void set(LinkedList<JSONObject> examData) {
-        int temp = getItemCount();
-        data.clear();
+        clear();
         data.addAll(examData);
-        notifyItemRangeChanged(0, Math.max(temp, getItemCount()));
+        notifyItemRangeInserted(0, getItemCount());
     }
 
     public void clear() {
