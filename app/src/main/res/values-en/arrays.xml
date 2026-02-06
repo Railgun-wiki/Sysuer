@@ -9,12 +9,6 @@
         <item>WeChat Pay</item>
         <item>QQ Wallet</item>
     </string-array>
-
-    <integer-array name="values_3">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </integer-array>
     <string-array name="weeks">
         <item>Mon</item>
         <item>Tue</item>

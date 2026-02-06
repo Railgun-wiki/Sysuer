@@ -22,8 +22,8 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
         app:contentPadding="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toTopOf="@id/service_action_grid"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/handler">
 
@@ -42,9 +42,10 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        app:constraint_referenced_ids="collect,feedback,delete,order"
+        app:constraint_referenced_ids="collect,feedback,delete,order,add_shortcut"
         app:flow_horizontalBias="0"
-        app:flow_horizontalStyle="spread"
+        app:flow_horizontalGap="16dp"
+        app:flow_horizontalStyle="packed"
         app:flow_wrapMode="chain2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -83,4 +84,12 @@
         android:layout_height="wrap_content"
         android:text="@string/service_order"
         app:icon="@drawable/menu" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/add_shortcut"
+        style="@style/Widget.Material3Expressive.Button.TonalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_shortcut"
+        app:icon="@drawable/add" />
 </androidx.constraintlayout.widget.ConstraintLayout>

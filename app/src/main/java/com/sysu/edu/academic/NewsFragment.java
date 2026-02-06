@@ -45,24 +45,23 @@ public class NewsFragment extends Fragment {
         adp.add(json);
     }
 
-    public void setListener(Context context, AdapterListener l) {
+    public void setListener(Context context, AdapterListener listener) {
         if (adp == null) {
             adp = new NewsAdp(context);
         }
-        adp.setListener(l);
+        adp.setListener(listener);
     }
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        lm.setSpanCount(params.getColumn());
         super.onConfigurationChanged(newConfig);
+        lm.setSpanCount(params.getColumn());
     }
 
     public static class NewsAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         public final ArrayList<JSONObject> data = new ArrayList<>();
         final Context context;
         AdapterListener listener;
-        // String cookie;
 
         public NewsAdp(Context context) {
             super();

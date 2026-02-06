@@ -25,6 +25,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.BrowserActivity;
+import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemNewsBinding;
@@ -46,6 +47,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class NewsFragment extends Fragment {
+
     final int position;
     final OkHttpClient http = new OkHttpClient.Builder().build();
     RecyclerViewScrollBinding binding;
@@ -53,6 +55,7 @@ public class NewsFragment extends Fragment {
     int page = 1;
     Runnable run;
     Params params;
+    AuthorizationManager authorizationManager;
 
     public NewsFragment(int pos) {
         this.position = pos;
@@ -61,10 +64,10 @@ public class NewsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         if (savedInstanceState == null) {
             binding = RecyclerViewScrollBinding.inflate(inflater);
             params = new Params(requireActivity());
+            authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
             params.setCallback(this, () -> run.run());
             RecyclerView list = binding.recyclerView;
             list.setLayoutManager(new GridLayoutManager(requireContext(), params.getColumn()));
@@ -83,15 +86,20 @@ public class NewsFragment extends Fragment {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     Bundle rdata = msg.getData();
-                    boolean isJson = !rdata.getBoolean("isJson");
+                    boolean isJson = rdata.getBoolean("isJson");
                     String json = rdata.getString("data");
-                    JSONObject data = new JSONObject();
-                    if (isJson) {
-                        params.toast(R.string.educational_wifi_warning);
+                    if(json == null){
+                        params.toast(R.string.no_wifi_warning);
                         return;
-                    } else if (json != null) {
-                        data = JSON.parseObject(json);
                     }
+                    if(!isJson){
+                        if(!authorizationManager.isAccessible(json)){
+                            params.toast(R.string.educational_wifi_warning);
+                            run.run();
+                            return;
+                        }
+                    }
+                    JSONObject data = Objects.requireNonNull(JSON.parseObject(json));
                     if (msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
                     } else {
@@ -114,6 +122,7 @@ public class NewsFragment extends Fragment {
                                         }
                                         newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
                                     });
+                                    //
                                     break;
                                 case 3:
                                     data.getJSONArray("data").forEach(e -> {
@@ -125,6 +134,7 @@ public class NewsFragment extends Fragment {
                                         }
                                         newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
                                     });
+                                    //
                                     break;
                                 case 4:
                                     response.getJSONArray("records").forEach(e -> {
@@ -151,16 +161,10 @@ public class NewsFragment extends Fragment {
                                     break;
                             }
                         } else if (code == 10003) {
+                            params.toast(code + " " + data.getString("message"));
+                        } else if (code == 496 || code == 497) {
                             params.toast(data.getString("message"));
-                            params.gotoLogin(getView(), TargetUrl.NEWS);
-                        } else if (code == 496) {
-                            params.toast(data.getString("message"));
-                            params.gotoLogin(getView(), TargetUrl.NEWS);
-                        } else if (code == 497) {
-                            params.toast(data.getString("message"));
-                            params.gotoLogin(getView(), TargetUrl.NEWS);
-                        } else {
-                            params.toast(data.getString("message"));
+                            params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                         }
                     } //今日中大
 
@@ -168,17 +172,17 @@ public class NewsFragment extends Fragment {
             };
         }
         run = () -> List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position).run();
-        if (!params.getAuthorization().isEmpty()) {
-            run.run();
-        } else {
-            params.gotoLogin(binding.getRoot(), TargetUrl.NEWS);
-        }
+//        if (!params.getAuthorization().isEmpty()) {
+        run.run();
+//        } else {
+//            params.gotoLogin(binding.getRoot(), TargetUrl.NEWS);
+//        }
         //getAuthorization();
         return binding.getRoot();
     }
 
     void getNews() {
-        http.newCall(new Request.Builder().url("https://iportal.sysu.edu.cn/ai_service/content-portal/recommend/query-recommend")
+        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/recommend/query-recommend")
                 .post(RequestBody.create("", MediaType.parse("application/json")))
                 .header("Authorization", params.getAuthorization())
                 .header("Cookie", params.getCookie())
@@ -204,7 +208,7 @@ public class NewsFragment extends Fragment {
     }
 
     void getSubscription() {
-        http.newCall(new Request.Builder().url("https://iportal.sysu.edu.cn/ai_service/content-portal/user/content/page")
+        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page")
                 .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytr4e6c\",\"notice\":false}", MediaType.parse("application/json")))
                 .header("Authorization", params.getAuthorization())
                 .header("Cookie", params.getCookie())
@@ -255,7 +259,7 @@ public class NewsFragment extends Fragment {
 //    }
 
     void getNotice() {
-        http.newCall(new Request.Builder().url("https://iportal.sysu.edu.cn/ai_service/content-portal/user/content/page")
+        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page")
                 .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytunvv6\",\"notice\":false}", MediaType.parse("application/json")))
                 .header("Authorization", params.getAuthorization())
                 .header("Cookie", params.getCookie())
@@ -281,7 +285,7 @@ public class NewsFragment extends Fragment {
     }
 
     void getDailyNews() {
-        http.newCall(new Request.Builder().url("https://iportal.sysu.edu.cn/ai_service/content-portal/user/content/page")
+        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page")
                 .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"4cef8rqw\",\"notice\":false}", MediaType.parse("application/json")))
                 .header("Authorization", params.getAuthorization())
                 .header("Cookie", params.getCookie())

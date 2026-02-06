@@ -50,6 +50,16 @@
         "id": 201,
         "name": "To-do",
         "description": "To-do list management tool for recording learning tasks, assignment reminders, and important arrangements"
+      },
+      {
+        "id": 202,
+        "name": "Cross-Exploration Platform",
+        "description": "Cross-exploration platform for student projects, helping students to collaborate and manage cross-disciplinary projects"
+      },
+      {
+        "id": 203,
+        "name": "EduAI Platform",
+        "description": "AI-assisted education platform, integrating AI technologies to provide personalized learning support and course recommendations"
       }
     ]
   },

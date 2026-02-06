@@ -4,7 +4,9 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,15 +23,19 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.AgendaActivity;
 import com.sysu.edu.academic.CourseDetailActivity;
@@ -37,6 +43,8 @@ import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.SysuerPreferenceManager;
 import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.databinding.DialogServiceActionBinding;
+import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentDashboardBinding;
 import com.sysu.edu.databinding.ItemCourseBinding;
 import com.sysu.edu.databinding.ItemExamBinding;
@@ -59,6 +67,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
+import java.util.stream.IntStream;
 
 import io.noties.markwon.AbstractMarkwonPlugin;
 import io.noties.markwon.Markwon;
@@ -73,26 +82,33 @@ public class DashboardFragment extends Fragment {
     final ArrayList<JSONObject> tomorrowCourse = new ArrayList<>();
     final LinkedList<JSONObject> thisWeekExams = new LinkedList<>();
     final LinkedList<JSONObject> nextWeekExams = new LinkedList<>();
-    //    final OkHttpClient http = new OkHttpClient.Builder().build();
     HttpManager http;
-    //    Handler handler;
     String cookie;
     Params params;
+    HomeCollectionHelper db;
     FragmentDashboardBinding binding;
     boolean refresh = true;
+    HomeViewModel viewModel;
+    BottomSheetDialog orderDialog;
+    CollectionAdapter collectionAdapter;
+    BottomSheetDialog actionDialog;
+    DialogServiceActionBinding actionBinding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (refresh) {
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
+            db = new HomeCollectionHelper(requireContext());
+            viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
+            viewModel.updateDashboardShortcut.observe(requireActivity(), b -> getShortcutCollection());
             binding.scan.setOnClickListener(v -> {
                 try {
                     Intent intent = new Intent();
                     intent.setComponent(new ComponentName("com.tencent.mm", "com.tencent.mm.ui.LauncherUI"));
                     intent.putExtra("LauncherUI.From.Scaner.Shortcut", true);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setAction("android.intent.action.VIEW");
+                    intent.setAction("android.intent.initActionDialog.VIEW");
                     startActivity(intent);
                 } catch (ActivityNotFoundException ignored) {
                 }
@@ -292,6 +308,9 @@ public class DashboardFragment extends Fragment {
                 if (!s.isEmpty()) visible.removeAll(s);
                 visible.forEach(i -> List.of(binding.shortcutGroup, binding.nextClassCard, binding.timeCard, binding.courseGroup, binding.examGroup, binding.todoGroup).get(Integer.parseInt(i)).setVisibility(View.GONE));
             });
+            initOrder(inflater);
+            initAction(inflater);
+            getShortcutCollection();
         }
         return binding.getRoot();
     }
@@ -313,7 +332,7 @@ public class DashboardFragment extends Fragment {
 
     void getExams(String term) {
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
-        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo?code=jwxsd_ksxxck" + term,String.format("{\"acadYear\":\"%s\",\"examWeekId\":\"1928284621349085186\",\"examWeekName\":\"18-19周期末考\",\"examDate\":\"\"}", term), 2);
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo?code=jwxsd_ksxxck" + term, String.format("{\"acadYear\":\"%s\",\"examWeekId\":\"1928284621349085186\",\"examWeekName\":\"18-19周期末考\",\"examDate\":\"\"}", term), 2);
     }
 
     String getTimePosition(String from, String to) {
@@ -325,6 +344,111 @@ public class DashboardFragment extends Fragment {
         } catch (ParseException ignored) {
         }
         return "before";
+    }
+
+    void getShortcutCollection() {
+        if (binding.shortcutGroup.getChildCount() > 4)
+            IntStream.range(3, binding.shortcutGroup.getChildCount() - 1).forEach(i -> binding.shortcutGroup.removeViewAt(3));
+        try (Cursor cursor = db.getWritableDatabase().query("dashboard_shortcut_collection", null, null, null, null, null, "position")) {
+            if (cursor.moveToFirst()) {
+                collectionAdapter.clear();
+                do {
+                    Integer id = cursor.getInt(cursor.getColumnIndexOrThrow("shortcutId"));
+                    JSONObject shortcut = JSON.parseObject(cursor.getString(cursor.getColumnIndexOrThrow("shortcutJson")));
+                    MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
+                    button.setText(shortcut.getString("name"));
+                    binding.shortcutGroup.addView(button);
+                    if (viewModel.actionMap.containsKey(id))
+                        button.setOnClickListener(viewModel.actionMap.get(id));
+                    button.setOnLongClickListener(v -> action(shortcut));
+                    collectionAdapter.add(shortcut);
+                } while (cursor.moveToNext());
+            }
+        }
+    }
+
+    void initOrder(@NonNull LayoutInflater inflater) {
+        Context context = requireContext();
+        orderDialog = new BottomSheetDialog(context);
+        DialogServiceOrderBinding orderBinding = DialogServiceOrderBinding.inflate(inflater);
+        orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        collectionAdapter = new CollectionAdapter();
+        orderBinding.recyclerView.setAdapter(collectionAdapter);
+        orderBinding.confirm.setOnClickListener(v -> {
+            updateShortcut();
+            getShortcutCollection();
+            orderDialog.dismiss();
+        });
+        orderDialog.setContentView(orderBinding.getRoot());
+        new ItemTouchHelper(new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
+                collectionAdapter.swap(source.getBindingAdapterPosition(), target.getBindingAdapterPosition());
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        }).attachToRecyclerView(orderBinding.recyclerView);
+    }
+
+    void updateShortcut() {
+        IntStream.range(0, collectionAdapter.getItemCount()).forEach(i -> {
+            collectionAdapter.getItem(i);
+            db.updateDashboardShortcutPosition(collectionAdapter.getItem(i).getInteger("id"), i);
+        });
+    }
+
+    void initAction(@NonNull LayoutInflater inflater) {
+        actionDialog = new BottomSheetDialog(requireContext());
+        actionBinding = DialogServiceActionBinding.inflate(inflater);
+        actionBinding.order.setOnClickListener(v -> orderDialog.show());
+        actionDialog.setContentView(actionBinding.getRoot());
+    }
+
+    boolean action(JSONObject item) {
+        int itemId = item.getIntValue("id");
+        MutableLiveData<Boolean> isServiceCollected = new MutableLiveData<>(db.isServiceCollected(itemId));
+        MutableLiveData<Boolean> isShortcutCollected = new MutableLiveData<>(db.isDashboardShortcutCollected(itemId));
+        actionBinding.collect.setText(Boolean.TRUE.equals(isServiceCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
+        actionBinding.addShortcut.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_shortcut);
+        actionBinding.collect.setOnClickListener(w -> {
+            boolean isServiceCollect = Boolean.TRUE.equals(isServiceCollected.getValue());
+            if (isServiceCollect) {
+                db.deleteService(itemId);
+                params.toast(R.string.cancel_collect_success);
+            } else {
+                db.addService(itemId, item.toJSONString(), collectionAdapter.getItemCount());
+                params.toast(R.string.collect_success);
+            }
+            getShortcutCollection();
+            actionBinding.collect.setText(isServiceCollect ? R.string.collect : R.string.cancel_collect);
+            isServiceCollected.setValue(!isServiceCollect);
+        });
+        actionBinding.addShortcut.setOnClickListener(w -> {
+            boolean isShortcutCollect = Boolean.TRUE.equals(isShortcutCollected.getValue());
+            if (isShortcutCollect) {
+                db.deleteDashboardShortcut(itemId);
+                params.toast(R.string.cancel_add_shortcut_success);
+            } else {
+                db.addDashboardShortcut(itemId, item.toJSONString(), collectionAdapter.getItemCount());
+                params.toast(R.string.add_shortcut_success);
+            }
+            viewModel.updateDashboardShortcut.setValue(true);
+            actionBinding.addShortcut.setText(isShortcutCollect ? R.string.add_shortcut : R.string.cancel_add_shortcut);
+            isShortcutCollected.setValue(!isShortcutCollect);
+        });
+        actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
+        actionDialog.show();
+        return true;
     }
 }
 

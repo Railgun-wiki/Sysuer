@@ -122,6 +122,5 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
 
     boolean getAuthorization(String content) {
         return Pattern.compile("中山大学统一身份认证").matcher(content).find();
-
     }
 }

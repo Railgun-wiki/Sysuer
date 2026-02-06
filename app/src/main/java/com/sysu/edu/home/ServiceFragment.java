@@ -1,6 +1,6 @@
 package com.sysu.edu.home;
 
-import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,14 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
-import androidx.preference.PreferenceManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,68 +24,31 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.AcademyNotification;
-import com.sysu.edu.academic.AgendaActivity;
-import com.sysu.edu.academic.AssistantInfoActivity;
-import com.sysu.edu.academic.BrowserActivity;
-import com.sysu.edu.academic.CETActivity;
-import com.sysu.edu.academic.CalendarActivity;
-import com.sysu.edu.academic.ClassroomQueryActivity;
-import com.sysu.edu.academic.CourseCompletionActivity;
-import com.sysu.edu.academic.CourseQueryActivity;
-import com.sysu.edu.academic.CourseSelectedActivity;
-import com.sysu.edu.academic.CourseSelectionActivity;
-import com.sysu.edu.academic.EvaluationActivity;
-import com.sysu.edu.academic.ExamActivity;
-import com.sysu.edu.academic.GradeActivity;
-import com.sysu.edu.academic.GradeForLevelActivity;
-import com.sysu.edu.academic.LeaveReturnRegistrationActivity;
-import com.sysu.edu.academic.MajorInfo;
-import com.sysu.edu.academic.PhysicalFitnessTestResultActivity;
-import com.sysu.edu.academic.RegisterInfo;
-import com.sysu.edu.academic.RoomQueryActivity;
-import com.sysu.edu.academic.SchoolEnrollmentActivity;
-import com.sysu.edu.academic.SchoolWorkWarning;
-import com.sysu.edu.academic.TrainingSchedule;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.DialogServiceActionBinding;
 import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentServiceBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemServiceBoxBinding;
-import com.sysu.edu.life.GymReservationActivity;
-import com.sysu.edu.life.NetPayActivity;
-import com.sysu.edu.life.News;
-import com.sysu.edu.life.Pay;
-import com.sysu.edu.life.SchoolBus;
-import com.sysu.edu.todo.TodoActivity;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 import io.noties.markwon.Markwon;
 
 public class ServiceFragment extends Fragment {
 
-    final Map<Integer, View.OnClickListener> actionMap = new HashMap<>();
-    final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-            }
-    );
     FragmentServiceBinding binding;
     Params params;
     BottomSheetDialog actionDialog;
-    AppCollection dbHelper;
+    HomeCollectionHelper db;
     DialogServiceActionBinding actionBinding;
     BottomSheetDialog orderDialog;
     CollectionAdapter collectionAdapter;
-    DialogServiceOrderBinding orderBinding;
+    ItemServiceBoxBinding collectionBinding;
+    HomeViewModel viewModel;
 
     @Nullable
     @Override
@@ -97,45 +57,14 @@ public class ServiceFragment extends Fragment {
             binding = FragmentServiceBinding.inflate(inflater);
             params = new Params(requireActivity());
             // 初始化actions HashMap
-            initializeActionMap();
-
-            actionDialog = new BottomSheetDialog(requireContext());
-            orderDialog = new BottomSheetDialog(requireContext());
-            orderBinding = DialogServiceOrderBinding.inflate(inflater);
-            orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-            collectionAdapter = new CollectionAdapter();
-            orderBinding.recyclerView.setAdapter(collectionAdapter);
-            orderBinding.confirm.setOnClickListener(v -> {
-                update();
-                orderDialog.dismiss();
-            });
-            orderDialog.setContentView(orderBinding.getRoot());
-            new ItemTouchHelper(new ItemTouchHelper.Callback() {
-                @Override
-                public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                    int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-                    int swipeFlags = 0;
-                    return makeMovementFlags(dragFlags, swipeFlags);
-                }
-
-                @Override
-                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
-                    collectionAdapter.swap(source.getBindingAdapterPosition(), target.getBindingAdapterPosition());
-                    return true;
-                }
-
-                @Override
-                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
-                }
-            }).attachToRecyclerView(orderBinding.recyclerView);
-            actionBinding = DialogServiceActionBinding.inflate(inflater);
-            actionBinding.order.setOnClickListener(v -> orderDialog.show());
-            actionDialog.setContentView(actionBinding.getRoot());
+            viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
+            // 初始化dialog
+            initAction(inflater);
+            initOrder(inflater);
             JSONReader reader = JSONReader.of(getResources().openRawResource(R.raw.service), StandardCharsets.UTF_8);
             JSONArray array = reader.readJSONArray();
             reader.close();
-            dbHelper = new AppCollection(requireContext());
+            db = new HomeCollectionHelper(requireContext());
             addCollection(inflater);
             IntStream.range(0, array.size()).forEach(i -> {
                 JSONObject serviceGroup = array.getJSONObject(i);
@@ -145,8 +74,68 @@ public class ServiceFragment extends Fragment {
         return binding.getRoot();
     }
 
+    void initAction(@NonNull LayoutInflater inflater) {
+        actionDialog = new BottomSheetDialog(requireContext());
+        actionBinding = DialogServiceActionBinding.inflate(inflater);
+        actionBinding.order.setOnClickListener(v -> orderDialog.show());
+        actionDialog.setContentView(actionBinding.getRoot());
+    }
+
+    void initOrder(@NonNull LayoutInflater inflater) {
+        Context context = requireContext();
+        orderDialog = new BottomSheetDialog(context);
+        DialogServiceOrderBinding orderBinding = DialogServiceOrderBinding.inflate(inflater);
+        orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        collectionAdapter = new CollectionAdapter();
+        orderBinding.recyclerView.setAdapter(collectionAdapter);
+        orderBinding.confirm.setOnClickListener(v -> {
+            updateService();
+            updateServiceCollection();
+            orderDialog.dismiss();
+        });
+        orderDialog.setContentView(orderBinding.getRoot());
+        new ItemTouchHelper(new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
+                collectionAdapter.swap(source.getBindingAdapterPosition(), target.getBindingAdapterPosition());
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        }).attachToRecyclerView(orderBinding.recyclerView);
+    }
+
     void addCollection(@NonNull LayoutInflater inflater) {
-        Cursor cursor = dbHelper.getWritableDatabase().query("service_collection", null, null, null, null, null, "position ASC");
+        JSONArray collection = getCollection();
+        ViewGroup container = initBoxWithHashMap(inflater, getString(R.string.collect), collection);
+        collectionBinding = ItemServiceBoxBinding.bind(container);
+        if (collection.isEmpty()) container.setVisibility(View.GONE);
+        container.getChildAt(0).setOnClickListener(v -> orderDialog.show());
+        binding.serviceContainer.addView(container, 0);
+    }
+
+    void updateServiceCollection() {
+        JSONArray collection = getCollection();
+        if (collection.isEmpty()) {
+            collectionBinding.getRoot().setVisibility(View.GONE);
+        } else {
+            collectionBinding.getRoot().setVisibility(View.VISIBLE);
+            collectionBinding.serviceBoxItems.removeAllViews();
+            addItems(getLayoutInflater(), collection, collectionBinding);
+        }
+    }
+
+    @NonNull
+    private JSONArray getCollection() {
+        Cursor cursor = db.getWritableDatabase().query("service_collection", null, null, null, null, null, "position ASC");
         JSONArray collection = new JSONArray();
         collectionAdapter.clear();
         while (cursor.moveToNext()) {
@@ -155,177 +144,75 @@ public class ServiceFragment extends Fragment {
             collectionAdapter.add(serviceJson);
         }
         cursor.close();
-        ViewGroup container = initBoxWithHashMap(inflater, getString(R.string.collect), collection);
-        if (collection.isEmpty())
-            container.setVisibility(View.GONE);
-        if (binding.serviceContainer.getChildCount() > 0)
-            binding.serviceContainer.removeViewAt(0);
-        container.getChildAt(0).setOnClickListener(v -> orderDialog.show());
-        binding.serviceContainer.addView(container, 0);
+        return collection;
     }
 
-
-    // 初始化actions HashMap
-    void initializeActionMap() {
-        // 学术服务 (id: 1xx)
-        actionMap.put(101, newActivity(SchoolEnrollmentActivity.class));           // 学籍
-        actionMap.put(102, newActivity(CETActivity.class));          // 四六级
-        actionMap.put(103, newActivity(RegisterInfo.class));         // 注册
-        actionMap.put(104, newActivity(SchoolWorkWarning.class));    // 学业预警
-        actionMap.put(105, newActivity(CourseCompletionActivity.class));     // 课程完成情况
-        actionMap.put(106, newActivity(LeaveReturnRegistrationActivity.class));     // 请假返回登记
-        actionMap.put(107, newActivity(PhysicalFitnessTestResultActivity.class));     // 体测
-
-
-        // 学习服务 (id: 2xx)
-        actionMap.put(201, newActivity(TodoActivity.class));         // 待办
-
-        // 资讯门户 (id: 3xx)
-        actionMap.put(301, newActivity(News.class));                 // 资讯门户
-        actionMap.put(302, v -> {
-            try {
-                startActivity(Objects.requireNonNull(requireActivity().getPackageManager().getLaunchIntentForPackage("com.comingx.zanao")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            } catch (ActivityNotFoundException e) {
-                params.toast(R.string.no_app);
-            }
-        }); // 校园集市
-        actionMap.put(303, newActivity(AcademyNotification.class));  // 教务通知
-
-        // 系统服务 (id: 4xx)
-        actionMap.put(401, browse("https://gym.sysu.edu.cn/#/"));                   // 体育场馆预定系统
-        actionMap.put(402, browse("https://xgxt-443.webvpn.sysu.edu.cn/main/#/index"));        // 学工系统
-        actionMap.put(403, browse("https://jwxt.sysu.edu.cn/jwxt/yd/index/#/Home"));           // 本科教务系统
-        actionMap.put(404, browse("https://portal.sysu.edu.cn/newClient/#/newPortal/index"));  // 中山大学统一门户
-        actionMap.put(405, browse("https://usc.sysu.edu.cn/taskcenter-v4/workflow/index"));    // 大学服务中心
-        actionMap.put(406, browse("https://cwxt-443.webvpn.sysu.edu.cn/#/home/index"));        // 财务信息系统
-
-        // 官网服务 (id: 5xx)
-        actionMap.put(501, browse("https://www.sysu.edu.cn/"));              // 中山大学官网
-        actionMap.put(502, browse("https://admission.sysu.edu.cn/"));        // 本科招生
-        actionMap.put(503, browse("https://graduate.sysu.edu.cn/zsw/"));     // 研究生招生
-        actionMap.put(504, browse("https://rcb.sysu.edu.cn/"));              // 人才招聘
-        actionMap.put(505, browse("https://sysu100.sysu.edu.cn/"));          // 百年校庆
-        actionMap.put(506, browse("https://bwgxsg.sysu.edu.cn/"));           // 博物馆
-        actionMap.put(507, browse("https://library.sysu.edu.cn/"));          // 图书馆
-        actionMap.put(508, browse("https://alumni.sysu.edu.cn/"));           // 校友会
-        actionMap.put(509, browse("https://mail.sysu.edu.cn/"));             // 公务电子邮件系统
-
-        // 官方服务 (id: 6xx)
-        actionMap.put(601, v -> {    // 二维码
-            String linking = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("qrcode", "");
-            if (!linking.isEmpty()) {
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(linking)));
-                } catch (ActivityNotFoundException e) {
-                    params.toast(R.string.no_app);
-                }
-            }/* else {
-                //new LaunchMiniProgram(requireActivity()).launchMiniProgram("gh_85575b9f544e");
-            }*/
-        });
-        actionMap.put(602, v -> {
-            try {
-                startActivity(Objects.requireNonNull(requireActivity().getPackageManager().getLaunchIntentForPackage("com.tencent.wework")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            } catch (Exception e) {
-                //(requireContext(), R.string.no_app, Toast.LENGTH_LONG).show();
-            }
-        }); // 企业微信
-        //actionMap.put(603, v -> startActivity(Objects.requireNonNull(requireActivity().getPackageManager().getLaunchIntentForPackage("com.tencent.wework")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))); // 中大招生
-
-        // 教务服务 (id: 7xx)
-        actionMap.put(701, newActivity(EvaluationActivity.class));           // 评教
-        actionMap.put(702, newActivity(CourseSelectionActivity.class));
-        actionMap.put(703, newActivity(AgendaActivity.class));               // 课程表
-        actionMap.put(704, newActivity(ExamActivity.class));                 // 考试
-        actionMap.put(705, newActivity(CalendarActivity.class));             // 校历
-        actionMap.put(706, newActivity(ClassroomQueryActivity.class));       // 自习室
-        actionMap.put(707, newActivity(GradeActivity.class));                        // 成绩
-        actionMap.put(708, newActivity(CourseQueryActivity.class));                  // 课程
-        actionMap.put(709, browse("https://jwxt.sysu.edu.cn/jwxt/mk/#/personalTrainingProgramView")); // 个人培养方案
-        actionMap.put(710, newActivity(TrainingSchedule.class));             // 培养方案
-        actionMap.put(711, newActivity(MajorInfo.class));                    // 专业
-        actionMap.put(712, newActivity(CourseSelectedActivity.class));                  // 已选课程
-        actionMap.put(713, newActivity(AssistantInfoActivity.class));       // 助教信息
-        actionMap.put(714, newActivity(GradeForLevelActivity.class));           // 等级制成绩
-        actionMap.put(715, newActivity(RoomQueryActivity.class));           // 教室
-
-
-        // 学习平台 (id: 8xx)
-        actionMap.put(801, browse("http://seelight.net/html/homePage/homePagePhone.html"));             // SeeLight
-        actionMap.put(802, browse("https://www.yuketang.cn/web"));           // 雨课堂
-        actionMap.put(803, browse("https://www.ketangpai.com/"));            // 课堂派
-        actionMap.put(804, browse("https://lms.sysu.edu.cn/"));              // 在线教学平台
-        actionMap.put(805, browse("https://www.icourse163.org/"));           // 中国大学（慕课）
-        actionMap.put(806, browse("https://welearn.sflep.com/index.aspx"));  // WeLearn
-
-        // 生活服务 (id: 9xx)
-        actionMap.put(902, newActivity(SchoolBus.class));                    // 校车
-        actionMap.put(903, browse("https://visitor.sysu.edu.cn/"));                 // 逸仙通行
-        actionMap.put(905, browse("https://gongfang.sysu.edu.cn/h5_separation/repair_apply/index.html#/applyDetail/20251231162524362223"));                 // 报修
-        actionMap.put(906, browse("https://zhny.sysu.edu.cn/h5/#/"));        // 水电费
-        actionMap.put(907, newActivity(Pay.class));                          // 缴费大厅
-        actionMap.put(908, newActivity(GymReservationActivity.class));     // 体育馆预约
-        actionMap.put(909, newActivity(NetPayActivity.class));              // 校园网
-
-
-        // 人工智能服务 (id: 10xx)
-        actionMap.put(1001, browse("https://chat.sysu.edu.cn/zntgc/agent"));     // Deepseek
-        actionMap.put(1002, browse("https://chat.sysu.edu.cn/znt/chat/empty"));  // 逸闻
-        actionMap.put(1003, browse("https://xgxw.sysu.edu.cn/aicounsellor/agents/outlink/sunyatsenuniversity")); // 学工君
-    }
 
     ViewGroup initBoxWithHashMap(LayoutInflater inflater, String box_title, JSONArray items) {
         ItemServiceBoxBinding binding = ItemServiceBoxBinding.inflate(inflater);
         binding.serviceBoxTitle.setText(box_title);
+        addItems(inflater, items, binding);
+        return binding.getRoot();
+    }
+
+    void addItems(LayoutInflater inflater, JSONArray items, ItemServiceBoxBinding binding) {
         IntStream.range(0, items.size()).forEach(index -> {
             JSONObject item = items.getJSONObject(index);
             int itemId = item.getIntValue("id");
             ItemActionChipBinding chip = ItemActionChipBinding.inflate(inflater, binding.serviceBoxItems, false);
-            View.OnClickListener action = actionMap.get(itemId);
+            View.OnClickListener action = viewModel.actionMap.get(itemId);
             chip.getRoot().setOnClickListener(
-                    action != null ? action : v -> params.toast(R.string.undevelop)
+                    action != null ? action : v -> params.toast(R.string.undeveloped)
             );
-            chip.getRoot().setOnLongClickListener(v -> {
-                MutableLiveData<Boolean> isCollected = new MutableLiveData<>(dbHelper.isCollected(itemId));
-                actionBinding.collect.setText(Boolean.TRUE.equals(isCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
-                actionBinding.collect.setOnClickListener(w -> {
-                    if (Boolean.TRUE.equals(isCollected.getValue())) {
-                        dbHelper.deleteService(itemId);
-                        params.toast(R.string.cancel_collect_success);
-                        addCollection(inflater);
-                    } else {
-                        dbHelper.addService(itemId, item.toJSONString(), collectionAdapter.getItemCount());
-                        params.toast(R.string.collect_success);
-                        addCollection(inflater);
-                    }
-                    actionBinding.collect.setText(Boolean.TRUE.equals(isCollected.getValue()) ? R.string.collect : R.string.cancel_collect);
-                    isCollected.setValue(!Boolean.TRUE.equals(isCollected.getValue()));
-                });
-                actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
-                Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
-                actionDialog.show();
-                return true;
-            });
+            chip.getRoot().setOnLongClickListener(v -> action(item));
             chip.getRoot().setText(item.getString("name"));
             binding.serviceBoxItems.addView(chip.getRoot());
         });
-        return binding.getRoot();
     }
 
-    View.OnClickListener browse(String url) {
-        return view -> startActivity(new Intent(view.getContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle());
+    private boolean action(JSONObject item) {
+        int itemId = item.getIntValue("id");
+        MutableLiveData<Boolean> isServiceCollected = new MutableLiveData<>(db.isServiceCollected(itemId));
+        MutableLiveData<Boolean> isShortcutCollected = new MutableLiveData<>(db.isDashboardShortcutCollected(itemId));
+        actionBinding.collect.setText(Boolean.TRUE.equals(isServiceCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
+        actionBinding.addShortcut.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_shortcut);
+        actionBinding.collect.setOnClickListener(w -> {
+            boolean isServiceCollect = Boolean.TRUE.equals(isServiceCollected.getValue());
+            if (isServiceCollect) {
+                db.deleteService(itemId);
+                params.toast(R.string.cancel_collect_success);
+            } else {
+                db.addService(itemId, item.toJSONString(), collectionAdapter.getItemCount());
+                params.toast(R.string.collect_success);
+            }
+            updateServiceCollection();
+            actionBinding.collect.setText(isServiceCollect ? R.string.collect : R.string.cancel_collect);
+            isServiceCollected.setValue(!isServiceCollect);
+        });
+        actionBinding.addShortcut.setOnClickListener(w -> {
+            boolean isShortcutCollect = Boolean.TRUE.equals(isShortcutCollected.getValue());
+            if (isShortcutCollect) {
+                db.deleteDashboardShortcut(itemId);
+                params.toast(R.string.cancel_add_shortcut_success);
+            } else {
+                db.addDashboardShortcut(itemId, item.toJSONString(), null);
+                params.toast(R.string.add_shortcut_success);
+            }
+            viewModel.updateDashboardShortcut.setValue(true);
+            actionBinding.addShortcut.setText(isShortcutCollect ? R.string.add_shortcut : R.string.cancel_add_shortcut);
+            isShortcutCollected.setValue(!isShortcutCollect);
+        });
+        actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
+        actionDialog.show();
+        return true;
     }
 
-    View.OnClickListener newActivity(Class<?> activity_class) {
-        return view -> launcher.launch(new Intent(view.getContext(), activity_class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp"));
-    }
-
-    void update() {
+    void updateService() {
         IntStream.range(0, collectionAdapter.getItemCount()).forEach(i -> {
             collectionAdapter.getItem(i);
-            dbHelper.updateServicePosition(collectionAdapter.getItem(i).getInteger("id"), i);
+            db.updateServicePosition(collectionAdapter.getItem(i).getInteger("id"), i);
         });
-        addCollection(getLayoutInflater());
     }
 }
 

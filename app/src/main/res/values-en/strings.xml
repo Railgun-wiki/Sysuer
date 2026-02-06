@@ -26,9 +26,9 @@
     <string name="password">Password</string>
     <string name="captcha">Captcha</string>
     <string name="today">Today</string>
-    <string name="noClass">😁NO course today😁</string>
-    <string name="noExam">😁NO exams today😁</string>
-    <string name="noTodo">😁NO todos today😁</string>
+    <string name="noClass">😁NO Courses Today😁</string>
+    <string name="noExam">😁NO Exams Today😁</string>
+    <string name="noTodo">😒NO Todos Today😒</string>
     <string name="classTime">Section</string>
     <string name="name">Label</string>
     <string name="college">School</string>
@@ -502,4 +502,19 @@
     <string name="click_for_grade">Click to see the total grade</string>
     <string name="download_complete">Download Complete</string>
     <string name="sponsor_appreciation">Thanks for your sponsor 🤑</string>
+    <string name="permission_granted">Permission havs been granted</string>
+    <string name="agree">Agree</string>
+    <string name="disagree">Disagree</string>
+    <string name="user_agreement_and_privacy_policy">User Agreement And Privacy Policy</string>
+    <string name="collect">Collect</string>
+    <string name="undeveloped">Undevelop</string>
+    <string name="collect_success">Succeed Collecting</string>
+    <string name="delete_success">Succeed Deleting</string>
+    <string name="cancel_collect">Uncollecting</string>
+    <string name="cancel_collect_success">Succeed Uncollecting</string>
+    <string name="service_order">Order</string>
+    <string name="add_shortcut">Add to Dashboard</string>
+    <string name="cancel_add_shortcut_success">Succeed Removing from Dashboard</string>
+    <string name="add_shortcut_success">Succeed Adding to Dashboard</string>
+    <string name="cancel_add_shortcut">Remove from Dashboard</string>
 </resources>
