@@ -44,12 +44,14 @@ import com.sysu.edu.academic.CourseCompletionActivity;
 import com.sysu.edu.academic.CourseQueryActivity;
 import com.sysu.edu.academic.CourseSelectedActivity;
 import com.sysu.edu.academic.CourseSelectionActivity;
+import com.sysu.edu.academic.DormActivity;
 import com.sysu.edu.academic.EvaluationActivity;
 import com.sysu.edu.academic.ExamActivity;
 import com.sysu.edu.academic.GradeActivity;
 import com.sysu.edu.academic.GradeForLevelActivity;
 import com.sysu.edu.academic.LeaveReturnRegistrationActivity;
 import com.sysu.edu.academic.MajorInfo;
+import com.sysu.edu.academic.PersonalInformationActivity;
 import com.sysu.edu.academic.PhysicalFitnessTestResultActivity;
 import com.sysu.edu.academic.RegisterInfo;
 import com.sysu.edu.academic.RoomQueryActivity;
@@ -98,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         initActionMap(viewModel.actionMap);
         NavHostFragment fragment = (NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.dashboard_scroll));
         NavController navController = fragment.getNavController();
-        NavGraph graph = new NavInflater(this, navController.getNavigatorProvider()).inflate(R.navigation.main_navigation);
+        NavGraph graph = new NavInflater(this, navController.getNavigatorProvider()).inflate(R.navigation.main_nav);
         graph.setStartDestination(new int[]{R.id.navigation_dashboard, R.id.navigation_service, R.id.navigation_account}[Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("home", "0"))]);
 //        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
 //            //Log.d(TAG, "Shizuku 权限已授予");
@@ -285,6 +287,8 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(105, newActivity(CourseCompletionActivity.class));     // 课程完成情况
         actionMap.put(106, newActivity(LeaveReturnRegistrationActivity.class));     // 请假返回登记
         actionMap.put(107, newActivity(PhysicalFitnessTestResultActivity.class));     // 体测
+        actionMap.put(108, newActivity(DormActivity.class));     // 宿舍
+        actionMap.put(109, newActivity(PersonalInformationActivity.class));     // 个人信息
 
 
         // 学习服务 (id: 2xx)

@@ -171,13 +171,8 @@ public class NewsFragment extends Fragment {
                 }
             };
         }
-        run = () -> List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position).run();
-//        if (!params.getAuthorization().isEmpty()) {
+        run = List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position);
         run.run();
-//        } else {
-//            params.gotoLogin(binding.getRoot(), TargetUrl.NEWS);
-//        }
-        //getAuthorization();
         return binding.getRoot();
     }
 
@@ -337,33 +332,31 @@ public class NewsFragment extends Fragment {
 class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     final ArrayList<HashMap<String, String>> data = new ArrayList<>();
     final FragmentActivity context;
+    Params params;
 
     public NewsAdapter(FragmentActivity context) {
         super();
         this.context = context;
+        params = new Params(context);
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-        return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-        };
+        return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {};
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemNewsBinding binding = ItemNewsBinding.bind(holder.itemView);
-        holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(data.get(position).get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle())
-                //context.startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(data.get(position).get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle())
-        );
+        holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(data.get(position).get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle()));
         binding.title.setText(data.get(position).getOrDefault("title", ""));
         binding.content.setText(String.format("#%s #%s", data.get(position).getOrDefault("source", ""), data.get(position).getOrDefault("time", "")));
         String img = data.get(position).get("image");
         if (img != null && !img.isEmpty()) {
             Glide.with(context).load(img)
                     //.placeholder(R.drawable.logo)
-                    .override(new Params(context).dpToPx(120), new Params(context).dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
+                    .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
                     .into(binding.image);
         }
     }

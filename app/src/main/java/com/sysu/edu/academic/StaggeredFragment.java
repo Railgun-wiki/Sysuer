@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
@@ -111,7 +110,7 @@ public class StaggeredFragment extends Fragment {
         staggeredListener.setValue(v);
     }
 
-    public void add(String title, @Nullable Integer icon, List<String> keys, List<String> values) {
+    public void add(String title, Integer icon, List<String> keys, List<String> values) {
         staggeredAdapter.add(title, keys, values, icon);
     }
 

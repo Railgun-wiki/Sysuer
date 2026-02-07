@@ -30,6 +30,14 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="36">
         <activity
+            android:name=".academic.PersonalInformationActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true" />
+        <activity
+            android:name=".academic.DormActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true" />
+        <activity
             android:name=".academic.RoomQueryActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true" />
@@ -217,7 +225,7 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".stuwork.StuJob"
+            android:name=".studentAffair.StudentPartTime"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
@@ -245,6 +253,7 @@
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>

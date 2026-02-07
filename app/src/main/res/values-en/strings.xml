@@ -420,7 +420,7 @@
     <string name="restart">Restart</string>
     <string name="reservation">Reservation</string>
     <string name="wallet">Wallet</string>
-    <string name="school_id">Student ID</string>
+    <string name="student_id">Student ID</string>
     <string name="sport_credit">Sport Hours</string>
     <string name="net_id">NetId</string>
     <string name="admin">Admin</string>
@@ -517,4 +517,26 @@
     <string name="cancel_add_shortcut_success">Succeed Removing from Dashboard</string>
     <string name="add_shortcut_success">Succeed Adding to Dashboard</string>
     <string name="cancel_add_shortcut">Remove from Dashboard</string>
+    <string name="dorm">Dorm</string>
+    <string name="personal_info">Personal Information</string>
+    <string name="dorm_info">Dorm Information</string>
+    <string name="dorm_fee">Dorm Fee</string>
+    <string name="gender">Gender</string>
+    <string name="major">Major</string>
+    <string name="training_level">Training Level</string>
+    <string name="stay_school_status">Accommodation Status</string>
+    <string name="student_status">Studenet Status</string>
+    <string name="contact_number">Contact Phone</string>
+    <string name="room_number">Room Number</string>
+    <string name="bed_number">Bed Number</string>
+    <string name="accommodation_fee">Dorm Fee</string>
+    <string name="stay_start_date">Start Staying Date</string>
+    <string name="stay_end_date">End Staying Date</string>
+    <string name="accommodation_standard">Dorm Standard</string>
+    <string name="should_pay_stay_charge">Supposed Fee</string>
+    <string name="real_pay_stay_charge">Real Fee</string>
+    <string name="arrears">Arrears</string>
+    <string name="building">Building</string>
+    <string name="recruitment_info">Recruitment Information</string>
+    <string name="cv">CV</string>
 </resources>

@@ -38,6 +38,16 @@
         "id": 107,
         "name": "Physics Fitness Test",
         "description": "Physics Fitness Test Result,PE Credit,Swimming Certification"
+      },
+      {
+        "id": 108,
+        "name": "Dormitory",
+        "description": "Dormitory information inquiry system, check personal dormitory status, allocation situation, fee payment, etc."
+      },
+      {
+        "id": 109,
+        "name": "Personal Information",
+        "description": "Personal information inquiry system, check personal basic information, educational work experience, family members, and social relationships, as well as dual major dual degree information, work and study records, etc."
       }
     ]
   },

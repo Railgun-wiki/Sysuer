@@ -419,7 +419,7 @@
     <string name="restart">重启</string>
     <string name="reservation">预约</string>
     <string name="wallet">钱包</string>
-    <string name="school_id">学号</string>
+    <string name="student_id">学号</string>
     <string name="sport_credit">运动时</string>
     <string name="net_id">NetId</string>
     <string name="admin">管理员</string>
@@ -515,5 +515,27 @@
     <string name="cancel_add_shortcut_success">成功取消添加到面板</string>
     <string name="add_shortcut_success">成功添加到面板</string>
     <string name="cancel_add_shortcut">取消添加到面板</string>
+    <string name="dorm">宿舍</string>
+    <string name="personal_info">个人信息</string>
+    <string name="dorm_info">住宿信息</string>
+    <string name="dorm_fee">住宿费</string>
+    <string name="gender">性别</string>
+    <string name="major">专业</string>
+    <string name="training_level">培养层次</string>
+    <string name="stay_school_status">住宿状态</string>
+    <string name="student_status">学籍状态</string>
+    <string name="contact_number">联系电话</string>
+    <string name="room_number">宿舍号</string>
+    <string name="bed_number">床号</string>
+    <string name="accommodation_fee">住宿费用</string>
+    <string name="stay_start_date">住宿开始时间</string>
+    <string name="stay_end_date">住宿结束时间</string>
+    <string name="accommodation_standard">住宿标准（元/学年）</string>
+    <string name="should_pay_stay_charge">应缴住宿费（元）</string>
+    <string name="real_pay_stay_charge">实缴住宿费（元）</string>
+    <string name="arrears">是否欠费</string>
+    <string name="building">楼栋</string>
+    <string name="recruitment_info">招聘信息</string>
+    <string name="cv">简历</string>
 
 </resources>

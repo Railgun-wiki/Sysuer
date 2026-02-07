@@ -26,6 +26,7 @@ public class HttpManager {
     String authorization;
     Params params;
     String ua;
+    boolean isAuthorizationRequired;
 
     public HttpManager(Handler handler) {
         http = new OkHttpClient();
@@ -52,6 +53,10 @@ public class HttpManager {
         this.authorization = authorization;
     }
 
+    public void setAuthorization(boolean isAuthorizationRequired) {
+        this.isAuthorizationRequired = isAuthorizationRequired;
+    }
+
     public void setUA(String ua) {
         this.ua = ua;
     }
@@ -65,6 +70,8 @@ public class HttpManager {
                 .url(url);
         if (params != null) request.header("Cookie", params.getCookie());
         if (cookie != null) request.header("Cookie", cookie);
+        if (isAuthorizationRequired && params != null)
+            request.header("Authorization", params.getAuthorization());
         if (authorization != null) request.header("Authorization", authorization);
         if (referrer != null) request.header("Referer", referrer);
         if (ua != null) request.header("User-Agent", ua);
@@ -82,10 +89,10 @@ public class HttpManager {
                 Message msg = new Message();
                 msg.what = what;
                 msg.obj = response.body().string();
-
                 Bundle bundle = new Bundle();
                 bundle.putInt("code", response.code());
                 bundle.putBoolean("isJSON", Objects.requireNonNull(response.header("Content-Type")).contains("application/json"));
+                bundle.putString("data", (String) msg.obj);
                 msg.setData(bundle);
                 handler.sendMessage(msg);
             }

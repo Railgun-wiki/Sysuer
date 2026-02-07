@@ -65,7 +65,7 @@ public class GymAccountFragment extends Fragment {
                             String[] keys = {"Type", "Name", "HostKey", "UserId"};
                             PreferenceAdapter preferenceAdapter = new PreferenceAdapter(requireContext());
                             for (int i = 0; i < keys.length; i++) {
-                                preferenceAdapter.addItem(getString(List.of(R.string.type, R.string.name, R.string.school_id, R.string.net_id, R.string.sport_credit, R.string.wallet).get(i)), json.getString(keys[i]));
+                                preferenceAdapter.addItem(getString(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id, R.string.sport_credit, R.string.wallet).get(i)), json.getString(keys[i]));
                             }
                             concatAdapter.addAdapter(new TitleAdapter(getContext(), getString(R.string.account)));
                             concatAdapter.addAdapter(preferenceAdapter);
