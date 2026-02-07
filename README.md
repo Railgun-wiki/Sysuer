@@ -1,5 +1,5 @@
-<div style="text-align: center;">
-  <a href="https://github.com/sysu-tang/sysuer">
+<div style="display: grid; align-items: center;">
+  <a href="https://github.com/sysu-tang/sysuer" style="text-align: center;">
     <img src="app/src/main/res/mipmap-xxxhdpi/icon.png" alt="Logo" width="72" height="72">
   </a>
 
