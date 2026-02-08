@@ -17,6 +17,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ItemNewsBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
+import com.sysu.edu.view.AdapterListener;
 
 import java.util.ArrayList;
 

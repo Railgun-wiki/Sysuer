@@ -18,29 +18,85 @@
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
+                android:transitionName="miniapp"
                 android:layout_height="wrap_content"
+                app:layout_scrollFlags="scroll|enterAlways"
                 app:title="@string/student_job" />
 
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/options"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/filter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#00000000" />
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="8dp">
+
+                <androidx.constraintlayout.helper.widget.Flow
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:constraint_referenced_ids="year,campus,job_type,job_name,unit"
+                    app:flow_horizontalBias="0"
+                    app:flow_horizontalGap="8dp"
+                    app:flow_horizontalStyle="packed"
+                    app:flow_verticalGap="4dp"
+                    app:flow_wrapMode="chain2"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/year"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/year" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/campus"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/campus" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/job_type"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/job_type" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/job_name"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/job_name" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/unit"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/employ_unit" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:name="androidx.navigation.fragment.NavHostFragment"
             app:defaultNavHost="true"
-            app:navGraph="@navigation/student_part_time_nav"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:navGraph="@navigation/student_part_time_nav" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.navigation.NavigationView
-        style="@style/Widget.Material3.NavigationView"
         android:id="@+id/nav_view"
+        style="@style/Widget.Material3.NavigationView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"

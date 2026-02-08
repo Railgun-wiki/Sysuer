@@ -19,10 +19,10 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.AdapterListener;
-import com.sysu.edu.academic.StaggeredFragment;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemCardBinding;
+import com.sysu.edu.view.AdapterListener;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;

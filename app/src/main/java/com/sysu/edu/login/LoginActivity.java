@@ -11,9 +11,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.Pager2Adapter;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityLoginBinding;
+import com.sysu.edu.view.Pager2Adapter;
 
 import java.util.Objects;
 import java.util.regex.Matcher;

@@ -22,13 +22,13 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.StaggeredFragment;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentPayNeedBinding;
 import com.sysu.edu.databinding.FragmentPayRecordBinding;
 import com.sysu.edu.databinding.FragmentPaySituationBinding;
 import com.sysu.edu.databinding.ItemFilterChipBinding;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;

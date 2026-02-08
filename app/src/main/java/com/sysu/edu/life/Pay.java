@@ -6,8 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.Pager2Adapter;
 import com.sysu.edu.databinding.ActivityPagerBinding;
+import com.sysu.edu.view.Pager2Adapter;
 
 public class Pay extends AppCompatActivity {
 

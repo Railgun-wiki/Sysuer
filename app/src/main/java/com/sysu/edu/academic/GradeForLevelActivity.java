@@ -25,6 +25,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityGradeForLevelBinding;
 import com.sysu.edu.databinding.PreferenceEditBinding;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -27,8 +27,6 @@ public class LoginFragment extends Fragment {
         model.getLogin().observe(getViewLifecycleOwner(), b -> binding.loginButton.setEnabled(!b));
 //        model.getLogin().observe(getViewLifecycleOwner(), a -> {
 //            if(!a){
-////                binding.loginButton.setEnabled(true);
-////                Glide.with(requireContext()).load(new GlideUrl("https://cas.sysu.edu.cn/cas/captcha.jsp",new LazyHeaders.Builder().addHeader("Cookie", Objects.requireNonNull(model.getSessionId().getValue())).build())).diskCacheStrategy(DiskCacheStrategy.NONE).skipMemoryCache(true).override(92*3,34*3).into(binding.capImg);
 //            }
 //        });
 //        binding.capImg.setOnClickListener(v -> {

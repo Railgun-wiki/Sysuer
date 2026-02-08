@@ -81,17 +81,17 @@ public class ClassroomQueryActivity extends AppCompatActivity {
             binding.dateText.setText(new SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault()).format(new Date(selection)));
         });
         roomAdapter = new RoomAdapter(this);
-        binding.toolbar.setNavigationOnClickListener(view -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         binding.result.setAdapter(roomAdapter);
         binding.result.setLayoutManager(new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL));
         BottomSheetBehavior.from(binding.resultSheet).setState(BottomSheetBehavior.STATE_HIDDEN);
-        binding.date.setOnClickListener(v -> dateDialog.show(getSupportFragmentManager(), null));
-        binding.timeSlider.addOnChangeListener((slider, value, fromUser) -> {
+        binding.date.setOnClickListener(_ -> dateDialog.show(getSupportFragmentManager(), null));
+        binding.timeSlider.addOnChangeListener((slider, _, _) -> {
             startClassTime = String.format(Locale.getDefault(), "%.0f", slider.getValues().get(0));
             endClassTime = String.format(Locale.getDefault(), "%.0f", slider.getValues().get(1));
             binding.time.setText(String.format(getString(R.string.section_range_x), startClassTime, endClassTime));
         });
-        binding.query.setOnClickListener(v -> {
+        binding.query.setOnClickListener(_ -> {
             roomAdapter.clear();
             page = 1;
             getRoom();
@@ -105,7 +105,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        binding.reset.setOnClickListener(view -> {
+        binding.reset.setOnClickListener(_ -> {
             binding.officeGroup.getCheckedChipIds().forEach(e -> ((Chip) binding.officeGroup.findViewById(e)).setChecked(false));
             binding.campusGroup.getCheckedChipIds().forEach(e -> ((Chip) binding.campusGroup.findViewById(e)).setChecked(false));
             binding.typeGroup.getCheckedChipIds().forEach(e -> ((Chip) binding.typeGroup.findViewById(e)).setChecked(true));
@@ -141,7 +141,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
                                     String id = ((JSONObject) campusInfo).getString("id");
                                     Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_filter_chip, binding.campusGroup, false);
                                     binding.campusGroup.addView(chip);
-                                    chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                                    chip.setOnCheckedChangeListener((_, isChecked) -> {
                                         if (isChecked) {
                                             if (classroom.containsKey(id)) {
                                                 Objects.requireNonNull(classroom.get(id)).forEach(e -> e.setVisibility(View.VISIBLE));
@@ -156,7 +156,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
                                     break;
                                 }
                                 case 2: {
-                                    classroom.computeIfAbsent(campusLiveData.getValue(), k -> new ArrayList<>());
+                                    classroom.computeIfAbsent(campusLiveData.getValue(), _ -> new ArrayList<>());
                                     Chip chip = ItemFilterChipBinding.inflate(getLayoutInflater(), binding.officeGroup, false).getRoot();
                                     binding.officeGroup.addView(chip);
                                     office.put(chip.getId(), ((JSONObject) campusInfo).getString("id"));
@@ -186,27 +186,6 @@ public class ClassroomQueryActivity extends AppCompatActivity {
     public void getOffice(String campus) {
         campusLiveData.setValue(campus);
         http.postRequest("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/selfStudyClassRoom/buildingConditionPull", "{\"campusIdList\":[\"" + campus + "\"]}", 2);
-//        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/selfStudyClassRoom/buildingConditionPull").post(RequestBody.create("{\"campusIdList\":[\"" + campus + "\"]}", MediaType.parse("application/json"))).build()).enqueue(
-//                new Callback() {
-//                    @Override
-//                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                        Message message = new Message();
-//                        message.what = 2;
-//                        Bundle data = new Bundle();
-//                        data.putString("campus", campus);
-//                        message.setData(data);
-//                        message.obj = response.body().string();
-//                        handler.sendMessage(message);
-//                    }
-//
-//                    @Override
-//                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                        Message message = new Message();
-//                        message.what = -1;
-//                        handler.sendMessage(message);
-//                    }
-//                }
-//        );
     }
 
     public void getRoom() {
@@ -226,25 +205,6 @@ public class ClassroomQueryActivity extends AppCompatActivity {
             return;
         }
         http.postRequest("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/selfStudyClassRoom/pageListStudyClassroom", String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":20,\"param\":{\"dateStr\":\"%s\",\"teachingBuildIDs\":%s,\"startClassTimes\":%s,\"endClassTimes\":%s,\"classRoomTagList\":%s}}", page++, dateStr, JSON.toJSONString(teachingBuildIDs), startClassTime, endClassTime, JSON.toJSONString(classType)), 3);
-////        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/selfStudyClassRoom/pageListStudyClassroom")
-//                        .post(RequestBody.create(String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":20,\"param\":{\"dateStr\":\"%s\",\"teachingBuildIDs\":%s,\"startClassTimes\":%s,\"endClassTimes\":%s,\"classRoomTagList\":%s}}", page++, dateStr, JSON.toJSONString(teachingBuildIDs), startClassTime, endClassTime, JSON.toJSONString(classType)), MediaType.parse("application/json"))).build())
-//                .enqueue(new Callback() {
-//                             @Override
-//                             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                                 Message message = new Message();
-//                                 message.what = 3;
-//                                 message.obj = response.body().string();
-//                                 handler.sendMessage(message);
-//                             }
-//
-//                             @Override
-//                             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                                 Message message = new Message();
-//                                 message.what = -1;
-//                                 handler.sendMessage(message);
-//                             }
-//                         }
-//                );
     }
 
     static class RoomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -292,7 +252,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
                     .override((int) (145 * 3.6), (int) (132 * 3.6))
                     .fitCenter()
                     .into(binding.image);
-            binding.getRoot().setOnClickListener(v -> {
+            binding.getRoot().setOnClickListener(_ -> {
             });
         }
 

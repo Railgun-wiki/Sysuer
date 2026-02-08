@@ -19,6 +19,9 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityPagerBinding;
 import com.sysu.edu.databinding.ItemCardBinding;
+import com.sysu.edu.view.AdapterListener;
+import com.sysu.edu.view.Pager2Adapter;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +75,7 @@ public class CourseCompletionActivity extends AppCompatActivity {
                                     ((StaggeredFragment) adp.getItem(0)).staggeredAdapter.setListener(new AdapterListener() {
                                         @Override
                                         public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-                                            List<String> item = ((StaggeredFragment.StaggeredAdapter) adapter).values.get(position);
+                                            List<String> item = ((StaggeredFragment.StaggeredAdapter) adapter).getValues(position);
                                             LinearProgressIndicator progress = holder.itemView.findViewById(R.id.progress);
                                             progress.setMax((int) Float.parseFloat(item.get(3)));
                                             progress.setProgress((int) Float.parseFloat(item.get(4)));

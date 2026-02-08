@@ -169,9 +169,9 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                 }
             }
         };
-        binding.save.setOnClickListener(view -> saveEvaluation());
-        binding.submit.setOnClickListener(view -> Snackbar.make(binding.getRoot(), "提交后不可更改", Snackbar.LENGTH_LONG).setAction(R.string.confirm, v -> submitEvaluation()).show());
-        binding.reset.setOnClickListener(view -> {
+        binding.save.setOnClickListener(_ -> saveEvaluation());
+        binding.submit.setOnClickListener(_ -> Snackbar.make(binding.getRoot(), "提交后不可更改", Snackbar.LENGTH_LONG).setAction(R.string.confirm, _ -> submitEvaluation()).show());
+        binding.reset.setOnClickListener(_ -> {
             adp.getAdapters().forEach(adapter -> {
                 if (adapter instanceof OptionAdapter) {
                     ((OptionAdapter) adapter).clearAnswer();
@@ -184,7 +184,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
             /*answers.getJSONArray("pjjglist").forEach(o -> ((JSONObject) o).getJSONArray("pjxxlist").forEach(e -> ((JSONObject) e).put("xxdalist", new JSONArray())));
             adp.notifyDataSetChanged();*/
         });
-        binding.auto.setOnClickListener(v -> adp.getAdapters().forEach(adapter -> {
+        binding.auto.setOnClickListener(_ -> adp.getAdapters().forEach(adapter -> {
             if (adapter instanceof OptionAdapter) {
                 ((OptionAdapter) adapter).setLastOption();
             } else if (adapter instanceof RankAdapter) {
@@ -305,7 +305,7 @@ class OptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         int pos = holder.getBindingAdapterPosition();
         ItemOptionBinding binding = ItemOptionBinding.bind(holder.itemView);
-        binding.getRoot().setOnClickListener(v -> setOption(pos));
+        binding.getRoot().setOnClickListener(_ -> setOption(pos));
         if (selected == -1 && Objects.equals(data.get(pos).getString("tmxxid"), option)) {
             selected = pos;
         }
@@ -363,7 +363,7 @@ class RankAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         p.setValueFrom(0);
         p.setValueTo(100);
         p.setLabelBehavior(LabelFormatter.LABEL_FLOATING);
-        p.addOnChangeListener((slider, value, fromUser) -> answer.set(0, String.valueOf((int) value)));
+        p.addOnChangeListener((_, value, _) -> answer.set(0, String.valueOf((int) value)));
         return new RecyclerView.ViewHolder(p) {
         };
     }
@@ -442,9 +442,7 @@ class BlanketAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String text = s.toString();
                 if (text.isEmpty()) {
-                    if (!answer.isEmpty()) {
-                        answer.remove(0);
-                    }
+                    if (!answer.isEmpty()) answer.remove(0);
                 } else {
                     answer.set(0, text);
                 }

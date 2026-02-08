@@ -14,6 +14,7 @@ import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityListBinding;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;
 import java.util.List;

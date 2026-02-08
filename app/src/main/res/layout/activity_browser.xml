@@ -19,7 +19,7 @@
             app:title="@string/app_name" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.sysu.edu.academic.NestedScrollWebView
+    <com.sysu.edu.view.NestedScrollWebView
         android:id="@+id/web"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

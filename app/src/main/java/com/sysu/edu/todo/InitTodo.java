@@ -83,7 +83,7 @@ public class InitTodo {
                 .create();
         AlertDialog todoAddDialog = new MaterialAlertDialogBuilder(activity)
                 .setView(itemEditTextBinding.getRoot())
-                .setPositiveButton(R.string.add, (dialog, which) -> {
+                .setPositiveButton(R.string.add, (_, _) -> {
                     Editable toAdd = itemEditTextBinding.edit.getText();
                     if (toAdd != null && !toAdd.toString().isEmpty()) {
                         SQLiteDatabase db = todoDB.getWritableDatabase();

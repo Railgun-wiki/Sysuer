@@ -217,7 +217,7 @@ public class ServiceFragment extends Fragment {
 }
 
 class CollectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    ArrayList<JSONObject> serviceNames = new ArrayList<>();
+    final ArrayList<JSONObject> serviceNames = new ArrayList<>();
 
     @NonNull
     @Override

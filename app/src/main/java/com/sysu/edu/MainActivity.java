@@ -68,6 +68,7 @@ import com.sysu.edu.life.NetPayActivity;
 import com.sysu.edu.life.NewsActivity;
 import com.sysu.edu.life.Pay;
 import com.sysu.edu.life.SchoolBus;
+import com.sysu.edu.studentAffair.StudentPartTimeActivity;
 import com.sysu.edu.todo.TodoActivity;
 
 import java.io.File;
@@ -224,12 +225,6 @@ public class MainActivity extends AppCompatActivity {
 //                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
 //            }
 //        } else {
-////            ClassIsland.sendCourseNotification(
-////                    this,
-////                    "高等数学",           // 课程名称
-////                    "10分钟",            // 剩余时间
-////                    "逸夫楼301"          // 教室
-////            );
 //        }
         /*handler.postAtTime(() -> {
             ClassIsland.sendCourseNotification(
@@ -289,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(107, newActivity(PhysicalFitnessTestResultActivity.class));     // 体测
         actionMap.put(108, newActivity(DormActivity.class));     // 宿舍
         actionMap.put(109, newActivity(PersonalInformationActivity.class));     // 个人信息
+        actionMap.put(110, newActivity(StudentPartTimeActivity.class));     // 勤工俭学
 
 
         // 学习服务 (id: 2xx)

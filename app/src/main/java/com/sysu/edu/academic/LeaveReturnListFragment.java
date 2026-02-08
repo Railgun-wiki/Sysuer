@@ -21,6 +21,8 @@ import com.google.android.material.button.MaterialButton;
 import com.sysu.edu.R;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemCardBinding;
+import com.sysu.edu.view.AdapterListener;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;

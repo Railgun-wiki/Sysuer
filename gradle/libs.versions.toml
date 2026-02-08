@@ -44,8 +44,8 @@ recyclerTable = "4.6.2"
 
 [libraries]
 api = { module = "dev.rikka.shizuku:api", version.ref = "api" }
-casclient-android = { module = "org.jasig.cas.client.android:casclient-android", version.ref = "casclientAndroid" }
-dev-appcompat = { module = "dev.rikka.rikkax.appcompat:appcompat", version.ref = "appcompatVersion" }
+#casclient-android = { module = "org.jasig.cas.client.android:casclient-android", version.ref = "casclientAndroid" }
+#dev-appcompat = { module = "dev.rikka.rikkax.appcompat:appcompat", version.ref = "appcompatVersion" }
 fastjson2 = { module = "com.alibaba.fastjson2:fastjson2", version = "2.0.60.android8" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
 glide = { module = "com.github.bumptech.glide:glide", version = "5.0.5" }
@@ -82,9 +82,9 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 core = { group = "io.noties.markwon", name = "core", version.ref = "core" }
 ext-tables = { group = "io.noties.markwon", name = "ext-tables", version.ref = "extTables" }
 ext-strikethrough = { group = "io.noties.markwon", name = "ext-strikethrough", version.ref = "extStrikethrough" }
-material3-preference = { group = "com.github.knightwood", name = "material3-preference", version = "1.4" }
-preference-data-core = { group = "com.github.Knightwood.ComposePreference", name = "preference-data-core", version.ref = "preferenceDataCore" }
-androidx-preference-material3 = { group = "com.github.halifox", name = "androidx.preference.material3", version.ref = "androidxPreferenceMaterial3" }
+#material3-preference = { group = "com.github.knightwood", name = "material3-preference", version = "1.4" }
+#preference-data-core = { group = "com.github.Knightwood.ComposePreference", name = "preference-data-core", version.ref = "preferenceDataCore" }
+#androidx-preference-material3 = { group = "com.github.halifox", name = "androidx.preference.material3", version.ref = "androidxPreferenceMaterial3" }
 google-material = { group = "com.google.android.material", name = "material", version = "1.14.0-alpha09" }
 recycler = { group = "io.noties.markwon", name = "recycler", version.ref = "recycler" }
 recycler-table = { group = "io.noties.markwon", name = "recycler-table", version.ref = "recyclerTable" }

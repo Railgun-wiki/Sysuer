@@ -537,5 +537,12 @@
     <string name="building">楼栋</string>
     <string name="recruitment_info">招聘信息</string>
     <string name="cv">简历</string>
+    <string name="job">岗位类型</string>
+    <string name="job_type">岗位类型</string>
+    <string name="job_name">岗位名称</string>
+    <string name="award">获奖情况</string>
+    <string name="unit">设岗单位</string>
+    <string name="employ_unit">设岗单位</string>
+    <string name="experience">工作经历</string>
 
 </resources>

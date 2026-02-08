@@ -24,7 +24,6 @@ import com.google.firebase.installations.BuildConfig;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ActivityCrashBinding;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -107,7 +106,7 @@ public class CrashActivity extends AppCompatActivity {
     }
 
 
-    String generateGitHubWebIssueUrl(String title) throws UnsupportedEncodingException {
+    String generateGitHubWebIssueUrl(String title) {
         return String.format("https://github.com/%s/%s/issues/new?title=%s&labels=bug,crash-report",
                 "SYSU-Tang", "Sysuer", URLEncoder.encode(title, StandardCharsets.UTF_8));
     }

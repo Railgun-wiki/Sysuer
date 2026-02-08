@@ -48,8 +48,8 @@ public class AboutActivity extends AppCompatActivity {
         ActivityInfoBinding binding = ActivityInfoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         params = new Params(this);
-        binding.toolbar.setNavigationOnClickListener(view -> finishAfterTransition());
-        binding.icon.setOnClickListener(v -> {
+        binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
+        binding.icon.setOnClickListener(_ -> {
             if (click.isEmpty() || System.currentTimeMillis() - click.get(click.size() - 1) < 500) {
                 if (click.size() == 4) {
                     params.toast("已开启开发者模式");
@@ -73,10 +73,10 @@ public class AboutActivity extends AppCompatActivity {
                     try {
                         int version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
                         if (version < response.getInteger("version")) {
-                            new MaterialAlertDialogBuilder(AboutActivity.this).setMessage(response.getString("description")).setTitle("发现新版本").setPositiveButton("更新", (dialogInterface, i) -> {
+                            new MaterialAlertDialogBuilder(AboutActivity.this).setMessage(response.getString("description")).setTitle("发现新版本").setPositiveButton("更新", (_, _) -> {
                                 file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "sysuer.apk");
                                 downloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(new DownloadManager.Request(Uri.parse(response.getString("link"))).setDestinationUri(Uri.fromFile(file)).setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED));
-                            }).setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
+                            }).setNegativeButton(R.string.cancel, (_, _) -> {
                             }).setCancelable(response.getBoolean("enforce")).create().show();
                         } else if (version < response.getInteger("version")) {
                             params.toast("本APP已被篡改");

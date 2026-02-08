@@ -332,7 +332,7 @@ public class NewsFragment extends Fragment {
 class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     final ArrayList<HashMap<String, String>> data = new ArrayList<>();
     final FragmentActivity context;
-    Params params;
+    final Params params;
 
     public NewsAdapter(FragmentActivity context) {
         super();

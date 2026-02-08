@@ -16,6 +16,7 @@ import com.sysu.edu.R;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityExamBinding;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;

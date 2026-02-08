@@ -6,12 +6,12 @@
 
     <fragment
         android:id="@+id/recruitment_info"
-        android:name="com.sysu.edu.academic.StaggeredFragment"
+        android:name="com.sysu.edu.studentAffair.RecruitmentInfoFragment"
         android:label="@string/recruitment_info" />
 
     <fragment
         android:id="@+id/cv"
-        android:name="com.sysu.edu.academic.StaggeredFragment"
+        android:name="com.sysu.edu.studentAffair.CVFragment"
         android:label="@string/cv" />
 
 </navigation>

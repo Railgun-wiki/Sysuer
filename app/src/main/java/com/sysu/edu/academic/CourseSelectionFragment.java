@@ -88,10 +88,10 @@ public class CourseSelectionFragment extends Fragment {
                 clear();
                 getInfo();
             });
-            vm.filterValue.observe(requireActivity(), f -> {
+            vm.filterValue.observe(requireActivity(), _ -> {
                 filter.setValue(vm.getReturnData());
                 binding.head.seniorFilter.removeAllViews();
-                vm.getFilterName().forEach((k, v) ->
+                vm.getFilterName().forEach((_, v) ->
                 {
                     if (v != null && !v.isEmpty()) {
                         ItemActionChipBinding item = ItemActionChipBinding.inflate(inflater, binding.head.filter, false);
@@ -102,7 +102,7 @@ public class CourseSelectionFragment extends Fragment {
                 clear();
                 getCourseList();
             });
-            binding.head.type.setOnCheckedStateChangeListener((chipGroup, list) -> {
+            binding.head.type.setOnCheckedStateChangeListener((chipGroup, _) -> {
                 int cid = chipGroup.getCheckedChipId();
                 if (cid == R.id.my_major) {
                     selectCategory();
@@ -120,19 +120,19 @@ public class CourseSelectionFragment extends Fragment {
                 });
                 animator.start();
             });
-            binding.zoom.setOnClickListener(v -> binding.head.getRoot().setVisibility(binding.head.getRoot().getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE));
+            binding.zoom.setOnClickListener(_ -> binding.head.getRoot().setVisibility(binding.head.getRoot().getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE));
             typeCate.addSource(type, s -> typeCate.setValue(List.of(type.getValue() == null ? 1 : type.getValue(), s)));
             typeCate.addSource(category, s -> typeCate.setValue(List.of(type.getValue() == null ? 11 : type.getValue(), s)));
-            typeCate.observe(requireActivity(), s -> {
+            typeCate.observe(requireActivity(), _ -> {
                 clear();
                 getCourseList();
             });
-            binding.head.category.setOnCheckedStateChangeListener((chipGroup, list) -> selectCategory());
+            binding.head.category.setOnCheckedStateChangeListener((_, _) -> selectCategory());
             cookie = params.getCookie();
             binding.course.setLayoutManager(gm = new GridLayoutManager(requireContext(), params.getColumn()));
             binding.course.addItemDecoration(new SpacesItemDecoration(params.dpToPx(8)));
             binding.course.setAdapter(adp = new CourseAdapter(this));
-            binding.head.filter.setOnCheckedStateChangeListener((chipGroup, list) -> {
+            binding.head.filter.setOnCheckedStateChangeListener((_, _) -> {
                 clear();
                 getCourseList();
             });
@@ -241,12 +241,6 @@ public class CourseSelectionFragment extends Fragment {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         gm.setSpanCount(params.getColumn());
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-//        binding = null;
     }
 
     void clear() {
@@ -377,7 +371,7 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         binding.select.setSelected(data.get(position).getInteger("selectedStatus") == 3 || data.get(position).getInteger("selectedStatus") == 4);
         binding.select.setText(binding.select.isSelected() ? context.getString(R.string.drop_course) : context.getString(R.string.select_course));
         binding.like.setText(binding.like.isSelected() ? context.getString(R.string.unlike) : context.getString(R.string.like));
-        binding.select.setOnClickListener(v -> {
+        binding.select.setOnClickListener(_ -> {
             if (selectAction != null)
                 selectAction.accept(position);
         });

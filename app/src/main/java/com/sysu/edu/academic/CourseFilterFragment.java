@@ -86,7 +86,7 @@ public class CourseFilterFragment extends Fragment {
                                 MaterialAutoCompleteTextView v = new MaterialAutoCompleteTextView[]{binding.campus, binding.days, binding.sections, binding.languages, binding.special}[msg.what];
                                 v.setSimpleItems(items.toArray(new String[]{}));
                                 final int a = msg.what;
-                                v.setOnItemClickListener((adapterView, view, i, l) -> {
+                                v.setOnItemClickListener((_, _, i, _) -> {
                                     filterValue.put(new String[]{"campus", "day", "section", "language", "special"}[a], itemCodes.get(i));
                                     filterName.put(new String[]{"campus", "day", "section", "language", "special"}[a], items.get(i));
                                 });
@@ -144,8 +144,8 @@ public class CourseFilterFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         navController = Navigation.findNavController(view);
-        binding.reset.setOnClickListener(v -> reset());
-        binding.submit.setOnClickListener(v -> submit());
+        binding.reset.setOnClickListener(_ -> reset());
+        binding.submit.setOnClickListener(_ -> submit());
     }
 
     private void submit() {
@@ -153,12 +153,6 @@ public class CourseFilterFragment extends Fragment {
         vm.setFilterName(filterName);
         vm.setFilterValue(filterValue);
         navController.navigateUp();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-//        binding = null;
     }
 
     void getData(int i) {

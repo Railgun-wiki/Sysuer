@@ -225,7 +225,7 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".studentAffair.StudentPartTime"
+            android:name=".studentAffair.StudentPartTimeActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />

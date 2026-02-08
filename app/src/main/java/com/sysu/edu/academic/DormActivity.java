@@ -15,6 +15,8 @@ import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityPagerBinding;
+import com.sysu.edu.view.Pager2Adapter;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +24,8 @@ import java.util.List;
 public class DormActivity extends AppCompatActivity {
 
     HttpManager http;
-    AuthorizationManager auth = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt-443.webvpn.sysu.edu.cn/");
-    ArrayList<String> tabs = new ArrayList<>();
+    final AuthorizationManager auth = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt-443.webvpn.sysu.edu.cn/");
+    final ArrayList<String> tabs = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +35,7 @@ public class DormActivity extends AppCompatActivity {
         Params params = new Params(this);
         params.setCallback(this::getDormInfo);
         binding.toolbar.setTitle(R.string.dorm);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         Pager2Adapter pager2Adapter = new Pager2Adapter(this);
         binding.pager.setAdapter(pager2Adapter);
 

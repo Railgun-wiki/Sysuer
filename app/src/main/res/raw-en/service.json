@@ -48,6 +48,11 @@
         "id": 109,
         "name": "Personal Information",
         "description": "Personal information inquiry system, check personal basic information, educational work experience, family members, and social relationships, as well as dual major dual degree information, work and study records, etc."
+      },
+      {
+        "id": 110,
+        "name": "Part-Time Employment",
+        "description": "Part-time employment record inquiry system"
       }
     ]
   },

@@ -1,7 +1,6 @@
 package com.sysu.edu.preference;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.util.AttributeSet;
 
 import androidx.annotation.NonNull;
@@ -33,20 +32,12 @@ public class MutiListPreference extends MultiSelectListPreference {
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(getContext());
         if (getTitle() != null) dialogBuilder.setTitle(getTitle());
         if (getPositiveButtonText() != null)
-            dialogBuilder.setPositiveButton(getPositiveButtonText(), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    persistStringSet(getValues());
-                    notifyChanged();
-                }
+            dialogBuilder.setPositiveButton(getPositiveButtonText(), (dialog, which) -> {
+                persistStringSet(getValues());
+                notifyChanged();
             });
         if (getNegativeButtonText() != null)
-            dialogBuilder.setNegativeButton(getNegativeButtonText(), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
+            dialogBuilder.setNegativeButton(getNegativeButtonText(), (dialog, which) -> dialog.dismiss());
         if (getEntries() != null)
             dialogBuilder.setMultiChoiceItems(getEntries(), getSelectedItems(), (dialog, which, isChecked) -> {
                 getValues().remove(getEntryValues()[which].toString());
