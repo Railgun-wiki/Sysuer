@@ -1,0 +1,285 @@
+package com.sysu.edu.academic;
+
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
+import com.alibaba.fastjson2.JSONObject;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
+import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
+import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.databinding.FragmentCourseSelectionSelectedBinding;
+import com.sysu.edu.databinding.ItemCourseSelectionBinding;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+public class CourseSelectionSelectedFragment extends Fragment {
+
+
+    CourseSelectedAdapter adapter;
+    HttpManager http;
+    int page = 1;
+    int success = 1;
+    int failure = 1;
+    int retired = 1;
+    int waiting = 1;
+    int total = 0;
+    String category;
+    StaggeredGridLayoutManager layoutManager;
+    Params params;
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        FragmentCourseSelectionSelectedBinding binding = FragmentCourseSelectionSelectedBinding.inflate(inflater, container, false);
+        params = new Params(requireActivity());
+        params.setCallback(this, this::regetSelectedCourses);
+        layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
+        binding.list.getRoot().setLayoutManager(layoutManager);
+        binding.list.getRoot().setAdapter(adapter = new CourseSelectedAdapter());
+        binding.list.getRoot().addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView v, int dx, int dy) {
+                if (!v.canScrollVertically(1) && total > (page - 1) * 10 && dy > 0)
+                    getSelectedCourses();
+                binding.head.setElevation(v.canScrollVertically(-1) ? params.dpToPx(2) : 0);
+                super.onScrolled(v, dx, dy);
+            }
+        });
+
+        binding.list.getRoot().addItemDecoration(new CourseSelectionFragment.SpacesItemDecoration(params.dpToPx(8)));
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                if (msg.what == -1) {
+                    params.toast(R.string.no_wifi_warning);
+                } else {
+                    JSONObject response = JSONObject.parseObject((String) msg.obj);
+                    if (response.getIntValue("code") == 200) {
+                        if (msg.what == 0) {
+                            total = response.getJSONObject("data").getInteger("total");
+                            response.getJSONObject("data").getJSONArray("rows").forEach(o -> adapter.add((JSONObject) o));
+                        } else if (msg.what == 3) {
+                            if (response.containsKey("data") && response.getString("data") != null)
+                                params.toast(response.getString("data"));
+                            regetSelectedCourses();
+                        }
+                    } else {
+                        params.toast(R.string.login_warning);
+                        params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                    }
+                }
+            }
+        });
+        binding.filter.setOnCheckedStateChangeListener((_, checkedId) -> {
+            success = checkedId.contains(R.id.success) ? 1 : 0;
+            failure = checkedId.contains(R.id.failure) ? 1 : 0;
+            retired = checkedId.contains(R.id.retired) ? 1 : 0;
+            waiting = checkedId.contains(R.id.to_filter) ? 1 : 0;
+            regetSelectedCourses();
+        });
+        binding.category.setOnCheckedStateChangeListener((_, checkedId) -> {
+            Integer i = checkedId.get(0);
+            if (i == R.id.all)
+                category = "";
+            else if (i == R.id.public_compulsory)
+                category = "10";
+            else if (i == R.id.public_selective)
+                category = "30";
+            else if (i == R.id.major_compulsory)
+                category = "11";
+            else if (i == R.id.major_selective)
+                category = "21";
+            else if (i == R.id.cross_major)
+                category = "kzy";
+            else if (i == R.id.honor)
+                category = "31";
+
+            regetSelectedCourses();
+        });
+        http.setParams(params);
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE");
+        adapter.setSelectAction(position -> {
+            if (adapter.getItem(position).getInteger("selectedStatus") == 3 || adapter.getItem(position).getInteger("selectedStatus") == 4) {
+                unselect(adapter.convert(position, "courseId"), adapter.convert(position, "teachingClassId"),
+                        adapter.getItem(position).getString("selectedType"));
+            } else {
+                select(adapter.convert(position, "teachingClassId"), adapter.convert(position, "selectedType"),
+                        adapter.getItem(position).getString("courseCateCode"));
+            }
+        });
+        adapter.setLikeAction(this::setPNP);
+        getSelectedCourses();
+        return binding.getRoot();
+    }
+
+
+    void unselect(String classId, String code, String type) {
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/classCourseInfo/course/back",
+                String.format("{\"courseId\":\"%s\",\"clazzId\":\"%s\",\"selectedType\":\"%s\"}", classId, code, type),
+                3);
+
+    }
+
+    void select(String code, String type, String category) {
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/classCourseInfo/course/choose",
+                String.format("{\"clazzId\":\"%s\",\"selectedType\":\"%s\",\"selectedCate\":\"%s\",\"check\":true}", code, type, category),
+                3);
+
+    }
+
+    void getSelectedCourses() {
+        JSONObject params = new JSONObject().fluentPut("successStatus", String.valueOf(success))
+                .fluentPut("failureStatus", String.valueOf(failure))
+                .fluentPut("retiredClass", String.valueOf(retired))
+                .fluentPut("waitingScreen", String.valueOf(waiting));
+        if (category != null && !category.isEmpty())
+            params.put("courseCateCode", category);
+
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/selectedCourse/list", String.format("{\"pageNo\":%s,\"pageSize\":10,\"total\":true,\"param\":%s}", page++, params.toJSONString()), 0);
+    }
+
+    void regetSelectedCourses() {
+        page = 1;
+        total = 0;
+        adapter.clear();
+        getSelectedCourses();
+    }
+
+    void setPNP(String type, String id) {
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/selectedCourse/setTwoTier?type=" + type, String.format("{\"clazzId\":\"%s\"}", id), 3);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        layoutManager.setSpanCount(params.getColumn());
+    }
+}
+
+class CourseSelectedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    final String[] info = new String[]{"credit", "teachingClassNum", "scheduleExamTime", "examFormName"};
+    final ArrayList<JSONObject> data = new ArrayList<>();
+    Consumer<Integer> selectAction;
+    BiConsumer<String, String> likeAction;
+
+    public void add(JSONObject e) {
+        data.add(e);
+        notifyItemInserted(getItemCount() - 1);
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.inflate(LayoutInflater.from(context), parent, false);
+        for (int i = 0; i < info.length; i++) {
+            Chip chip = (Chip) LayoutInflater.from(context).inflate(R.layout.item_action_chip, binding.courseInfo, false);
+            chip.setOnLongClickListener(a -> {
+                ((ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("", ((Chip) a).getText()));
+                return false;
+            });
+            chip.setOnClickListener(a -> Snackbar.make(context, chip, ((Chip) a).getText(), Snackbar.LENGTH_LONG).show());
+            binding.courseInfo.addView(chip);
+        }
+//        binding.like.setVisibility(View.GONE);
+        return new RecyclerView.ViewHolder(binding.getRoot()) {
+        };
+    }
+
+
+    public void setSelectAction(Consumer<Integer> action) {
+        this.selectAction = action;
+    }
+
+    public JSONObject getItem(int position) {
+        return data.get(position);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.bind(holder.itemView);
+        Context context = binding.getRoot().getContext();
+        binding.courseName.setText(String.format("%s-%s", convert(position, "courseNum"), convert(position, "courseName")));
+        JSONObject item = data.get(position);
+        Integer status = item.getInteger("status");
+        binding.select.setSelected(status == 3 || status == 4);
+
+        boolean canPNP = status == 4 && Objects.equals(item.getString("isInTwoTierSet"), "1") && Arrays.asList(item.getString("courseCateList").split(",")).contains(item.getString("courseCateCode"));
+
+        binding.select.setText(binding.select.isSelected() ? context.getString(R.string.drop_course) : context.getString(R.string.select_course));
+        binding.filtering.setText(String.format("%s：%s", context.getString(R.string.status), "\n" + context.getString(status == 4 ? R.string.status_selected : status == 3 ? R.string.filtering : status == 1 ? R.string.retired : R.string.unselected)));
+        binding.select.setOnClickListener(_ -> {
+            if (selectAction != null)
+                selectAction.accept(position);
+        });
+        binding.open.setOnClickListener(v -> context.startActivity(new Intent(context, CourseDetailActivity.class).putExtra("code", convert(position, "courseNum")).putExtra("id", convert(position, "courseId")).putExtra("class", convert(position, "clazzNum")), ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context, v, "miniapp").toBundle()));
+        binding.head.setText(convert(position, "teachingTimePlace").replace(";", " | ").replace(",", "\n"));
+
+        binding.like.setVisibility(canPNP ? View.VISIBLE : View.GONE);
+        if (canPNP) {
+            boolean isPNP = item.getString("isTwoTier") == null || item.getString("isTwoTier").equals("0");
+            binding.like.setText(isPNP ? "设置PNP" : "取消PNP");
+            binding.like.setOnClickListener(_ -> likeAction.accept( isPNP ? "1" : "0",item.getString("teachingClassId")));
+        }
+        String[] courseInfoLabels = context.getResources().getStringArray(R.array.course_info_labels);
+        String[] seatInfoLabels = context.getResources().getStringArray(R.array.seat_info_labels);
+        ArrayList<String> infoList = new ArrayList<>(Arrays.asList(seatInfoLabels));
+        infoList.remove(1);
+        for (int i = 0; i < info.length; i++) {
+            String content = convert(position, info[i]);
+            ((Chip) binding.courseInfo.getChildAt(i)).setText(String.format("%s：%s", courseInfoLabels[i], content));
+        }
+        String[] seats = new String[]{"baseReceiveNum", "selectCount"};
+        for (int i = 0; i < seats.length; i++) {
+            String content = convert(position, seats[i]);
+            (new MaterialButton[]{binding.left, binding.selected}[i]).setText(String.format("%s\n%s", infoList.get(i), content));
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return data.size();
+    }
+
+    public String convert(int position, String key) {
+        String a = data.get(position).getString(key);
+        return (a == null ? "" : a).replace("\n\n", "\n");
+    }
+
+    public void clear() {
+        int tmp = getItemCount();
+        data.clear();
+        notifyItemRangeRemoved(0, tmp);
+    }
+
+    public void setLikeAction(BiConsumer<String, String> action) {
+        this.likeAction = action;
+    }
+}

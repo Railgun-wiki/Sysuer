@@ -14,4 +14,9 @@
         android:name="com.sysu.edu.studentAffair.CVFragment"
         android:label="@string/cv" />
 
+    <fragment
+        android:id="@+id/application_record"
+        android:name="com.sysu.edu.studentAffair.ApplicationRecordFragment"
+        android:label="@string/application_record" />
+
 </navigation>

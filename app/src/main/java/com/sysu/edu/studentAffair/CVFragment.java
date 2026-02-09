@@ -1,5 +1,7 @@
 package com.sysu.edu.studentAffair;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,7 +21,6 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class CVFragment extends StaggeredFragment {
@@ -70,11 +71,11 @@ public class CVFragment extends StaggeredFragment {
                             if (data.containsKey("code") && data.getInteger("code") == 200) {
                                 data = data.getJSONObject("data");
                                 add(getString(R.string.cv), List.of("学号", "姓名", "培养单位", "专业", "培养层次", "电话号码", "邮箱", "最后修改时间", "家庭人均月收入(元)", "在校每月平均消费(元)", "爱好特长", "勤工助学经历", /*"", */"工作时间", "性别", "住宿地址"),
-                                        separate(data, new String[]{"xh", "xm", "pydw", "zymc", "pycc", "dhhm", "email", "zhxgsj", "jtrjysr", "zxmypjxf", "ahtc", "qgzxjls",/*"kqgzxsjs",*/"gzsjs", "xb", "ssdz"}));
+                                        extractValue(data, new String[]{"xh", "xm", "pydw", "zymc", "pycc", "dhhm", "email", "zhxgsj", "jtrjysr", "zxmypjxf", "ahtc", "qgzxjls",/*"kqgzxsjs",*/"gzsjs", "xb", "ssdz"}));
                                 data.getJSONArray("hjqks").forEach(i -> add(getString(R.string.award), List.of("颁奖单位", "颁奖日期", "奖项"),
-                                        separate((JSONObject) i, new String[]{"bjdw", "bjrq", "jxmc"})));
+                                        extractValue((JSONObject) i, new String[]{"bjdw", "bjrq", "jxmc"})));
                                 data.getJSONArray("rzjls").forEach(i -> add(getString(R.string.experience), List.of("工作单位", "工作开始年月", "工作结束年月", "工作职务", "证明人", "证明人单位"),
-                                        separate((JSONObject) i, new String[]{"gzdw", "gzksny", "gzjsny", "gzzw", "zmr", "zmrdwhzw"})));
+                                        extractValue((JSONObject) i, new String[]{"gzdw", "gzksny", "gzjsny", "gzzw", "zmr", "zmrdwhzw"})));
                             } else if (data.getJSONObject("meta").getInteger("statusCode") == 302) {
                                 params.toast(R.string.login_warning);
                                 params.gotoLogin(view, auth.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
@@ -92,14 +93,4 @@ public class CVFragment extends StaggeredFragment {
     void getCV() {
         http.getRequest(auth.getBaseUrl() + "qgzx/api/sm-qgzx/xsjl/get", 0);
     }
-
-    ArrayList<String> separate(JSONObject data, String[] keys) {
-        ArrayList<String> values = new ArrayList<>();
-        for (String i : keys) {
-            values.add(data.getString(i));
-        }
-        return values;
-    }
-
-
 }

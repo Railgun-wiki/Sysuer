@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:background="#00000000" />
 
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView

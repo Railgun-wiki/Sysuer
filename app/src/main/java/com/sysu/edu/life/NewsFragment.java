@@ -93,12 +93,18 @@ public class NewsFragment extends Fragment {
                         return;
                     }
                     if(!isJson){
+                        if (!authorizationManager.isAuthorized(json)){
+                            params.toast(R.string.login_warning);
+                            params.gotoLogin(binding.getRoot(),authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                            return;
+                        }
                         if(!authorizationManager.isAccessible(json)){
                             params.toast(R.string.educational_wifi_warning);
                             run.run();
                             return;
                         }
                     }
+                    System.out.println(json);
                     JSONObject data = Objects.requireNonNull(JSON.parseObject(json));
                     if (msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);

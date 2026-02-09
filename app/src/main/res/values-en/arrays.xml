@@ -84,13 +84,14 @@
         <item>Teaching Class Code</item>
         <item>Assessment</item>
         <item>Assessment Method</item>
+        <item>Status</item>
         <item>Remaining Seats</item>
         <item>Number of People to be Filtered</item>
         <item>Number of Selected People</item>
     </string-array>
 
     <string-array name="seat_info_labels">
-        <item>Remaining</item>
+        <item>Total</item>
         <item>Filtering</item>
         <item>Selected</item>
     </string-array>

@@ -145,6 +145,7 @@
         <item>教学班代码</item>
         <item>考查</item>
         <item>考查方式</item>
+        <item>状态</item>
         <item>剩余空位</item>
         <item>待筛选人数</item>
         <item>选上人数</item>
@@ -152,7 +153,7 @@
 
     <!-- 座位信息标签 -->
     <string-array name="seat_info_labels">
-        <item>剩余</item>
+        <item>总共</item>
         <item>待筛选</item>
         <item>选上</item>
     </string-array>

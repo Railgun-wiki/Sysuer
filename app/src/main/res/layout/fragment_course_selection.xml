@@ -18,8 +18,6 @@
         android:id="@+id/course"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="0dp"
         app:fastScrollEnabled="true"
         app:fastScrollHorizontalThumbDrawable="@drawable/thumb"
         app:fastScrollHorizontalTrackDrawable="@drawable/track"

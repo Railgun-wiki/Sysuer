@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -62,6 +63,10 @@ public class CourseSelectedActivity extends AppCompatActivity {
         CourseSelectedAdapter adp = new CourseSelectedAdapter();
         setContentView(binding.getRoot());
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setOnMenuItemClickListener(item -> {
+
+            return true;
+        });
         binding.search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -152,6 +157,7 @@ public class CourseSelectedActivity extends AppCompatActivity {
             vh.setInfo(data.get(viewType));
             return vh;
         }
+
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {

@@ -24,15 +24,18 @@ public class CourseSelectionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityCourseSelectionBinding.inflate(getLayoutInflater());
-        binding.toolbar.setNavigationOnClickListener(view -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         setContentView(binding.getRoot());
         NavController navController = ((NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.course_selection_fragment))).getNavController();
         binding.tab.addTab(binding.tab.newTab().setText(R.string.course_selection));
         binding.tab.addTab(binding.tab.newTab().setText(R.string.preview));
+        binding.tab.addTab(binding.tab.newTab().setText(R.string.course_selected));
+
         binding.tab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                navController.navigate(new int[]{R.id.selection_navigation, R.id.preview_navigation}[tab.getPosition()], null, new NavOptions.Builder().setRestoreState(true).setLaunchSingleTop(true).build());
+                navController.navigate(new int[]{R.id.selection_navigation, R.id.preview_navigation,R.id.course_selection_selected_fragment}[tab.getPosition()], null,
+                        new NavOptions.Builder().setRestoreState(true)/*.setPopUpTo(R.id.selection_navigation, true, true)*/.setLaunchSingleTop(true).build());
             }
 
             @Override
@@ -49,7 +52,7 @@ public class CourseSelectionActivity extends AppCompatActivity {
             supportFinishAfterTransition();
             return true;
         }).build());
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> binding.tab.selectTab(binding.tab.getTabAt(destination.getId() == R.id.preview_fragment ? 1 : 0)));
+        navController.addOnDestinationChangedListener((_, destination, _) -> binding.tab.selectTab(binding.tab.getTabAt(destination.getId() == R.id.preview_fragment ? 1 : destination.getId() == R.id.course_selection_selected_fragment ? 2 : 0)));
         //binding.toolbar.setNavigationOnClickListener(view -> supportFinishAfterTransition());
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }

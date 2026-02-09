@@ -34,4 +34,9 @@
             android:name="com.sysu.edu.academic.CourseFilterFragment"
             android:label="@string/filter" />
     </navigation>
+    <fragment
+        android:id="@+id/course_selection_selected_fragment"
+        android:name="com.sysu.edu.academic.CourseSelectionSelectedFragment"
+        android:label="@string/course_selected"/>
+
 </navigation>
