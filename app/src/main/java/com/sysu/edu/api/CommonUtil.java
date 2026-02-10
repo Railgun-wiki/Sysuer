@@ -21,4 +21,24 @@ public class CommonUtil {
         return values;
     }
 
+    /**
+    * 将boolean值转换为字符串"1"或"0"
+    * @param b 要转换的boolean值
+    * @return 转换后的字符串"1"或"0"
+    * */
+    public static String bool2str(boolean b) {
+        return b ? "1" : "0";
+    }
+
+    /**
+    * 检查字符串是否为空或仅包含空格
+    * @param str 要检查的字符串
+    * @return 如果字符串为空或仅包含空格，则返回true；否则返回false
+    * */
+    public static boolean isEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+
+
 }

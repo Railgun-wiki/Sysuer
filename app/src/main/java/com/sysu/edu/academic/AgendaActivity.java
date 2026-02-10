@@ -78,11 +78,11 @@ public class AgendaActivity extends AppCompatActivity {
                 getAvailableTerms();
             }
         });
-        cookie = params.getCookie();// 获取cookie
+        cookie = params.getCookie();
 
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         String[] duration = getResources().getStringArray(R.array.duration);
-        binding.toolbar.getMenu().add(R.string.today).setOnMenuItemClickListener(menuItem -> {
+        binding.toolbar.getMenu().add(R.string.today).setOnMenuItemClickListener(_ -> {
             getTable(currentTerm, currentWeek);
             getRange(currentTerm, currentWeek);
             return false;
@@ -92,8 +92,8 @@ public class AgendaActivity extends AppCompatActivity {
         binding.month.setText(getResources().getStringArray(R.array.months)[calendar.get(Calendar.MONTH)]);
         int weekday = calendar.get(Calendar.DAY_OF_WEEK);
         weekday = (weekday == 1) ? 8 : weekday;
-        binding.last.setOnClickListener(v -> changeWeek(currentWeekIndex - 1));
-        binding.next.setOnClickListener(v -> changeWeek(currentWeekIndex + 1));
+        binding.last.setOnClickListener(_ -> changeWeek(currentWeekIndex - 1));
+        binding.next.setOnClickListener(_ -> changeWeek(currentWeekIndex + 1));
         for (int i = 0; i < duration.length; i++) {
             ItemDurationBinding durationBinding = ItemDurationBinding.inflate(getLayoutInflater(), binding.day, false);
             durationBinding.courseDuration.setText(duration[i].replace("~", "\n"));
@@ -129,7 +129,7 @@ public class AgendaActivity extends AppCompatActivity {
         binding.term.setOnClickListener(v -> {
             if (termPop == null) {
                 termPop = new PopupMenu(v.getContext(), v, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
-                terms.forEach(e -> termPop.getMenu().add(String.format(getString(R.string.term_x), e)).setOnMenuItemClickListener(item -> {
+                terms.forEach(e -> termPop.getMenu().add(String.format(getString(R.string.term_x), e)).setOnMenuItemClickListener(_ -> {
                     changeTerm(e);
                     return true;
                 }));
@@ -139,7 +139,7 @@ public class AgendaActivity extends AppCompatActivity {
         binding.weekTime.setOnClickListener(v -> {
             if (weekPop == null) {
                 weekPop = new PopupMenu(v.getContext(), v, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
-                weeks.forEach(e -> weekPop.getMenu().add(String.format(getString(R.string.week_x), e)).setOnMenuItemClickListener(item -> {
+                weeks.forEach(e -> weekPop.getMenu().add(String.format(getString(R.string.week_x), e)).setOnMenuItemClickListener(_ -> {
                     changeWeek(weeks.indexOf(e));
                     return true;
                 }));
@@ -154,6 +154,8 @@ public class AgendaActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
+                if (msg.obj == null) return;
+                System.out.println(msg.obj);
                 JSONObject response = JSONObject.parseObject((String) msg.obj);
                 if (response.getInteger("code").equals(200)) {
                     switch (msg.what) {
@@ -180,9 +182,8 @@ public class AgendaActivity extends AppCompatActivity {
                                         item.setEnabled(false);
                                         item.setBackgroundColor(getColor(R.color.teal_700));
                                     }
-
                                     views.add(item);
-                                    item.setOnClickListener(v -> {
+                                    item.setOnClickListener(_ -> {
                                         String location = (campus == null ? "" : campus) + "-" + (teachingBuildingName == null ? "" : teachingBuildingName) + "-" + (classroomNum == null ? "" : classroomNum);
                                         setDialogDetail(course, location, teacher, String.format(getString(R.string.from_to), startClassTimes, endClassTimes), detail.getString("assistantInfo"));
                                         id.setValue(detail.getString("classesId"));
@@ -209,7 +210,7 @@ public class AgendaActivity extends AppCompatActivity {
                             //getRange(currentTerm,currentWeek);
                             getTable(currentTerm, currentWeek);
                             break;
-                        }
+                        }// 获取Term
                         case 3: {
                             String from = response.getJSONObject("data").getString("startTime");
                             try {
@@ -248,6 +249,7 @@ public class AgendaActivity extends AppCompatActivity {
                         }
                         case -1: {
                             params.toast(R.string.no_wifi_warning);
+                            break;
                         }
                     }
                 } else {

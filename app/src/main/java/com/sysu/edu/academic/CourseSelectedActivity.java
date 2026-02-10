@@ -58,19 +58,19 @@ public class CourseSelectedActivity extends AppCompatActivity {
         ActivityCourseSelectedBinding binding = ActivityCourseSelectedBinding.inflate(getLayoutInflater());
         params = new Params(this);
         params.setCallback(this::getSelectedCourses);
-        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
+        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
         });
         CourseSelectedAdapter adp = new CourseSelectedAdapter();
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        binding.toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setOnMenuItemClickListener(item -> {
-
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+        binding.toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setOnMenuItemClickListener(_ -> {
+            startActivity(new Intent(this, MarkdownViewActivity.class).putExtra("content", adp.toMarkdown()).putExtra("title", getString(R.string.course_selected)),
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(this, binding.toolbar, "miniapp").toBundle());
             return true;
         });
         binding.search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //adp.filter(query);
                 return true;
             }
 
@@ -123,7 +123,7 @@ public class CourseSelectedActivity extends AppCompatActivity {
                 .post(RequestBody.create(String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":10,\"total\":true,\"param\":{\"courseName\":\"%s\",\"successStatus\":\"1\",\"failureStatus\":\"0\",\"retiredClass\":\"0\",\"waitingScreen\":\"0\"}}", ++page, courseName), MediaType.parse("application/json"))).build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() -> params.toast(R.string.no_wifi_warning));
+                handler.sendEmptyMessage(-1);
             }
 
             @Override
@@ -156,6 +156,20 @@ public class CourseSelectedActivity extends AppCompatActivity {
             ViewHolder vh = new ViewHolder(ItemCourseSelectedBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
             vh.setInfo(data.get(viewType));
             return vh;
+        }
+
+        public String toMarkdown() {
+            String[] key = new String[]{"courseName", "courseCategoryName", "courseUnitName", "scheduleExamTime", "examFormName", "credit", "teachingClassId", "teachingClassNum", "teachingClassName", "courseNum"};
+            StringBuilder md = new StringBuilder();
+            md.append("| 课程名称 | 课程类别 | 开设学院 | 考试时间 | 考核方式 | 学分 | 班级ID | 班级号 | 班级名 | 课程号 |\n");
+            md.append("| -------- | -------- | -------- | -------- | -------- | -------- | -------- | -------- | -------- | -------- |\n");
+            data.forEach(item -> {
+                for (String s : key) {
+                    md.append(item.getString(s) == null ? "无" : item.getString(s)).append(" | ");
+                }
+                md.append("\n");
+            });
+            return md.toString();
         }
 
 
@@ -222,7 +236,7 @@ public class CourseSelectedActivity extends AppCompatActivity {
                 Params params = new Params((FragmentActivity) binding.getRoot().getContext());
                 item.setTextAppearance(binding.getRoot().getContext(), com.google.android.material.R.style.TextAppearance_Material3_BodyMedium);
                 item.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT));
-                item.setOnClickListener(v -> params.copy(name, value));
+                item.setOnClickListener(_ -> params.copy(name, value));
                 item.setText(String.format(Locale.getDefault(), "%s: %s", name, value));
                 item.setCornerRadius(params.dpToPx(8));
                 item.setPadding(params.dpToPx(8), params.dpToPx(6), params.dpToPx(8), params.dpToPx(6));

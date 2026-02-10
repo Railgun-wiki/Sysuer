@@ -539,4 +539,19 @@
     <string name="building">Building</string>
     <string name="recruitment_info">Recruitment Information</string>
     <string name="cv">CV</string>
+    <string name="job_type">Job Type</string>
+    <string name="job_name">Job Name</string>
+    <string name="award">Award</string>
+    <string name="employ_unit">Employment Unit</string>
+    <string name="experience">Work Experience</string>
+    <string name="application_record">Application History</string>
+    <string name="failure">Failure</string>
+    <string name="success">Success</string>
+    <string name="to_filter">Filtering</string>
+    <string name="retired">Retired</string>
+    <string name="unselected">Unselected</string>
+    <string name="status_selected">Selected</string>
+    <string name="filtering">Filtering</string>
+    <string name="cross_major">Cross Major</string>
+    <string name="public_selective">Public Selective</string>
 </resources>

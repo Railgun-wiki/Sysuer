@@ -37,8 +37,8 @@ public class StudentPartTimeActivity extends AppCompatActivity {
         viewModel.jobNameDialog.setHint(R.string.job_name);
 
         viewModel.unitDialog = new EditTextDialog(this);
-        viewModel.unitDialog.setTitle(R.string.unit);
-        viewModel.unitDialog.setHint(R.string.unit);
+        viewModel.unitDialog.setTitle(R.string.employ_unit);
+        viewModel.unitDialog.setHint(R.string.employ_unit);
         setContentView(binding.getRoot());
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, binding.getRoot(), binding.toolbar, R.string.open, R.string.close);
         toggle.syncState();
@@ -91,7 +91,7 @@ public class StudentPartTimeActivity extends AppCompatActivity {
         });
         viewModel.unitName.observe(this, unit -> {
             if (unit.isEmpty())
-                binding.unit.setText(R.string.unit);
+                binding.unit.setText(R.string.employ_unit);
             else
                 binding.unit.setText(unit);
         });

@@ -139,7 +139,6 @@
         <item>其他</item>
     </string-array>
 
-    <!-- 课程信息标签 -->
     <string-array name="course_info_labels">
         <item>学分</item>
         <item>教学班代码</item>
