@@ -161,40 +161,44 @@ public class AgendaActivity extends AppCompatActivity {
                             views.forEach(e -> binding.day.removeView(e));
                             views.clear();
                             response.getJSONArray("data").forEach(e -> {
-                                String week = ((JSONObject) e).getString("week");
-                                String startClassTimes = ((JSONObject) e).getString("startClassTimes");
-                                String endClassTimes = ((JSONObject) e).getString("endClassTimes");
-                                JSONArray info = ((JSONObject) e).getJSONArray("teachingInfoList");
-                                JSONObject detail = (JSONObject) info.get(0);
-                                String course = detail.getString("courseName");
-                                String teacher = detail.getString("teacherName");
-                                String campus = detail.getString("teachingCampusName");
-                                String isStop = detail.getString("whetherStopClass");
-                                String teachingBuildingName = detail.getString("teachingBuildingName");
-                                String classroomNum = detail.getString("classroomNum");
-                                ItemAgendaBinding itemAgendaBinding = ItemAgendaBinding.inflate(getLayoutInflater(), binding.day, false);
-                                View item = itemAgendaBinding.getRoot();
-                                if (isStop != null && !isStop.equals("0")) {
-                                    item.setEnabled(false);
-                                    item.setBackgroundColor(getColor(R.color.teal_700));
+                                JSONObject jsonObject = (JSONObject) e;
+                                String week = jsonObject.getString("week");
+                                if (week != null) {
+                                    String startClassTimes = jsonObject.getString("startClassTimes");
+                                    String endClassTimes = jsonObject.getString("endClassTimes");
+                                    JSONArray info = jsonObject.getJSONArray("teachingInfoList");
+                                    JSONObject detail = (JSONObject) info.get(0);
+                                    String course = detail.getString("courseName");
+                                    String teacher = detail.getString("teacherName");
+                                    String campus = detail.getString("teachingCampusName");
+                                    String isStop = detail.getString("whetherStopClass");
+                                    String teachingBuildingName = detail.getString("teachingBuildingName");
+                                    String classroomNum = detail.getString("classroomNum");
+                                    ItemAgendaBinding itemAgendaBinding = ItemAgendaBinding.inflate(getLayoutInflater(), binding.day, false);
+                                    View item = itemAgendaBinding.getRoot();
+                                    if (isStop != null && !isStop.equals("0")) {
+                                        item.setEnabled(false);
+                                        item.setBackgroundColor(getColor(R.color.teal_700));
+                                    }
+
+                                    views.add(item);
+                                    item.setOnClickListener(v -> {
+                                        String location = (campus == null ? "" : campus) + "-" + (teachingBuildingName == null ? "" : teachingBuildingName) + "-" + (classroomNum == null ? "" : classroomNum);
+                                        setDialogDetail(course, location, teacher, String.format(getString(R.string.from_to), startClassTimes, endClassTimes), detail.getString("assistantInfo"));
+                                        id.setValue(detail.getString("classesId"));
+                                        detailDialog.show();
+                                        //setDetail(course, location,teacher,String.format("第%s节到第%s节",startClassTimes,endClassTimes));
+                                    });
+                                    itemAgendaBinding.content.setText(String.format("%s/%s-%s", course, teachingBuildingName == null ? "" : teachingBuildingName, classroomNum == null ? "" : classroomNum));
+                                    GridLayout.LayoutParams gl = new GridLayout.LayoutParams();
+                                    gl.columnSpec = GridLayout.spec(Integer.parseInt(week), 1.0f);
+                                    gl.width = 0;
+                                    gl.height = 0;
+                                    gl.setGravity(Gravity.FILL);
+                                    gl.rowSpec = GridLayout.spec(Integer.parseInt(startClassTimes) - 1, Integer.parseInt(endClassTimes) - Integer.parseInt(startClassTimes) + 1, 1.0f);
+                                    item.setLayoutParams(gl);
+                                    binding.day.addView(item);
                                 }
-                                views.add(item);
-                                item.setOnClickListener(v -> {
-                                    String location = (campus == null ? "" : campus) + "-" + (teachingBuildingName == null ? "" : teachingBuildingName) + "-" + (classroomNum == null ? "" : classroomNum);
-                                    setDialogDetail(course, location, teacher, String.format(getString(R.string.from_to), startClassTimes, endClassTimes), detail.getString("assistantInfo"));
-                                    id.setValue(detail.getString("classesId"));
-                                    detailDialog.show();
-                                    //setDetail(course, location,teacher,String.format("第%s节到第%s节",startClassTimes,endClassTimes));
-                                });
-                                itemAgendaBinding.content.setText(String.format("%s/%s-%s", course, teachingBuildingName == null ? "" : teachingBuildingName, classroomNum == null ? "" : classroomNum));
-                                GridLayout.LayoutParams gl = new GridLayout.LayoutParams();
-                                gl.columnSpec = GridLayout.spec(Integer.parseInt(week), 1.0f);
-                                gl.width = 0;
-                                gl.height = 0;
-                                gl.setGravity(Gravity.FILL);
-                                gl.rowSpec = GridLayout.spec(Integer.parseInt(startClassTimes) - 1, Integer.parseInt(endClassTimes) - Integer.parseInt(startClassTimes) + 1, 1.0f);
-                                item.setLayoutParams(gl);
-                                binding.day.addView(item);
                             });
                             break;
                         }

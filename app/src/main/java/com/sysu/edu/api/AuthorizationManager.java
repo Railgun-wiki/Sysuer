@@ -26,13 +26,15 @@ public class AuthorizationManager {
         isAccessible = !Pattern.compile("Access Forbidden").matcher(content).find();
         return isAccessible;
     }
-    public void setAccessible(boolean accessible) {
-        isAccessible = accessible;
-    }
 
     public boolean isAccessible() {
         return isAccessible;
     }
+
+    public void setAccessible(boolean accessible) {
+        isAccessible = accessible;
+    }
+
     public boolean isAuthorized() {
         return isAuthorized;
     }

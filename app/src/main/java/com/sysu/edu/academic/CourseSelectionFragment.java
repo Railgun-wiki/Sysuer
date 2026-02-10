@@ -45,8 +45,6 @@ public class CourseSelectionFragment extends Fragment {
     final MutableLiveData<Integer> category = new MutableLiveData<>(11);
     final MediatorLiveData<List<Integer>> typeCate = new MediatorLiveData<>();
     FragmentCourseSelectionBinding binding;
-    Handler handler;
-    String cookie;
     int tmp;
     int page = 1;
     CourseAdapter adp;
@@ -56,15 +54,6 @@ public class CourseSelectionFragment extends Fragment {
     GridLayoutManager gm;
     Params params;
     HttpManager http;
-/*
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        setSharedElementEnterTransition(TransitionInflater.from(requireContext())
-                .inflateTransition(android.R.transition.move));
-        setSharedElementReturnTransition(TransitionInflater.from(requireContext())
-                .inflateTransition(android.R.transition.move));
-        super.onCreate(savedInstanceState);
-    }*/
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -112,7 +101,6 @@ public class CourseSelectionFragment extends Fragment {
             typeCate.addSource(category, s -> typeCate.setValue(List.of(type.getValue() == null ? 11 : type.getValue(), s)));
             typeCate.observe(requireActivity(), _ -> regetCourseList());
             binding.head.category.setOnCheckedStateChangeListener((_, _) -> selectCategory());
-            cookie = params.getCookie();
             binding.course.setLayoutManager(gm = new GridLayoutManager(requireContext(), params.getColumn()));
             binding.course.addItemDecoration(new SpacesItemDecoration(params.dpToPx(8)));
             binding.course.setAdapter(adp = new CourseAdapter());
@@ -126,7 +114,17 @@ public class CourseSelectionFragment extends Fragment {
             });
             adp.setLikeAction(this::like);
 
-            handler = new Handler(Looper.getMainLooper()) {
+            binding.course.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView v, int dx, int dy) {
+                    if (!v.canScrollVertically(1) && total / 10 + 1 > page && dy > 0) {
+                        getCourseList();
+                    }
+                    binding.head.getRoot().setElevation(v.canScrollVertically(-1) ? params.dpToPx(2) : 0);
+                    super.onScrolled(v, dx, dy);
+                }
+            });
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.obj == null) {
@@ -135,7 +133,6 @@ public class CourseSelectionFragment extends Fragment {
                     }
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     Integer code = response.getInteger("code");
-//                    System.out.println(response);
                     if (Objects.equals(code, 200)) {
                         switch (msg.what) {
                             case -1 -> params.toast(R.string.no_wifi_warning);
@@ -162,19 +159,7 @@ public class CourseSelectionFragment extends Fragment {
                     }
                     super.handleMessage(msg);
                 }
-            };
-
-            binding.course.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(@NonNull RecyclerView v, int dx, int dy) {
-                    if (!v.canScrollVertically(1) && total / 10 + 1 > page && dy > 0) {
-                        getCourseList();
-                    }
-                    binding.head.getRoot().setElevation(v.canScrollVertically(-1) ? params.dpToPx(2) : 0);
-                    super.onScrolled(v, dx, dy);
-                }
             });
-            http = new HttpManager(handler);
             http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%E9%80%89%E8%AF%BE");
             http.setParams(params);
             getInfo();
@@ -211,6 +196,7 @@ public class CourseSelectionFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             binding.head.addFilter.setOnClickListener(v ->
+
                     Navigation.findNavController(view).navigate(R.id.selection_to_filter1, null, new NavOptions.Builder()
                             .setEnterAnim(android.R.animator.fade_in)
                             .setExitAnim(android.R.animator.fade_out)
