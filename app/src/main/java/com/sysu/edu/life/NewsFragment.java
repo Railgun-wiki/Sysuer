@@ -1,5 +1,7 @@
 package com.sysu.edu.life;
 
+import static com.sysu.edu.api.CommonUtil.trim;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +24,8 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.BrowserActivity;
@@ -88,17 +92,17 @@ public class NewsFragment extends Fragment {
                     Bundle rdata = msg.getData();
                     boolean isJson = rdata.getBoolean("isJson");
                     String json = rdata.getString("data");
-                    if(json == null){
+                    if (json == null) {
                         params.toast(R.string.no_wifi_warning);
                         return;
                     }
-                    if(!isJson){
-                        if (!authorizationManager.isAuthorized(json)){
+                    if (!isJson) {
+                        if (!authorizationManager.isAuthorized(json)) {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.getRoot(),authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                            params.gotoLogin(binding.getRoot(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                             return;
                         }
-                        if(!authorizationManager.isAccessible(json)){
+                        if (!authorizationManager.isAccessible(json)) {
                             params.toast(R.string.educational_wifi_warning);
                             run.run();
                             return;
@@ -349,19 +353,24 @@ class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {};
+        return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+        };
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemNewsBinding binding = ItemNewsBinding.bind(holder.itemView);
-        holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(data.get(position).get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle()));
-        binding.title.setText(data.get(position).getOrDefault("title", ""));
-        binding.content.setText(String.format("#%s #%s", data.get(position).getOrDefault("source", ""), data.get(position).getOrDefault("time", "")));
-        String img = data.get(position).get("image");
-        if (img != null && !img.isEmpty()) {
-            Glide.with(context).load(img)
-                    //.placeholder(R.drawable.logo)
+        HashMap<String, String> item = data.get(position);
+        holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(item.get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle()));
+        binding.title.setText(item.getOrDefault("title", ""));
+        binding.content.setText(String.format("#%s #%s", item.getOrDefault("source", ""), item.getOrDefault("time", "")));
+        String img = trim(item.get("image"));
+        if (!img.isEmpty()) {
+            Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
+                            .addHeader("Cookie", params.getCookie())
+                            .addHeader("Authorization", params.getAuthorization())
+                            .build()))
+                    .timeout(30000)
                     .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
                     .into(binding.image);
         }
@@ -369,7 +378,7 @@ class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     void add(String title, String image, String url, String time, String source) {
         data.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", source)));
-        notifyItemInserted(getItemCount() - 1);
+        notifyItemInserted(getItemCount());
     }
 
     @Override

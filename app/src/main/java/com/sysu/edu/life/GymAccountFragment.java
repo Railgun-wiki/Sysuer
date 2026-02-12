@@ -126,60 +126,62 @@ public class GymAccountFragment extends Fragment {
     }
 
     void getAccount() {
-        sendRequest("https://gym.sysu.edu.cn/api/Credit/Me", 0);
-    }
-}
-
-class PreferenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    final ArrayList<String> titles = new ArrayList<>();
-    final ArrayList<String> contents = new ArrayList<>();
-    final ArrayList<Integer> icons = new ArrayList<>();
-
-    final Context context;
-
-    public PreferenceAdapter(Context context) {
-        super();
-        this.context = context;
+        sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/Credit/Me", 0);
     }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-        };
-    }
+    static
 
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        int pos = holder.getBindingAdapterPosition();
-        ItemPreferenceBinding binding = ItemPreferenceBinding.bind(holder.itemView);
-        binding.itemTitle.setText(titles.get(pos));
-        binding.itemContent.setText(contents.get(pos));
-        binding.getRoot().setOnClickListener(v -> {
-            // params.toast(titles.get(pos) + ": " + contents.get(pos));
-        });
-        if (icons.size() > pos && icons.get(pos) != null) {
-            binding.itemIcon.setImageResource(icons.get(pos));
-        } else {
-            binding.itemIcon.setImageResource(R.drawable.account);
+    class PreferenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        final ArrayList<String> titles = new ArrayList<>();
+        final ArrayList<String> contents = new ArrayList<>();
+        final ArrayList<Integer> icons = new ArrayList<>();
+
+        final Context context;
+
+        public PreferenceAdapter(Context context) {
+            super();
+            this.context = context;
         }
-        binding.getRoot().updateAppearance(pos, getItemCount());
-    }
 
-    void addItem(String title, String content, Integer icon) {
-        titles.add(title);
-        contents.add(content);
-        icons.add(icon);
-        notifyItemInserted(titles.size() - 1);
-    }
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+            };
+        }
 
-    void addItem(String title, String content) {
-        addItem(title, content, null);
-    }
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            int pos = holder.getBindingAdapterPosition();
+            ItemPreferenceBinding binding = ItemPreferenceBinding.bind(holder.itemView);
+            binding.itemTitle.setText(titles.get(pos));
+            binding.itemContent.setText(contents.get(pos));
+            binding.getRoot().setOnClickListener(_ -> {
+                // params.toast(titles.get(pos) + ": " + contents.get(pos));
+            });
+            if (icons.size() > pos && icons.get(pos) != null) {
+                binding.itemIcon.setImageResource(icons.get(pos));
+            } else {
+                binding.itemIcon.setImageResource(R.drawable.account);
+            }
+            binding.getRoot().updateAppearance(pos, getItemCount());
+        }
 
-    @Override
-    public int getItemCount() {
-        return titles.size();
+        void addItem(String title, String content, Integer icon) {
+            titles.add(title);
+            contents.add(content);
+            icons.add(icon);
+            notifyItemInserted(titles.size() - 1);
+        }
+
+        void addItem(String title, String content) {
+            addItem(title, content, null);
+        }
+
+        @Override
+        public int getItemCount() {
+            return titles.size();
+        }
     }
 }

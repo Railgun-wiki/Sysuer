@@ -13,10 +13,10 @@
             <intent android:data="https://github.com/SYSU-Tang/Sysuer/releases" />
         </Preference>
         <Preference
-            android:summary="https://sysu-tang.github.io/#/"
+            android:summary="https://sysu-tang.github.io/sysuer-website/"
             app:icon="@drawable/web"
             app:title="@string/official_website">
-            <intent android:data="https://sysu-tang.github.io/#/" />
+            <intent android:data="https://sysu-tang.github.io/sysuer-website/" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/project">
@@ -39,7 +39,6 @@
             <intent android:data="mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3Di4M0YfNzHskNiXgiYTAvA1EAWZh7HNQx" />
         </Preference>
     </PreferenceCategory>
-
     <PreferenceCategory app:title="@string/feedback">
         <Preference
             android:summary="https://github.com/SYSU-Tang/Sysuer/issues"
@@ -52,8 +51,8 @@
             app:key="sponsor"
             app:persistent="false"
             app:summary="@string/sponsor_appreciation"
-            app:title="@string/sponsor" >
-            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/sponsor"/>
+            app:title="@string/sponsor">
+            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/sponsor" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/permission">
@@ -62,26 +61,19 @@
             app:icon="@drawable/book"
             app:key="privacyPolicy"
             app:persistent="false"
-            app:summary="https://sysu-tang.github.io/#/zh-cn/agreement/隐私政策"
+            app:summary="https://sysu-tang.github.io/sysuer-website/docs/privacyPolicy/"
             app:title="@string/privacy_policy">
-
-            <intent android:data="https://sysu-tang.github.io/#/zh-cn/agreement/隐私政策" />
-
+            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/privacyPolicy/" />
         </Preference>
         <Preference
             app:defaultValue="true"
             app:icon="@drawable/book"
             app:key="userAgreement"
             app:persistent="false"
-            app:summary="https://sysu-tang.github.io/#/zh-cn/agreement/用户协议"
+            app:summary="https://sysu-tang.github.io/sysuer-website/docs/userAgreement/"
             app:title="@string/user_agreement">
-            <intent android:data="https://sysu-tang.github.io/#/zh-cn/agreement/用户协议" />
+            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/userAgreement/" />
         </Preference>
-        <Preference
-            app:icon="@drawable/book"
-            app:key="permissionDescription"
-            app:persistent="false"
-            app:title="@string/permission_introduction" />
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/open_source">
         <Preference

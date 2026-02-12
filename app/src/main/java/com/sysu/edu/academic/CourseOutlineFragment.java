@@ -95,7 +95,7 @@ class CourseOutlineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         data.forEach(e -> {
             if (e != null) {
                 md.append(trim(e.getString("sectionDesignation")).replace("\n", ";")).append("|");
-                md.append(trim(e.getString("teachingHours"))/*.replace("\n", ";")*/).append("|");
+                md.append(trim(e.getString("teachingHours"))).append("|");
                 md.append(trim(e.getString("teachingMainContent")).replace("\n", "")).append("|");
                 md.append(trim(e.getString("courseElements")).replace("\n", "")).append("|");
                 md.append(trim(e.getString("keyPoints")).replace("\n", "")).append("|\n");

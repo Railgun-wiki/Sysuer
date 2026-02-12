@@ -25,7 +25,6 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.bumptech.glide.Glide;
@@ -33,7 +32,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemFieldBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 
@@ -58,6 +59,7 @@ public class GymReservationListFragment extends Fragment {
     Handler handler;
     Params params;
     StaggeredGridLayoutManager layoutManager;
+//    AuthorizationManager authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
 
     @Nullable
     @Override
@@ -67,54 +69,61 @@ public class GymReservationListFragment extends Fragment {
         params.setCallback(this, this::getCampus);
         layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
         binding.getRoot().setLayoutManager(layoutManager);
-        FieldAdapter fieldAdapter = new FieldAdapter(requireContext());
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
+        FieldAdapter fieldAdapter = new FieldAdapter(requireContext(), viewModel);
         fieldAdapter.setAction(id -> {
             Bundle bundle = new Bundle();
             bundle.putString("id", id);
             bundle.putInt("code", requireArguments().getInt("code") + 1);
             Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
         });
-        viewModel.authorization.observe(getViewLifecycleOwner(), s -> {
-            System.out.println(s);
+        viewModel.authorization.observe(getViewLifecycleOwner(), _ -> {
+//            System.out.println(s);
             getInfo();
         });
+        viewModel.authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
         binding.getRoot().setAdapter(fieldAdapter);
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 Bundle rdata = msg.getData();
                 String json = rdata.getString("data");
-                System.out.println(json);
-                System.out.println(rdata.getInt("code"));
                 JSONArray data;
+                System.out.println(json);
                 if (rdata.getInt("code") == 401) {
+                    viewModel.authorizationManager.setAccessible(false);
                     params.toast(R.string.educational_wifi_warning);
-                    initWeb();
+                    getInfo();
                 } else if (rdata.getInt("code") == 200) {
                     if (!rdata.getBoolean("isJson")) {
-                        send();
+                        if (!viewModel.authorizationManager.isAuthorized(json)) {
+                            params.toast(R.string.login_warning);
+                            initWeb(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+//                            params.gotoLogin(binding.getRoot(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                            return;
+                        }
+                        if (!viewModel.authorizationManager.isAccessible(json)) {
+                            params.toast(R.string.educational_wifi_warning);
+                            getInfo();
+                            return;
+                        }
                         return;
                     }
-                    data = JSON.parseArray(json);
+                    data = JSONArray.parseArray(json);
                     if (data != null) {
                         switch (msg.what) {
-                            case 1:
-                                data.forEach(e -> fieldAdapter.add((JSONObject) e));
-                                break;
-                            case 2:
-                                data.forEach(e -> {
-                                            if (Objects.equals(((JSONObject) e).getString("Campus"), requireArguments().getString("id")))
-                                                fieldAdapter.add((JSONObject) e);
-                                        }
-                                );
-                                break;
+                            case 1 -> data.forEach(e -> fieldAdapter.add((JSONObject) e));
+                            case 2 -> data.forEach(e -> {
+                                        if (Objects.equals(((JSONObject) e).getString("Campus"), requireArguments().getString("id")))
+                                            fieldAdapter.add((JSONObject) e);
+                                    }
+                            );
                         }
                     }
                 }
             }
         };
-        send();
+        getInfo();
         return binding.getRoot();
     }
 
@@ -127,7 +136,7 @@ public class GymReservationListFragment extends Fragment {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    public void initWeb() {
+    public void initWeb(String link) {
         WebView web = new WebView(requireContext());
         WebSettings webSettings = web.getSettings();
         webSettings.setDomStorageEnabled(true);
@@ -150,22 +159,19 @@ public class GymReservationListFragment extends Fragment {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                //viewModel.token = cookie.getCookie(url);
-                web.evaluateJavascript("(function(){return JSON.parse(window.localStorage.getItem(\"scientia-session-authorization\")).access_token;})()", string -> {
-                    System.out.println(string);
-                    if (!Objects.equals(string, "null")) {
-                        viewModel.authorization.setValue("Bearer " + string.replace("\"", ""));
-//                        getInfo();
-//                        web.stopLoading();
-//                        web.destroy();
-                    }
-                });
-
+                if (url.contains(link)) {
+                    viewModel.token = cookie.getCookie(url);
+                    web.evaluateJavascript("(function(){return JSON.parse(window.localStorage.getItem(\"scientia-session-authorization\")).access_token;})()", string -> {
+//                        System.out.println(string);
+                        if (!Objects.equals(string, "null") && !Objects.equals("Bearer " + string.replace("\"", ""), viewModel.authorization.getValue()))
+                            viewModel.authorization.setValue("Bearer " + string.replace("\"", ""));
+                    });
+                }
                 super.onPageFinished(view, url);
             }
         });
-        web.loadUrl("https://gym.sysu.edu.cn");
-        //((ViewGroup) requireActivity().findViewById(android.R.id.content)).addView(web);
+        web.loadUrl(link);
+//        ((ViewGroup) requireActivity().findViewById(android.R.id.content)).addView(web);
 
     }
 
@@ -208,12 +214,12 @@ public class GymReservationListFragment extends Fragment {
     }
 
     void getCampus() {
-        sendRequest("https://gym.sysu.edu.cn/api/Campus/active", 1);
+        sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/Campus/active", 1);
     }
 
 
     void getVenue() {
-        sendRequest("https://gym.sysu.edu.cn/api/venuetype/all", 2);
+        sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/venuetype/all", 2);
     }
 
     public void send() {/*
@@ -263,10 +269,12 @@ public class GymReservationListFragment extends Fragment {
 
         final ArrayList<JSONObject> data = new ArrayList<>();
         Consumer<String> action;
+        GymReservationViewModel viewModel;
 
-        public FieldAdapter(Context context) {
+        public FieldAdapter(Context context, GymReservationViewModel viewModel) {
             super();
             this.context = context;
+            this.viewModel = viewModel;
         }
 
         public void setAction(Consumer<String> action) {
@@ -283,13 +291,15 @@ public class GymReservationListFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemFieldBinding binding = ItemFieldBinding.bind(holder.itemView);
-            binding.title.setText(data.get(position).getString("Name"));
-            binding.getRoot().setOnClickListener(v -> action.accept(data.get(position).getString("Identity")));
-            String imageUrl = data.get(position)
-                    .getString("ImageUrl");
+            JSONObject item = data.get(position);
+            binding.title.setText(item.getString("Name"));
+            binding.getRoot().setOnClickListener(_ -> action.accept(item.getString("Identity")));
+            String imageUrl = item.getString("ImageUrl");
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 Glide.with(context).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", viewModel.ua)
                         .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                        .addHeader("Cookie", viewModel.token)
+                        .addHeader("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
                         .build())).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(binding.image);
             }
         }

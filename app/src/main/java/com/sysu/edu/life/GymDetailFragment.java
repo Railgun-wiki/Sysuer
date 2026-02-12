@@ -67,7 +67,6 @@ public class GymDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         FragmentGymDetailBinding binding = FragmentGymDetailBinding.inflate(inflater, container, false);
         DialogGymReservationBinding dialogBinding = DialogGymReservationBinding.inflate(inflater, container, false);
-
         binding.date.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         DateAdapter date = new DateAdapter(requireContext());
 
@@ -94,15 +93,12 @@ public class GymDetailFragment extends Fragment {
         id = requireArguments().getString("id");
         field.setAction((JSONObject p) -> {
             JSONObject studentFee = fee.get("学生");
-            if (studentFee != null) {
+            if (studentFee != null)
                 updateReservationDialog(dialogBinding, p.getString("Venue"), p.getString("Date"), p.getString("Duration"), String.format(Locale.getDefault(), "运动时￥%d或现金￥%d", studentFee.getInteger("CreditFee"), studentFee.getInteger("CashFee")), p.getString("Type"));
-            }
             dialog.show();
         });
         position.observe(getViewLifecycleOwner(), p -> {
-            if (p != null) {
-                getInfo(id, date.getFormattedDate(p), date.getFormattedDate(p));
-            }
+            if (p != null) getInfo(id, date.getFormattedDate(p), date.getFormattedDate(p));
         });
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
         handler = new Handler(Looper.getMainLooper()) {
@@ -140,7 +136,6 @@ public class GymDetailFragment extends Fragment {
                                 });
                                 if (position.getValue() != null)
                                     date.setAvailableCapacity(position.getValue(), availableCapacity);
-
                             }
                         });
                         getFee(id);
@@ -178,9 +173,7 @@ public class GymDetailFragment extends Fragment {
                 .build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
+                handler.sendEmptyMessage(-1);
             }
 
             @Override
@@ -188,9 +181,8 @@ public class GymDetailFragment extends Fragment {
                 Message message = new Message();
                 message.what = what;
                 Bundle data = new Bundle();
-                String dataString = response.body().string();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", dataString);
+                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json"));
+                data.putString("data", response.body().string());
                 message.setData(data);
                 handler.sendMessage(message);
             }
@@ -198,11 +190,11 @@ public class GymDetailFragment extends Fragment {
     }
 
     void getInfo(String id, String from, String to) {
-        sendRequest(String.format("https://gym.sysu.edu.cn/api/venue/available-slots/range?venueTypeId=%s&start=%s&end=%s", id, from, to), 0);
+        sendRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venue/available-slots/range?venueTypeId=%s&start=%s&end=%s", id, from, to), 0);
     }
 
     void getFee(String id) {
-        sendRequest(String.format("https://gym.sysu.edu.cn/api/venuetype/%s/feetemplates", id), 1);
+        sendRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venuetype/%s/feetemplates", id), 1);
     }
 
 
@@ -285,7 +277,7 @@ public class GymDetailFragment extends Fragment {
         binding.time.key.setText(R.string.time);
         binding.fee.key.setText(R.string.fee);
         binding.type.key.setText(R.string.type);
-        binding.reserve.setOnClickListener(v -> generateToken(id));
+        binding.reserve.setOnClickListener(_ -> generateToken(id));
     }
 
     void updateReservationDialog(DialogGymReservationBinding binding, String field, String date, String time, String fee, String type) {
@@ -325,14 +317,9 @@ public class GymDetailFragment extends Fragment {
             ItemDateBinding binding = ItemDateBinding.bind(holder.itemView);
             binding.date.setText(getDate(position));
             binding.week.setText(String.format("星期%s", getWeek(position)));
-            binding.getRoot().setOnClickListener(v -> action.accept(position));
-            Integer capacity = availableCapacity.getOrDefault(position, 0);
-            if (capacity != null && capacity > 0) {
-                binding.availableCapacity.setText(String.format(Locale.getDefault(), "%d", capacity));
-            } else {
-                binding.availableCapacity.setText("");
-            }
-
+            binding.getRoot().setOnClickListener(_ -> action.accept(position));
+            Integer capacity = availableCapacity.getOrDefault(position, -1);
+            binding.availableCapacity.setText(capacity != null && capacity >= 0 ? String.format(Locale.getDefault(), "%d", capacity) : "");
         }
 
         public void setAvailableCapacity(int position, int i) {
@@ -366,8 +353,8 @@ public class GymDetailFragment extends Fragment {
             calendar.setTime(new Date());
             calendar.add(Calendar.DATE, distanceDay);
             int week = calendar.get(Calendar.DAY_OF_WEEK);
-            week = (week == 1) ? 6 : week - 1;
-            return context.getResources().getStringArray(R.array.weeks)[week];
+//            week = (week == 1) ? 6 : week - 1;
+            return context.getResources().getStringArray(R.array.weeks)[week - 1];
         }
     }
 
@@ -398,20 +385,21 @@ public class GymDetailFragment extends Fragment {
             int position = holder.getBindingAdapterPosition();
             ItemFieldDetailBinding binding = ItemFieldDetailBinding.bind(holder.itemView);
             binding.fieldDetail.setAlpha(1.0f);
-            binding.getRoot().setOnClickListener(v -> {
-                if (field.get(position).getInteger("Type") == 1 && field.get(position).getInteger("AvailableCapacity") > 0) {
-                    action.accept(field.get(position));
+            JSONObject item = field.get(position);
+            binding.getRoot().setOnClickListener(_ -> {
+                if (item.getInteger("Type") == 1 && item.getInteger("AvailableCapacity") > 0) {
+                    action.accept(item);
                 }
             });
-            switch (field.get(position).getInteger("Type")) {
+            switch (item.getInteger("Type")) {
                 case 0:
-                    binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", field.get(position).getString("VenueName")));
+                    binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("VenueName")));
                     break;
                 case 2:
-                    binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", field.get(position).getString("Name")));
+                    binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("Name")));
                     break;
                 case 1:
-                    if (field.get(position).getInteger("AvailableCapacity") == 0) {
+                    if (item.getInteger("AvailableCapacity") == 0) {
                         binding.fieldDetail.setText(context.getString(R.string.reserved));
                         binding.fieldDetail.setAlpha(0.5f);
                     } else {
