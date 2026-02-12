@@ -59,12 +59,13 @@ public class GymReservationListFragment extends Fragment {
     Handler handler;
     Params params;
     StaggeredGridLayoutManager layoutManager;
-//    AuthorizationManager authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
+    RecyclerViewScrollBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
+//        if (savedInstanceState == null) {
+        binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
         params = new Params(requireActivity());
         params.setCallback(this, this::getCampus);
         layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
@@ -77,10 +78,7 @@ public class GymReservationListFragment extends Fragment {
             bundle.putInt("code", requireArguments().getInt("code") + 1);
             Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
         });
-        viewModel.authorization.observe(getViewLifecycleOwner(), _ -> {
-//            System.out.println(s);
-            getInfo();
-        });
+        viewModel.authorization.observe(getViewLifecycleOwner(), _ -> getInfo());
         viewModel.authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
         binding.getRoot().setAdapter(fieldAdapter);
         handler = new Handler(Looper.getMainLooper()) {
@@ -89,7 +87,7 @@ public class GymReservationListFragment extends Fragment {
                 Bundle rdata = msg.getData();
                 String json = rdata.getString("data");
                 JSONArray data;
-                System.out.println(json);
+//                    System.out.println(json);
                 if (rdata.getInt("code") == 401) {
                     viewModel.authorizationManager.setAccessible(false);
                     params.toast(R.string.educational_wifi_warning);
@@ -97,9 +95,9 @@ public class GymReservationListFragment extends Fragment {
                 } else if (rdata.getInt("code") == 200) {
                     if (!rdata.getBoolean("isJson")) {
                         if (!viewModel.authorizationManager.isAuthorized(json)) {
+                            System.out.println("Unauthorized");
                             params.toast(R.string.login_warning);
                             initWeb(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-//                            params.gotoLogin(binding.getRoot(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                             return;
                         }
                         if (!viewModel.authorizationManager.isAccessible(json)) {
@@ -124,6 +122,7 @@ public class GymReservationListFragment extends Fragment {
             }
         };
         getInfo();
+//        }
         return binding.getRoot();
     }
 
@@ -166,6 +165,15 @@ public class GymReservationListFragment extends Fragment {
                         if (!Objects.equals(string, "null") && !Objects.equals("Bearer " + string.replace("\"", ""), viewModel.authorization.getValue()))
                             viewModel.authorization.setValue("Bearer " + string.replace("\"", ""));
                     });
+                } else if (Pattern.compile("//cas.+?sysu\\.edu\\.cn/esc-sso/login/page").matcher(url).find()) {
+                    web.loadUrl(String.format("""
+                            javascript:(function(){
+                                                    function waitElement(selector, callback) {
+                                                    const element = document.querySelector(selector);
+                                                    if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}
+                                                    waitElement('.para-widget-account-psw', () => {
+                                                    var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()"""
+                    ,params.getAccount(),params.getPassword()));
                 }
                 super.onPageFinished(view, url);
             }
@@ -217,7 +225,6 @@ public class GymReservationListFragment extends Fragment {
         sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/Campus/active", 1);
     }
 
-
     void getVenue() {
         sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/venuetype/all", 2);
     }
@@ -262,6 +269,7 @@ public class GymReservationListFragment extends Fragment {
                         }
                     }
                 });
+
     }
 
     private static class FieldAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

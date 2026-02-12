@@ -306,11 +306,11 @@ public class MainActivity extends AppCompatActivity {
 
         // 系统服务 (id: 4xx)
         actionMap.put(401, browse("https://gym.sysu.edu.cn/#/"));                   // 体育场馆预定系统
-        actionMap.put(402, browse("https://xgxt-443.webvpn.sysu.edu.cn/main/#/index"));        // 学工系统
+        actionMap.put(402, browse("https://xgxt.sysu.edu.cn/main/#/index"));        // 学工系统
         actionMap.put(403, browse("https://jwxt.sysu.edu.cn/jwxt/yd/index/#/Home"));           // 本科教务系统
         actionMap.put(404, browse("https://portal.sysu.edu.cn/newClient/#/newPortal/index"));  // 中山大学统一门户
         actionMap.put(405, browse("https://usc.sysu.edu.cn/taskcenter-v4/workflow/index"));    // 大学服务中心
-        actionMap.put(406, browse("https://cwxt-443.webvpn.sysu.edu.cn/#/home/index"));        // 财务信息系统
+        actionMap.put(406, browse("https://cwxt.webvpn.sysu.edu.cn/#/home/index"));        // 财务信息系统
 
         // 官网服务 (id: 5xx)
         actionMap.put(501, browse("https://www.sysu.edu.cn/"));              // 中山大学官网

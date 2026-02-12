@@ -321,6 +321,8 @@ public class AgendaActivity extends AppCompatActivity {
     }
 
     void getResponse(String url, int what) {
+//        System.out.println("Stored:"+cookie);
+//        System.out.println("Received:"+CookieManager.getInstance().getCookie(url));
         http.newCall(new Request.Builder().url(url)
                 .header("Referer", "https://jwxt.sysu.edu.cn/jwxt//yd/classSchedule/")
                 .header("Cookie", cookie).build()).enqueue(new Callback() {
