@@ -14,10 +14,6 @@ public class AuthorizationManager {
         this.substitute = substitute;
     }
 
-    public String getOrigin() {
-        return origin;
-    }
-
     public String getBaseUrl() {
         return isAccessible ? origin : substitute;
     }
@@ -35,9 +31,9 @@ public class AuthorizationManager {
         isAccessible = accessible;
     }
 
-    public boolean isAuthorized() {
+    /*public boolean isAuthorized() {
         return isAuthorized;
-    }
+    }*/
 
     public boolean isAuthorized(String content) {
         isAuthorized = !Pattern.compile("中山大学统一身份认证").matcher(content).find();

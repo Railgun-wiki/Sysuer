@@ -554,5 +554,9 @@
     <string name="public_selective">公选</string>
     <string name="study_hour">学时</string>
     <string name="course_outline">课程大纲</string>
+    <string name="refresh">刷新</string>
+    <string name="open_in_browser">在浏览器中打开</string>
+    <string name="clear_cookie">清除 Cookie</string>
+    <string name="exit">退出</string>
 
 </resources>

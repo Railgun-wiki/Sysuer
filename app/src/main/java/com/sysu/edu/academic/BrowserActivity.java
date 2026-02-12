@@ -8,8 +8,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
@@ -55,21 +55,18 @@ public class BrowserActivity extends AppCompatActivity {
         SharedPreferences privacy = getSharedPreferences("privacy", 0);
         String username = privacy.getString("username", "");
         String password = privacy.getString("password", "");
-        StringBuilder result;
+        StringBuilder result = new StringBuilder();
         String url = getIntent().getDataString() != null ? getIntent().getDataString() : "https://www.sysu.edu.cn/";
         try {
             InputStreamReader input = new InputStreamReader(getAssets().open("js.json"));
-            //input = new InputStreamReader(BufferedInputStream);
             BufferedReader buffer = new BufferedReader(input);
             String line;
-            result = new StringBuilder();
             while ((line = buffer.readLine()) != null) {
                 result.append(line);
             }
             input.close();
             buffer.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ignored) {
         }
         JavaScript js = new JavaScript(result.toString());
         web = binding.web;
@@ -82,7 +79,6 @@ public class BrowserActivity extends AppCompatActivity {
 
             @Override
             public void onPageFinished(WebView view, String link) {
-//                System.out.println(link);
                 if (Pattern.compile("//cas.+?sysu\\.edu\\.cn/esc-sso/login/page").matcher(link).find()) {
                     web.evaluateJavascript(String.format("""
                             javascript:(function(){\
@@ -95,7 +91,7 @@ public class BrowserActivity extends AppCompatActivity {
                 } else if (Pattern.compile("://appgw.sysu.edu.cn/").matcher(link).find()) {
                     web.stopLoading();
                     web.loadUrl(url.replace(".sysu.edu.cn/", "-443.webvpn.sysu.edu.cn/"));
-                }else{
+                } else {
                     view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
                 }
 
@@ -150,44 +146,41 @@ public class BrowserActivity extends AppCompatActivity {
         dialog.setContentView(R.layout.recycler_view);
         dialog.setTitle(R.string.js);
         RecyclerView recyclerView = dialog.findViewById(R.id.recycler_view);
-        JSAdapter adp = new JSAdapter(web);
+        JSAdapter jsAdapter = new JSAdapter(web);
         if (recyclerView != null) {
             recyclerView.setLayoutManager(new LinearLayoutManager(BrowserActivity.this));
-            recyclerView.setAdapter(adp);
+            recyclerView.setAdapter(jsAdapter);
         }
         binding.js.setOnClickListener(_ -> {
             ArrayList<JSONObject> j = js.searchJS(trim(web.getUrl()));
-            adp.setJS(j);
+            jsAdapter.setJS(j);
             dialog.show();
         });
         cookie = CookieManager.getInstance();
-        binding.toolbar.getMenu().add("在浏览器中打开").setOnMenuItemClickListener(_ -> {
+        Menu menu = binding.toolbar.getMenu();
+        menu.add(R.string.open_in_browser).setOnMenuItemClickListener(_ -> {
             startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(trim(web.getUrl()))));
             return false;
         });
-        binding.toolbar.getMenu().add("刷新").setOnMenuItemClickListener(_ -> {
+        menu.add(R.string.refresh).setOnMenuItemClickListener(_ -> {
             web.reload();
             return false;
         });
-        binding.toolbar.getMenu().add("清除 Cookie").setOnMenuItemClickListener(_ -> {
+        menu.add(R.string.clear_cookie).setOnMenuItemClickListener(_ -> {
             cookie.removeAllCookies(_ -> {
             });
             cookie.flush();
             return false;
         });
-        binding.toolbar.getMenu().add("退出").setOnMenuItemClickListener(_ -> {
+        menu.add(R.string.exit).setOnMenuItemClickListener(_ -> {
             supportFinishAfterTransition();
             return false;
         });
         binding.back.setOnClickListener(_ -> {
-            if (web.canGoBack()) {
-                web.goBack();
-            }
+            if (web.canGoBack()) web.goBack();
         });
         binding.forward.setOnClickListener(_ -> {
-            if (web.canGoForward()) {
-                web.goForward();
-            }
+            if (web.canGoForward()) web.goForward();
         });
 
         webSettings = web.getSettings();
@@ -206,11 +199,9 @@ public class BrowserActivity extends AppCompatActivity {
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         web.loadUrl(url);
-
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                System.out.println(web.canGoBack());
                 if (web.canGoBack()) {
                     web.goBack();
                 } else {
@@ -219,16 +210,6 @@ public class BrowserActivity extends AppCompatActivity {
             }
         });
     }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && web.canGoBack()) {
-            web.goBack();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
 
     protected void onDestroy() {
         if (web != null) {
@@ -242,22 +223,22 @@ public class BrowserActivity extends AppCompatActivity {
 
     static class JSAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final WebView web;
-        ArrayList<JSONObject> j = new ArrayList<>();
+        ArrayList<JSONObject> data = new ArrayList<>();
 
         public JSAdapter(WebView web) {
             super();
             this.web = web;
         }
 
-        public void setJS(ArrayList<JSONObject> j) {
+        public void setJS(ArrayList<JSONObject> list) {
             clear();
-            this.j = j;
+            data = list;
             notifyItemRangeInserted(0, getItemCount());
         }
 
         public void clear() {
-            int size = j.size();
-            j.clear();
+            int size = data.size();
+            data.clear();
             notifyItemRangeRemoved(0, size);
         }
 
@@ -271,17 +252,15 @@ public class BrowserActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemPreferenceBinding binding = ItemPreferenceBinding.bind(holder.itemView);
-            binding.itemTitle.setText(j.get(position).getString("title"));
-            binding.itemContent.setText(j.get(position).getString("description"));
+            binding.itemTitle.setText(data.get(position).getString("title"));
+            binding.itemContent.setText(data.get(position).getString("description"));
             binding.itemIcon.setImageResource(R.drawable.js);
-            binding.getRoot().setOnClickListener(_ -> web.evaluateJavascript(j.get(position).getString("script"), _ -> {
-            }));
+            binding.getRoot().setOnClickListener(_ -> web.evaluateJavascript(data.get(position).getString("script"), _ -> {}));
         }
-
 
         @Override
         public int getItemCount() {
-            return j.size();
+            return data.size();
         }
 
     }
