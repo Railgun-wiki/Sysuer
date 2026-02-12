@@ -61,9 +61,7 @@ public class BrowserActivity extends AppCompatActivity {
             InputStreamReader input = new InputStreamReader(getAssets().open("js.json"));
             BufferedReader buffer = new BufferedReader(input);
             String line;
-            while ((line = buffer.readLine()) != null) {
-                result.append(line);
-            }
+            while ((line = buffer.readLine()) != null) result.append(line);
             input.close();
             buffer.close();
         } catch (IOException ignored) {
@@ -94,7 +92,6 @@ public class BrowserActivity extends AppCompatActivity {
                 } else {
                     view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
                 }
-
                 super.onPageFinished(view, link);
             }
 
