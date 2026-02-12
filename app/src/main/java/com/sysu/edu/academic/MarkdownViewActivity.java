@@ -1,7 +1,10 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.trim;
+
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -11,7 +14,10 @@ import com.sysu.edu.databinding.ActivityMarkdownViewBinding;
 
 import org.commonmark.ext.gfm.tables.TableBlock;
 
+import io.noties.markwon.AbstractMarkwonPlugin;
 import io.noties.markwon.Markwon;
+import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin;
+import io.noties.markwon.inlineparser.NewLineInlineProcessor;
 import io.noties.markwon.recycler.MarkwonAdapter;
 import io.noties.markwon.recycler.table.TableEntry;
 import io.noties.markwon.recycler.table.TableEntryPlugin;
@@ -27,8 +33,8 @@ public class MarkdownViewActivity extends AppCompatActivity {
         String content = getIntent().getStringExtra("content");
         String title = getIntent().getStringExtra("title");
         binding.toolbar.setTitle(title);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        binding.copy.setOnClickListener(v -> {
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+        binding.copy.setOnClickListener(_ -> {
             params.copy(title, content);
             params.toast(R.string.copy_successfully);
         });
@@ -41,6 +47,17 @@ public class MarkdownViewActivity extends AppCompatActivity {
         binding.recycler.setAdapter(adapter);
         adapter.setMarkdown(Markwon.builder(this)
                 .usePlugin(TableEntryPlugin.create(this))
-                .build(), content == null ? "" : content);
+                .usePlugin(MarkwonInlineParserPlugin.create())
+                .usePlugin(new AbstractMarkwonPlugin() {
+                    @Override
+                    public void configure(@NonNull Registry registry) {
+                        registry.require(MarkwonInlineParserPlugin.class, markwonInlineParserPlugin ->
+                                markwonInlineParserPlugin.factoryBuilder().addInlineProcessor(new NewLineInlineProcessor()));
+                        super.configure(registry);
+                    }
+                })
+//                .usePlugin(MarkwonInlineParserPlugin.create(factoryBuilder ->
+//                        factoryBuilder.addInlineProcessor(new NewLineInlineProcessor())))
+                .build(), trim(content));
     }
 }

@@ -41,6 +41,7 @@ androidxPreferenceMaterial3 = "1.2.1-alpha07"
 googleMaterial = "1.13.0"
 recycler = "4.6.2"
 recyclerTable = "4.6.2"
+inlineParser = "4.6.2"
 
 [libraries]
 api = { module = "dev.rikka.shizuku:api", version.ref = "api" }
@@ -88,6 +89,7 @@ ext-strikethrough = { group = "io.noties.markwon", name = "ext-strikethrough", v
 google-material = { group = "com.google.android.material", name = "material", version = "1.14.0-alpha09" }
 recycler = { group = "io.noties.markwon", name = "recycler", version.ref = "recycler" }
 recycler-table = { group = "io.noties.markwon", name = "recycler-table", version.ref = "recyclerTable" }
+inline-parser = { group = "io.noties.markwon", name = "inline-parser", version.ref = "inlineParser" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

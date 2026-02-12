@@ -39,6 +39,13 @@ public class CommonUtil {
         return str == null || str.trim().isEmpty();
     }
 
-
+    /**
+    * 对字符串进行trim操作，若字符串为空则返回空字符串
+    * @param str 要进行修剪操作的字符串
+    * @return trim后的字符串，若原字符串为空则返回空字符串
+    * */
+    public static String trim(String str) {
+        return str == null ? "" : str.trim();
+    }
 
 }

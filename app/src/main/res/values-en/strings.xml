@@ -502,16 +502,16 @@
     <string name="click_for_grade">Click to see the total grade</string>
     <string name="download_complete">Download Complete</string>
     <string name="sponsor_appreciation">Thanks for your sponsor 🤑</string>
-    <string name="permission_granted">Permission havs been granted</string>
+    <string name="permission_granted">Permission has been granted</string>
     <string name="agree">Agree</string>
     <string name="disagree">Disagree</string>
     <string name="user_agreement_and_privacy_policy">User Agreement And Privacy Policy</string>
     <string name="collect">Collect</string>
-    <string name="undeveloped">Undevelop</string>
+    <string name="undeveloped">Undeveloped</string>
     <string name="collect_success">Succeed Collecting</string>
     <string name="delete_success">Succeed Deleting</string>
-    <string name="cancel_collect">Uncollecting</string>
-    <string name="cancel_collect_success">Succeed Uncollecting</string>
+    <string name="cancel_collect">Uncollected</string>
+    <string name="cancel_collect_success">Succeed Being Uncollected</string>
     <string name="service_order">Order</string>
     <string name="add_shortcut">Add to Dashboard</string>
     <string name="cancel_add_shortcut_success">Succeed Removing from Dashboard</string>
@@ -525,7 +525,7 @@
     <string name="major">Major</string>
     <string name="training_level">Training Level</string>
     <string name="stay_school_status">Accommodation Status</string>
-    <string name="student_status">Studenet Status</string>
+    <string name="student_status">Student Status</string>
     <string name="contact_number">Contact Phone</string>
     <string name="room_number">Room Number</string>
     <string name="bed_number">Bed Number</string>
@@ -554,4 +554,5 @@
     <string name="filtering">Filtering</string>
     <string name="cross_major">Cross Major</string>
     <string name="public_selective">Public Selective</string>
+    <string name="study_hour">Study Hour</string>
 </resources>

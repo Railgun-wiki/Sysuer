@@ -86,7 +86,7 @@ public class AgendaActivity extends AppCompatActivity {
             getTable(currentTerm, currentWeek);
             getRange(currentTerm, currentWeek);
             return false;
-        }).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         Calendar calendar = Calendar.getInstance();
         calendar.setFirstDayOfWeek(Calendar.MONDAY);
         binding.month.setText(getResources().getStringArray(R.array.months)[calendar.get(Calendar.MONTH)]);
@@ -210,7 +210,7 @@ public class AgendaActivity extends AppCompatActivity {
                             //getRange(currentTerm,currentWeek);
                             getTable(currentTerm, currentWeek);
                             break;
-                        }// 获取Term
+                        }// 获取 Term
                         case 3: {
                             String from = response.getJSONObject("data").getString("startTime");
                             try {
@@ -299,7 +299,7 @@ public class AgendaActivity extends AppCompatActivity {
 
     void changeWeek(int newWeek) {
         if (newWeek >= 0 && newWeek < weeks.size()) {
-            int currentWeek = weeks.get(newWeek);
+            currentWeek = weeks.get(newWeek);
             currentWeekIndex = newWeek;
             binding.weekTime.setText(String.format(getString(R.string.week_x), currentWeek));
             getTable(currentTerm, currentWeek);

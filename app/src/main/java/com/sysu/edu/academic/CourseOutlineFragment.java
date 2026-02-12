@@ -1,11 +1,12 @@
 package com.sysu.edu.academic;
 
-import android.content.Context;
+import static com.sysu.edu.api.CommonUtil.trim;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,25 +17,26 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.databinding.FragmentCourseOutlineBinding;
 import com.sysu.edu.databinding.ItemCourseOutlineBinding;
-import com.sysu.edu.databinding.RecyclerViewBinding;
 
 import java.util.ArrayList;
 
 public class CourseOutlineFragment extends Fragment {
 
 
-    CourseOutlineAdp adp;
+    CourseOutlineAdapter adp;
     JSONArray data;
     View root;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (root == null) {
-            RecyclerViewBinding binding = RecyclerViewBinding.inflate(inflater);
-            adp = new CourseOutlineAdp(requireContext());
-            binding.recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
-            binding.recyclerView.setAdapter(adp);
+            FragmentCourseOutlineBinding binding = FragmentCourseOutlineBinding.inflate(inflater);
+            adp = new CourseOutlineAdapter();
+            binding.recyclerViewScroll.recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 1));
+            binding.recyclerViewScroll.recyclerView.setAdapter(adp);
+            binding.fab.setOnClickListener(v -> startActivity(new Intent(requireContext(), MarkdownViewActivity.class).putExtra("content", adp.toMarkdown()).putExtra("title", getString(R.string.course_outline))));
             if (data != null) {
                 data.forEach(e -> {
                     if (e != null && adp != null) {
@@ -56,13 +58,8 @@ public class CourseOutlineFragment extends Fragment {
     }
 }
 
-class CourseOutlineAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    final Context context;
+class CourseOutlineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     final ArrayList<JSONObject> data = new ArrayList<>();
-
-    public CourseOutlineAdp(Context con) {
-        this.context = con;
-    }
 
     public void add(JSONObject json) {
         data.add(json);
@@ -72,15 +69,15 @@ class CourseOutlineAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemCourseOutlineBinding binding = ItemCourseOutlineBinding.inflate(LayoutInflater.from(context));
-        return new RecyclerView.ViewHolder(binding.getRoot()) {
+        return new RecyclerView.ViewHolder(ItemCourseOutlineBinding.inflate(LayoutInflater.from(parent.getContext())).getRoot()) {
         };
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ((TextView) holder.itemView.findViewById(R.id.title)).setText(String.format("%s（%s学时）", convert(position, "sectionDesignation"), convert(position, "teachingHours")));
-        ((TextView) holder.itemView.findViewById(R.id.intro)).setText(String.format("教学内容：%s\n育人元素：%s\n重点、难点：%s", convert(position, "teachingMainContent"), convert(position, "courseElements"), convert(position, "keyPoints")));
+        ItemCourseOutlineBinding binding = ItemCourseOutlineBinding.bind(holder.itemView);
+        binding.title.setText(String.format("%s（ %s %s）", convert(position, "sectionDesignation"), convert(position, "teachingHours"), holder.itemView.getResources().getString(R.string.study_hour)));
+        binding.intro.setText(String.format("教学内容：%s\n育人元素：%s\n重点、难点：%s", convert(position, "teachingMainContent"), convert(position, "courseElements"), convert(position, "keyPoints")));
     }
 
     @Override
@@ -89,7 +86,21 @@ class CourseOutlineAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     String convert(int position, String key) {
-        String a = data.get(position).getString(key);
-        return (a == null ? "" : a).replace("\n\n", "\n");
+        return trim(data.get(position).getString(key)).replaceAll("\n\n", "\n");
+    }
+
+    public String toMarkdown() {
+        StringBuilder md = new StringBuilder();
+        md.append("|章节|学时|教学内容|育人元素|重点、难点|\n|---|---|---|---|---|\n");
+        data.forEach(e -> {
+            if (e != null) {
+                md.append(trim(e.getString("sectionDesignation")).replace("\n", ";")).append("|");
+                md.append(trim(e.getString("teachingHours"))/*.replace("\n", ";")*/).append("|");
+                md.append(trim(e.getString("teachingMainContent")).replace("\n", "")).append("|");
+                md.append(trim(e.getString("courseElements")).replace("\n", "")).append("|");
+                md.append(trim(e.getString("keyPoints")).replace("\n", "")).append("|\n");
+            }
+        });
+        return md.toString();
     }
 }

@@ -552,5 +552,7 @@
     <string name="filtering">筛选中</string>
     <string name="cross_major">跨专业</string>
     <string name="public_selective">公选</string>
+    <string name="study_hour">学时</string>
+    <string name="course_outline">课程大纲</string>
 
 </resources>

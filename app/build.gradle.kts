@@ -89,6 +89,7 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.recycler)
     implementation(libs.recycler.table)
+    implementation(libs.inline.parser)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

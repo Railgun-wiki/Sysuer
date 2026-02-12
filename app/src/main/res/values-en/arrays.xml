@@ -96,4 +96,27 @@
         <item>Selected</item>
     </string-array>
 
+    <string-array name="course_outline">
+        <item>Course Name</item>
+        <item>Targeted Major</item>
+        <item>Course Category</item>
+        <item>Course Code</item>
+        <item>Course ID</item>
+        <item>Course Subcategory</item>
+        <item>Art Education Block</item>
+        <item>Textbook</item>
+        <item>Credits</item>
+        <item>Total Hours</item>
+        <item>Theoretical Hours</item>
+        <item>Practical Hours (including experiments)</item>
+        <item>Weekly Hours</item>
+        <item>Total Hours Remark</item>
+        <item>Teaching Language</item>
+        <item>Teaching Unit</item>
+        <item>Enrollment Number</item>
+        <item>Main Teacher</item>
+        <item>Intended Semester</item>
+        <item>Intended Offline Campus</item>
+        <item>Intended Cross-Campus Synchronous Course</item>
+    </string-array>
 </resources>
