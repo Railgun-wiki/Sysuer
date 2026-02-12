@@ -67,7 +67,7 @@ import com.sysu.edu.life.GymReservationActivity;
 import com.sysu.edu.life.NetPayActivity;
 import com.sysu.edu.life.NewsActivity;
 import com.sysu.edu.life.Pay;
-import com.sysu.edu.life.SchoolBus;
+import com.sysu.edu.life.SchoolBusActivity;
 import com.sysu.edu.studentAffair.StudentPartTimeActivity;
 import com.sysu.edu.todo.TodoActivity;
 
@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(806, browse("https://welearn.sflep.com/index.aspx"));  // WeLearn
 
         // 生活服务 (id: 9xx)
-        actionMap.put(902, newActivity(SchoolBus.class));                    // 校车
+        actionMap.put(902, newActivity(SchoolBusActivity.class));                    // 校车
         actionMap.put(903, browse("https://visitor.sysu.edu.cn/"));                 // 逸仙通行
         actionMap.put(905, browse("https://gongfang.sysu.edu.cn/h5_separation/repair_apply/index.html#/applyDetail/20251231162524362223"));                 // 报修
         actionMap.put(906, browse("https://zhny.sysu.edu.cn/h5/#/"));        // 水电费

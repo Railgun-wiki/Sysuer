@@ -558,5 +558,9 @@
     <string name="open_in_browser">在浏览器中打开</string>
     <string name="clear_cookie">清除 Cookie</string>
     <string name="exit">退出</string>
+    <string name="route_detail">路线详情</string>
+    <string name="weekend">周末</string>
+    <string name="workday">工作日</string>
+    <string name="notice">备注</string>
 
 </resources>

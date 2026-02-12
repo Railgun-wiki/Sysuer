@@ -4,7 +4,6 @@ import static com.sysu.edu.api.CommonUtil.trim;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
@@ -29,6 +28,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.sysu.edu.R;
+import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ActivityBrowserBinding;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
 import com.sysu.edu.extra.JavaScript;
@@ -52,9 +52,7 @@ public class BrowserActivity extends AppCompatActivity {
         binding = ActivityBrowserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
-        SharedPreferences privacy = getSharedPreferences("privacy", 0);
-        String username = privacy.getString("username", "");
-        String password = privacy.getString("password", "");
+        Params params = new Params(this);
         StringBuilder result = new StringBuilder();
         String url = getIntent().getDataString() != null ? getIntent().getDataString() : "https://www.sysu.edu.cn/";
         try {
@@ -64,8 +62,7 @@ public class BrowserActivity extends AppCompatActivity {
             while ((line = buffer.readLine()) != null) result.append(line);
             input.close();
             buffer.close();
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
         JavaScript js = new JavaScript(result.toString());
         web = binding.web;
         web.setWebViewClient(new WebViewClient() {
@@ -84,7 +81,7 @@ public class BrowserActivity extends AppCompatActivity {
                             const element = document.querySelector(selector);\
                             if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}\
                             waitElement('.para-widget-account-psw', () => {\
-                            var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()""", username, password), _ -> {
+                            var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()""", params.getAccount(), params.getPassword()), _ -> {
                     });
                 } else if (Pattern.compile("://appgw.sysu.edu.cn/").matcher(link).find()) {
                     web.stopLoading();
@@ -149,8 +146,7 @@ public class BrowserActivity extends AppCompatActivity {
             recyclerView.setAdapter(jsAdapter);
         }
         binding.js.setOnClickListener(_ -> {
-            ArrayList<JSONObject> j = js.searchJS(trim(web.getUrl()));
-            jsAdapter.setJS(j);
+            jsAdapter.setJS(js.searchJS(trim(web.getUrl())));
             dialog.show();
         });
         cookie = CookieManager.getInstance();
@@ -252,7 +248,8 @@ public class BrowserActivity extends AppCompatActivity {
             binding.itemTitle.setText(data.get(position).getString("title"));
             binding.itemContent.setText(data.get(position).getString("description"));
             binding.itemIcon.setImageResource(R.drawable.js);
-            binding.getRoot().setOnClickListener(_ -> web.evaluateJavascript(data.get(position).getString("script"), _ -> {}));
+            binding.getRoot().setOnClickListener(_ -> web.evaluateJavascript(data.get(position).getString("script"), _ -> {
+            }));
         }
 
         @Override

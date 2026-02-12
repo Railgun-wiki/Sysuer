@@ -1,31 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?android:colorBackground"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingLeft="8dp"
+    android:paddingTop="8dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="8dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/note"
-        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-        android:textColor="?colorPrimary" />
-
-    <com.google.android.material.card.MaterialCardView
-        style="@style/Widget.Material3.CardView.Outlined"
+    <androidx.constraintlayout.helper.widget.Flow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:contentPadding="16dp">
+        app:constraint_referenced_ids="notice,day,destination"
+        app:flow_horizontalBias="0.0"
+        app:flow_horizontalGap="4dp"
+        app:flow_horizontalStyle="packed"
+        app:flow_verticalAlign="center"
+        app:flow_wrapMode="chain2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/note"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/day"
+        style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/workday" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/notice"
+        style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:icon="@drawable/notice" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/destination"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/option"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
-    </com.google.android.material.card.MaterialCardView>
-</LinearLayout>
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
