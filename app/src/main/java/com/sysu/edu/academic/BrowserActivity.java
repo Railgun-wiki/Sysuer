@@ -19,6 +19,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -94,16 +95,17 @@ public class BrowserActivity extends AppCompatActivity {
                 } else if (Pattern.compile("://appgw.sysu.edu.cn/").matcher(link).find()) {
                     web.stopLoading();
                     web.loadUrl(url.replace(".sysu.edu.cn/", "-443.webvpn.sysu.edu.cn/"));
+                }else{
+                    view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
                 }
 
                 super.onPageFinished(view, link);
             }
 
-            @Override
-            public void onLoadResource(WebView view, String url) {
-
-                view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
-            }
+//            @Override
+//            public void onLoadResource(WebView view, String url) {
+//                view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
+//            }
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -174,7 +176,7 @@ public class BrowserActivity extends AppCompatActivity {
             return false;
         });
         binding.toolbar.getMenu().add("退出").setOnMenuItemClickListener(_ -> {
-            finishAfterTransition();
+            supportFinishAfterTransition();
             return false;
         });
         binding.back.setOnClickListener(_ -> {
@@ -204,6 +206,18 @@ public class BrowserActivity extends AppCompatActivity {
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setDefaultTextEncodingName("utf-8");
         web.loadUrl(url);
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                System.out.println(web.canGoBack());
+                if (web.canGoBack()) {
+                    web.goBack();
+                } else {
+                    supportFinishAfterTransition();
+                }
+            }
+        });
     }
 
     @Override
@@ -214,6 +228,7 @@ public class BrowserActivity extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
 
     protected void onDestroy() {
         if (web != null) {
