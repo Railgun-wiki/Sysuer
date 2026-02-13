@@ -98,9 +98,7 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
                 .build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
+                handler.sendEmptyMessage(-1);
             }
 
             @Override

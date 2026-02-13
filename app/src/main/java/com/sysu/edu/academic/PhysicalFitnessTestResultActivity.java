@@ -37,7 +37,7 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
         ActivityPagerBinding binding = ActivityPagerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         binding.toolbar.setTitle(R.string.physical_fitness_test_result);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         params = new Params(this);
         params.setCallback(this::getResult);
         Pager2Adapter adp = new Pager2Adapter(this);
@@ -84,7 +84,7 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                         page.staggeredAdapter.getTwoColumnsAdapter(position).setListener(new AdapterListener() {
                                             @Override
                                             public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int p) {
-                                                holder.itemView.setOnClickListener(v -> {
+                                                holder.itemView.setOnClickListener(_ -> {
                                                     if (adapter.getItemCount() == 1 && num != 2) {
                                                         if (num == 0) getDetail(urls.get(position));
                                                         if (num == 1)
@@ -112,9 +112,8 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                             }
                             case 3: {
                                 Matcher matcher = Pattern.compile("<a class=\"weui-cell\">.*?<div class=\"weui-cell__bd\">(.+?)</div>.*?<div class=\"weui-cell__ft\">(.+?)</div>.*?</a>", Pattern.DOTALL).matcher((String) msg.obj);
-                                while (matcher.find()) {
+                                while (matcher.find())
                                     page1.staggeredAdapter.addRow(position, Objects.requireNonNull(matcher.group(1)).replaceAll("</span>", "~").replaceAll("<.+?>", "").replaceAll("\\s", "").trim(), Objects.requireNonNull(matcher.group(2)).replaceAll("</span>", "~").replaceAll("<.+?>", "").replaceAll("%s", "").trim());
-                                }
                                 break;
                             }
                             case 4: {
@@ -124,9 +123,8 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                     Matcher creditMatcher = Pattern.compile("class=\"ticeImg\">(.+?)<", Pattern.DOTALL).matcher(matcher.group());
                                     if (creditMatcher.find())
                                         page2.staggeredAdapter.addRow(position, "积分", Objects.requireNonNull(creditMatcher.group(1)).trim());
-                                    while (matcher1.find()) {
+                                    while (matcher1.find())
                                         page2.staggeredAdapter.addRow(position, matcher1.group(1), matcher1.group(2));
-                                    }
                                 }
                                 break;
                             }

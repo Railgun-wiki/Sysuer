@@ -13,35 +13,25 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityExamBinding;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class ExamActivity extends AppCompatActivity {
 
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    Params params;
-    Handler handler;
+    HttpManager http;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityExamBinding binding = ActivityExamBinding.inflate(getLayoutInflater());
-        params = new Params(this);
+        Params params = new Params(this);
         params.setCallback(this::getTerms);
         ExamViewModel model = new ViewModelProvider(this).get(ExamViewModel.class);
         model.getTermList().observe(this, terms -> binding.terms.setSimpleItems(terms.toArray(new String[]{})));
@@ -51,7 +41,7 @@ public class ExamActivity extends AppCompatActivity {
         });
         model.getExamWeekList().observe(this, examWeeks -> binding.examWeeks.setSimpleItems(examWeeks.toArray(new String[]{})));
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(view -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         binding.fab.setOnClickListener(view -> {
             if (model.getTerm().getValue() == null || model.getExamWeekId().getValue() == null) {
                 Snackbar.make(view, "请选择考试周", Snackbar.LENGTH_LONG)
@@ -62,8 +52,8 @@ public class ExamActivity extends AppCompatActivity {
                 getResult(model.getTerm().getValue(), model.getExamWeekId().getValue());
             }
         });
-        binding.terms.setOnItemClickListener((adapterView, view, i, l) -> model.setTerm(String.valueOf(binding.terms.getText())));
-        binding.examWeeks.setOnItemClickListener((adapterView, view, i, l) -> {
+        binding.terms.setOnItemClickListener((_, _, _, _) -> model.setTerm(String.valueOf(binding.terms.getText())));
+        binding.examWeeks.setOnItemClickListener((_, _, i, _) -> {
             model.setExamWeekId(Objects.requireNonNull(model.getExamWeekInfo().getValue()).get(i).getString("examWeekId"));
             binding.date.setText(String.format("%s~%s", model.getExamWeekInfo().getValue().get(i).getString("startDate"), model.getExamWeekInfo().getValue().get(i).getString("endDate")));
             model.setExamWeek(Objects.requireNonNull(model.getExamWeekList().getValue()).get(i));
@@ -82,7 +72,7 @@ public class ExamActivity extends AppCompatActivity {
                 }
             }));
         });
-        handler = new Handler(getMainLooper()) {
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -122,107 +112,28 @@ public class ExamActivity extends AppCompatActivity {
                     }
                 }
             }
-        };
+        });
+        http.setParams(params);
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
         getTerms();
     }
 
     void getTerms() {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/findAcadyeartermNamesBox")
-                .header("Cookie", params.getCookie())
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/").build()).enqueue(
-                new Callback() {
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Message message = new Message();
-                        message.what = 1;
-                        message.obj = response.body().string();
-                        handler.sendMessage(message);
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Message message = new Message();
-                        message.what = -1;
-                        handler.sendMessage(message);
-                    }
-                }
-        );
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/findAcadyeartermNamesBox", 1);
     }
 
     void getTerm() {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist")
-                .header("Cookie", params.getCookie())
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/").build()).enqueue(
-                new Callback() {
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Message message = new Message();
-                        message.what = 2;
-                        message.obj = response.body().string();
-                        handler.sendMessage(message);
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Message message = new Message();
-                        message.what = -1;
-                        handler.sendMessage(message);
-                    }
-                }
-        );
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist", 2);
     }
 
     void getExamWeek(String term) {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/commonScheduleExamTime/queryExamWeekName?yearTerm=" + term)
-                .header("Cookie", params.getCookie())
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/").build()).enqueue(
-                new Callback() {
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Message message = new Message();
-                        message.what = 3;
-                        message.obj = response.body().string();
-                        handler.sendMessage(message);
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Message message = new Message();
-                        message.what = -1;
-                        handler.sendMessage(message);
-                    }
-                }
-        );
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/commonScheduleExamTime/queryExamWeekName?yearTerm=" + term, 3);
     }
 
     void getResult(String term, String examWeek) {
         String body = "";
-        if (term != null) {
-            body += "\"acadYear\":\"" + term + "\"";
-        }
-        if (examWeek != null) {
-            body += ",\"examWeekName\":\"" + examWeek + "\"";
-        }
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo")
-                .header("Cookie", params.getCookie())
-                .post(RequestBody.create(String.format("{%s}", body), MediaType.parse("application/json")))
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/").build()).enqueue(
-                new Callback() {
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Message message = new Message();
-                        message.what = 4;
-                        message.obj = response.body().string();
-                        handler.sendMessage(message);
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        Message message = new Message();
-                        message.what = -1;
-                        handler.sendMessage(message);
-                    }
-                }
-        );
+        if (term != null) body += "\"acadYear\":\"" + term + "\"";
+        if (examWeek != null) body += ",\"examWeekName\":\"" + examWeek + "\"";
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo", String.format("{%s}", body), 4);
     }
 }

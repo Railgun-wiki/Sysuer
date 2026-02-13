@@ -27,6 +27,10 @@ public class LoginWebFragment extends Fragment {
     @SuppressLint("SetJavaScriptEnabled")
     public static WebView getWebView(@NonNull FragmentActivity activity, LoginViewModel model, Runnable afterLoad) {
         WebView web = new WebView(activity);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        cookieManager.setAcceptThirdPartyCookies(web, true);
+        cookieManager.acceptThirdPartyCookies(web);
         Handler handler = new Handler(Looper.getMainLooper());
         model.getUrl().observe(activity, web::loadUrl);
         time = 0;

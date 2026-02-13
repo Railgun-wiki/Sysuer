@@ -25,29 +25,21 @@ import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.DialogEditTextBinding;
 import com.sysu.edu.databinding.FragmentQuestionnaireBinding;
 import com.sysu.edu.databinding.ItemOptionBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 
 public class EvaluationQuestionnaireFragment extends Fragment {
     final JSONObject answers = JSONObject.parseObject("{\"pjidlist\":[],\"pjjglist\":[],\"pjzt\": \"2\"}");
     Params params;
-    Handler handler;
+    HttpManager http;
 
     @Nullable
     @Override
@@ -77,7 +69,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                 requireArguments().getString("rwh"),
                 Objects.equals(requireArguments().getString("lsjgzt"), "2") ? "1" : "",
                 requireArguments().getString("bpmc"));
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
@@ -134,8 +126,6 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                                     adp.addAdapter(rankAdapter);
                                                     break;
                                                 }
-                                                default:
-                                                    break;
                                             }
                                         });
                                     }));
@@ -168,7 +158,8 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                         break;
                 }
             }
-        };
+        });
+        http.setParams(params);
         binding.save.setOnClickListener(_ -> saveEvaluation());
         binding.submit.setOnClickListener(_ -> Snackbar.make(binding.getRoot(), "提交后不可更改", Snackbar.LENGTH_LONG).setAction(R.string.confirm, _ -> submitEvaluation()).show());
         binding.reset.setOnClickListener(_ -> {
@@ -197,24 +188,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
     }
 
     public void getEvaluation(String rwid, String wjid, String sxz, String pjrdm, String bpdm, String kcdm, String rwh, String pjzt, String bpmc) {
-        new OkHttpClient.Builder().build().newCall(new Request.Builder().url(String.format("https://pjxt.sysu.edu.cn/evaluationPattern/getQuestionnaireTopic?rwid=%s&wjid=%s&sxz=%s&pjrdm=%s&bpdm=%s&kcdm=%s&rwh=%s&pjzt=%s&bpmc=%s", rwid, wjid, sxz, pjrdm, bpdm, kcdm, rwh, pjzt, bpmc))
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 1;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.getRequest(String.format("https://pjxt.sysu.edu.cn/evaluationPattern/getQuestionnaireTopic?rwid=%s&wjid=%s&sxz=%s&pjrdm=%s&bpdm=%s&kcdm=%s&rwh=%s&pjzt=%s&bpmc=%s", rwid, wjid, sxz, pjrdm, bpdm, kcdm, rwh, pjzt, bpmc), 1);
     }
 
     public void saveEvaluation() {
@@ -227,25 +201,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
 
     public void postEvaluation(String mode, int what) {
         answers.put("pjzt", mode);
-        new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://pjxt.sysu.edu.cn/evaluationPattern/submitSaveEvaluation")
-                .header("Cookie", params.getCookie())
-                .post(RequestBody.create(answers.toString(), MediaType.parse("application/json")))
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest("https://pjxt.sysu.edu.cn/evaluationPattern/submitSaveEvaluation", answers.toString(), "application/json", what);
     }
 }
 
@@ -284,7 +240,7 @@ class OptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public void setAnswer(JSONArray answers) {
-        this.answer = answers;
+        answer = answers;
         option = answers.isEmpty() ? null : answers.getString(0);
         notifyItemRangeChanged(0, getItemCount());
     }
@@ -306,11 +262,11 @@ class OptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         int pos = holder.getBindingAdapterPosition();
         ItemOptionBinding binding = ItemOptionBinding.bind(holder.itemView);
         binding.getRoot().setOnClickListener(_ -> setOption(pos));
-        if (selected == -1 && Objects.equals(data.get(pos).getString("tmxxid"), option)) {
+        JSONObject item = data.get(pos);
+        if (selected == -1 && Objects.equals(item.getString("tmxxid"), option))
             selected = pos;
-        }
         binding.option.setChecked(selected == pos);
-        binding.option.setText(data.get(pos).getString("xxmc"));
+        binding.option.setText(item.getString("xxmc"));
         binding.getRoot().updateAppearance(pos, getItemCount());
     }
 

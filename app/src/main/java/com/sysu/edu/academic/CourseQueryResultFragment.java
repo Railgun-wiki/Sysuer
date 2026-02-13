@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -26,20 +28,19 @@ public class CourseQueryResultFragment extends StaggeredFragment {
     HttpManager http;
     int page = 1;
     int total = -1;
-    FragmentCourseQueryResultBinding courseQueryResultBinding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        courseQueryResultBinding = FragmentCourseQueryResultBinding.inflate(inflater, container, false);
-        courseQueryResultBinding.getRoot().addView(super.onCreateView(inflater, courseQueryResultBinding.getRoot(), savedInstanceState),-1,-1);
+        FragmentCourseQueryResultBinding courseQueryResultBinding = FragmentCourseQueryResultBinding.inflate(inflater, container, false);
+        courseQueryResultBinding.getRoot().addView(super.onCreateView(inflater, courseQueryResultBinding.getRoot(), savedInstanceState), -1, -1);
         params = new Params(requireActivity());
         params.setCallback(this, () -> {
             reset();
             getCourses();
         });
-        courseQueryResultBinding.fab.setOnClickListener(v -> export(courseQueryResultBinding.fab, getString(R.string.course)));
-        Handler handler = new Handler(Looper.getMainLooper()) {
+        courseQueryResultBinding.fab.setOnClickListener(_ -> export(courseQueryResultBinding.fab, getString(R.string.course)));
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -53,9 +54,7 @@ public class CourseQueryResultFragment extends StaggeredFragment {
                             total = response.getJSONObject("data").getInteger("total");
                         response.getJSONObject("data").getJSONArray("rows").forEach(e -> {
                             JSONObject row = (JSONObject) e;
-                            ArrayList<String> values = new ArrayList<>();
-                            for (String i : new String[]{"yearTerm", "courseName", "courseNum", "openingUnitName", "courseCategoryName", "score", "teachingName", "limitNumber", "selectedNumber", "examMode", "teachingTimePlaceStr", "openingSchoolName", "readObj", "classNumber"})
-                                values.add(row.getString(i));
+                            ArrayList<String> values = extractValue(row, new String[]{"yearTerm", "courseName", "courseNum", "openingUnitName", "courseCategoryName", "score", "teachingName", "limitNumber", "selectedNumber", "examMode", "teachingTimePlaceStr", "openingSchoolName", "readObj", "classNumber"});
                             if (values.get(10) != null)
                                 values.set(10, values.get(10).replaceAll(",", "\n").replaceAll("/", " | "));
                             add(values.get(1), List.of("学年学期", "课程名称", "课程编号", "开课单位", "课程类别", "学分", "主讲教师", "限选人数", "已选人数", "考试方式", "上课信息", "上课校区", "修读对象", "教学班号"), values);
@@ -68,15 +67,13 @@ public class CourseQueryResultFragment extends StaggeredFragment {
                     }
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
         setScrollBottom(() -> {
             if ((page - 1) * 10 < total)
                 getCourses();
         });
-        clear();
         getCourses();
         return courseQueryResultBinding.getRoot();
     }

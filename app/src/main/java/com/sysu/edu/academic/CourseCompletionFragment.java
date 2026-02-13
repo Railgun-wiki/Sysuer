@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,34 +14,23 @@ import androidx.annotation.NonNull;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class CourseCompletionFragment extends StaggeredFragment {
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    String cookie;
-    Handler handler;
-    int total;
-    int page;
+    HttpManager http;
+    //    int total = -1;
+    int page = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        page = 0;
         /*binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView v, int dx, int dy) {
@@ -50,13 +41,11 @@ public class CourseCompletionFragment extends StaggeredFragment {
             }
         });*/
         Params params = new Params(requireActivity());
-        cookie = params.getCookie();
         params.setCallback(this, () -> {
-            cookie = params.getCookie();
             page = 0;
             getStudentCourse();
         });
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -65,14 +54,11 @@ public class CourseCompletionFragment extends StaggeredFragment {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response != null && response.getInteger("code").equals(200)) {
                         if (response.get("data") != null) {
-                            if (msg.what == 1) {
+                            if (msg.what == 0) {
                                 JSONObject data = response.getJSONObject("data");
-                                total = data.getInteger("total");
+//                                total = data.getInteger("total");
                                 data.getJSONArray("rows").forEach(a -> {
-                                    ArrayList<String> values = new ArrayList<>();
-                                    for (String key : new String[]{"acadYearSemester", "courseNumber", "courseName", "courseCategoryName", "credit",/**/"acadYearSemester", "achievementCourseNumber", "achievementCourseName", "achievementCourseCategoryName", "achievementCredit", "ispassed", "achievementPoint"}) {
-                                        values.add(((JSONObject) a).getString(key));
-                                    }
+                                    ArrayList<String> values = extractValue((JSONObject) a, new String[]{"acadYearSemester", "courseNumber", "courseName", "courseCategoryName", "credit",/**/"acadYearSemester", "achievementCourseNumber", "achievementCourseName", "achievementCourseCategoryName", "achievementCredit", "ispassed", "achievementPoint"});
                                     if (values.get(0) != null) {
                                         values.set(0, values.get(0).replace(",", "|"));
                                     }
@@ -91,32 +77,13 @@ public class CourseCompletionFragment extends StaggeredFragment {
                     }
                 }
             }
-        };
+        });
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/gradua/");
         getStudentCourse();
         return view;
     }
 
     void getStudentCourse() {
-        page++;
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/studentCourse")
-                .header("Cookie", cookie)
-                .post(RequestBody.create(String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":10,\"total\":true,\"param\":{\"cultureTypeCode\":\"01\"}}", page), MediaType.parse("application/json")))
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/gradua/")
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 1;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/studentCourse", String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":10,\"total\":true,\"param\":{\"cultureTypeCode\":\"01\"}}", ++page), 0);
     }
 }

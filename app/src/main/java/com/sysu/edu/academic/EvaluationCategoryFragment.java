@@ -1,6 +1,7 @@
 package com.sysu.edu.academic;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,33 +32,31 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class EvaluationCategoryFragment extends Fragment {
-    Params params;
-    Handler handler;
-    RecyclerViewScrollBinding binding;
     HttpManager http;
+    StaggeredGridLayoutManager staggeredGridLayoutManager;
+    Params params;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
+        RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
         params = new Params(requireActivity());
         params.setCallback(this, this::getEvaluation);
-        StaggeredGridLayoutManager sgm = new StaggeredGridLayoutManager(params.getColumn(), 1);
-        binding.getRoot().setLayoutManager(sgm);
-        CategoryAdapter adp = new CategoryAdapter(requireContext());
-        adp.setKeys(new String[]{"rwmc", "rwkssj", "rwjssj", "pjsl", "ypsl"});
-        adp.setValues(new String[]{"%s", "起始时间：%s", "结束时间：%s", "总评数：%s", "已评数：%s"});
-        adp.setParams(new String[]{"rwid", "firstwjid", "pjrdm"});
-        adp.setNavigation(R.id.from_category_to_course);
-        binding.getRoot().setAdapter(adp);
-        handler = new Handler(Looper.getMainLooper()) {
+        staggeredGridLayoutManager = new StaggeredGridLayoutManager(params.getColumn(), 1);
+        binding.getRoot().setLayoutManager(staggeredGridLayoutManager);
+        CategoryAdapter categoryAdapter = new CategoryAdapter(requireContext());
+        categoryAdapter.setKeys(new String[]{"rwmc", "rwkssj", "rwjssj", "pjsl", "ypsl"});
+        categoryAdapter.setValues(new String[]{"%s", "起始时间：%s", "结束时间：%s", "总评数：%s", "已评数：%s"});
+        categoryAdapter.setParams(new String[]{"rwid", "firstwjid", "pjrdm"});
+        categoryAdapter.setNavigation(R.id.from_category_to_course);
+        binding.getRoot().setAdapter(categoryAdapter);
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == 1) {
                     JSONObject data = JSON.parseObject((String) msg.obj);
                     if (data != null && Objects.equals(data.get("code"), "200")) {
-                        data.getJSONObject("result").getJSONArray("list").forEach(e -> adp.add((JSONObject) e));
+                        data.getJSONObject("result").getJSONArray("list").forEach(e -> categoryAdapter.add((JSONObject) e));
                     } else {
                         params.gotoLogin(getView(), "https://pjxt.sysu.edu.cn");
                     }
@@ -66,14 +65,19 @@ public class EvaluationCategoryFragment extends Fragment {
                     params.gotoLogin(getView(), "https://pjxt.sysu.edu.cn");
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         getEvaluation();
 
         return binding.getRoot();
     }
 
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        staggeredGridLayoutManager.setSpanCount(params.getColumn());
+    }
 
     public void getEvaluation() {
         http.getRequest("https://pjxt.sysu.edu.cn/personnelEvaluation/listObtainPersonnelEvaluationTasks?pageNum=1&pageSize=10", 1);
@@ -130,26 +134,19 @@ public class EvaluationCategoryFragment extends Fragment {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemEvaluationBinding binding = ItemEvaluationBinding.bind(holder.itemView);
             Bundle args = new Bundle();
-            for (String param : params) {
-                args.putString(param, data.get(position).getString(param));
-            }
-            binding.open.setOnClickListener(v -> ((NavHostFragment) Objects.requireNonNull(((AppCompatActivity) context).getSupportFragmentManager().findFragmentById(R.id.fragment))).getNavController().navigate(nav, args));
-            holder.itemView.setOnClickListener(v -> {
+            for (String param : params) args.putString(param, data.get(position).getString(param));
+            binding.open.setOnClickListener(_ -> ((NavHostFragment) Objects.requireNonNull(((AppCompatActivity) context).getSupportFragmentManager().findFragmentById(R.id.fragment))).getNavController().navigate(nav, args));
+            holder.itemView.setOnClickListener(_ -> {
             });
             Drawable drawable = AppCompatResources.getDrawable(context, Integer.parseInt(data.get(position).getString("pjsl")) <= Integer.parseInt(data.get(position).getString("ypsl")) ? R.drawable.submit : R.drawable.window);
-            if (drawable != null) {
-                drawable.setBounds(0, 0, 72, 72);
-            }
+            if (drawable != null) drawable.setBounds(0, 0, 72, 72);
             binding.title.setCompoundDrawables(drawable, null, null, null);
             binding.title.setCompoundDrawablePadding(36);
             binding.title.setText(String.format(values[0], data.get(position).getString(keys[0]) == null ? "" : data.get(position).getString(keys[0])));
             StringBuilder val = new StringBuilder();
-            for (int i = 1; i < keys.length; i++) {
-                val.append(String.format(values[i], data.get(position).getString(keys[i]) == null ? "" : data.get(position).getString(keys[i])));
-                val.append("\n");
-            }
+            for (int i = 1; i < keys.length; i++)
+                val.append(String.format(values[i], data.get(position).getString(keys[i]) == null ? "" : data.get(position).getString(keys[i]))).append("\n");
             binding.startTime.setText(val.toString().trim());
-
         }
 
         @Override

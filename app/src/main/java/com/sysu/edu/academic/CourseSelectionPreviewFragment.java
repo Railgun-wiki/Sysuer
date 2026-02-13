@@ -24,13 +24,14 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentCourseSelectionPreviewBinding;
 import com.sysu.edu.databinding.ItemEvaluationBinding;
 
 import org.commonmark.node.Node;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,72 +40,69 @@ import io.noties.markwon.AbstractMarkwonPlugin;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.MarkwonVisitor;
 import io.noties.markwon.ext.tables.TablePlugin;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class CourseSelectionPreviewFragment extends Fragment {
 
-    final OkHttpClient http = new OkHttpClient();
     final MutableLiveData<Integer> type = new MutableLiveData<>();
-    Handler handler;
-    Params params;
+    HttpManager http;
     CourseSelectionViewModel vm;
     FragmentCourseSelectionPreviewBinding binding;
     int page = 1;
-    Integer total;
+    int total = -1;
+    CourseSelectionPreviewAdapter previewAdapter;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (binding == null) {
             binding = FragmentCourseSelectionPreviewBinding.inflate(inflater, container, false);
-            params = new Params(requireActivity());
-            vm = new ViewModelProvider(requireActivity()).get(CourseSelectionViewModel.class);
-            binding.list.recyclerView.setLayoutManager(new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL));
-            CourseSelectionPreviewAdapter previewAdapter = new CourseSelectionPreviewAdapter();
-            binding.list.recyclerView.setAdapter(previewAdapter);
-            binding.list.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    if (!recyclerView.canScrollVertically(1) && dy > 0 && total / 10.0 > page - 1) {
-                        getList();
-                    }
-                }
-            });
-            binding.type.addOnButtonCheckedListener((group, checkedId, isChecked) -> type.setValue(binding.major.isChecked() ? 1 : binding.collegePublicSelective.isChecked() ? 4 : 2));
-            type.observe(getViewLifecycleOwner(), v -> {
-                page = 1;
-                previewAdapter.clear();
-                getList();
-            });
-            handler = new Handler(Looper.getMainLooper()) {
+            Params params = new Params(requireActivity());
+            params.setCallback(this, this::regetList);
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     super.handleMessage(msg);
                     if (msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
                     } else {
+                        System.out.println(msg.obj);
                         JSONObject response = JSONObject.parse((String) msg.obj);
                         if (response.getInteger("code") == 200) {
-                            total = response.getJSONObject("data").getInteger("total");
-                            response.getJSONObject("data").getJSONArray("rows").forEach(e -> previewAdapter.add((JSONObject) e));
+                            JSONObject data = response.getJSONObject("data");
+                            total = data.getInteger("total");
+                            data.getJSONArray("rows").forEach(e -> previewAdapter.add((JSONObject) e));
+                        } else {
+                            params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
                         }
                     }
                 }
-            };
-            vm.filterValue.observe(requireActivity(), f -> {
-                page = 1;
-                previewAdapter.clear();
-                getList();
             });
+            http.setParams(params);
+            http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%E9%80%89%E8%AF%BE");
+            vm = new ViewModelProvider(requireActivity()).get(CourseSelectionViewModel.class);
+            binding.list.recyclerView.setLayoutManager(new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL));
+            previewAdapter = new CourseSelectionPreviewAdapter();
+            binding.list.recyclerView.setAdapter(previewAdapter);
+            binding.list.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    if (!recyclerView.canScrollVertically(1) && dy > 0 && total / 10.0 > page - 1)
+                        getList();
+                }
+            });
+            binding.type.addOnButtonCheckedListener((_, _, _) -> type.setValue(binding.major.isChecked() ? 1 : binding.collegePublicSelective.isChecked() ? 4 : 2));
+            type.observe(getViewLifecycleOwner(), _ -> regetList());
+            vm.filterValue.observe(requireActivity(), _ -> regetList());
         }
         return binding.getRoot();
+    }
+
+    private void regetList() {
+        page = 1;
+        total = -1;
+        previewAdapter.clear();
+        getList();
     }
 
     @Override
@@ -117,45 +115,22 @@ public class CourseSelectionPreviewFragment extends Fragment {
                 .build(), new FragmentNavigator.Extras(Map.of(v, "miniapp"))));
     }
 
-    void sendRequest(String url, String data, int what) {
-        http.newCall(new Request.Builder().url(url)
-                .header("Cookie", params.getCookie())
-                .post(RequestBody.create(data, MediaType.parse("application/json")))
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%E9%80%89%E8%AF%BE")
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
-    }
-
     void getList() {
-        sendRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/schoolCourse/pageList",
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/schoolCourse/pageList",
                 String.format("{\"pageNo\":%s,\"pageSize\":10,\"total\":false,\"param\":{\"hiddenSelectedStatus\":\"0\",\"type\":\"%s\"%s}}",
-                        page++, type.getValue() == null ? 1 : type.getValue(), vm.getReturnData()),
-                0);
+                        page++, type.getValue() == null ? 1 : type.getValue(), vm.getReturnData()), 0);
     }
 
     static class CourseSelectionPreviewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         final ArrayList<JSONObject> data = new ArrayList<>();
 
+        String[] key = new String[]{"courseName", "courseCategoryName", "courseUnitName", "scheduleExamTime", "examFormName", "credit", "teachingClassId", "teachingClassNum", "teachingClassName", "courseNum"};
+        String[] name = new String[]{"课程名称", "课程类别", "开设学院", "考试时间", "考核方式", "学分", "教学班ID", "教学班号", "教学班名", "课程号"};
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            ItemEvaluationBinding binding = ItemEvaluationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-            return new RecyclerView.ViewHolder(binding.getRoot()) {
+            return new RecyclerView.ViewHolder(ItemEvaluationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
             };
         }
 
@@ -163,12 +138,9 @@ public class CourseSelectionPreviewFragment extends Fragment {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemEvaluationBinding binding = ItemEvaluationBinding.bind(holder.itemView);
             binding.title.setText(data.get(position).getString("courseName"));
-            String[] key = new String[]{"courseName", "courseCategoryName", "courseUnitName", "scheduleExamTime", "examFormName", "credit", "teachingClassId", "teachingClassNum", "teachingClassName", "courseNum"};
-            String[] name = new String[]{"课程名称", "课程类别", "开设学院", "考试时间", "考核方式", "学分", "班级ID", "班级号", "班级名", "课程号"};
-            StringBuilder md = new StringBuilder("| 老师 | 时间 | 地点 |\n|:-----:|:----:|:----:|\n|" + data.get(position).getString("teachingTimePlace").replace(";", " | ").replace(",", " |\n| ") + "|\n");
-            for (int i = 0; i < key.length; i++) {
+            StringBuilder md = new StringBuilder("|老师|时间|地点|\n|:-----:|:----:|:----:|\n|" + data.get(position).getString("teachingTimePlace").replace(";", " | ").replace(",", " |\n| ") + "|\n");
+            for (int i = 0; i < key.length; i++)
                 md.append(String.format("\n%s：**%s**\n", name[i], data.get(position).getString(key[i]) == null ? "无" : data.get(position).getString(key[i])));
-            }
             View.OnClickListener action = view -> view.getContext().startActivity(new Intent(view.getContext(), CourseDetailActivity.class).putExtra("id", data.get(position).getString("teachingClassId")).putExtra("code", data.get(position).getString("courseNum")).putExtra("class", data.get(position).getString("teachingClassNum")),
                     ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) binding.getRoot().getContext(), binding.title, "miniapp").toBundle());
             binding.getRoot().setOnClickListener(action);
@@ -180,7 +152,6 @@ public class CourseSelectionPreviewFragment extends Fragment {
                     builder.blockHandler(new MarkwonVisitor.BlockHandler() {
                         @Override
                         public void blockStart(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
-
                         }
 
                         @Override
@@ -192,7 +163,6 @@ public class CourseSelectionPreviewFragment extends Fragment {
                     });
                 }
             }, TablePlugin.create(binding.getRoot().getContext()))).build().setMarkdown(binding.startTime, md.toString());
-
         }
 
         public void add(JSONObject item) {

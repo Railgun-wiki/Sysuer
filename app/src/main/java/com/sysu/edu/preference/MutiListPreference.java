@@ -32,14 +32,14 @@ public class MutiListPreference extends MultiSelectListPreference {
         MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(getContext());
         if (getTitle() != null) dialogBuilder.setTitle(getTitle());
         if (getPositiveButtonText() != null)
-            dialogBuilder.setPositiveButton(getPositiveButtonText(), (dialog, which) -> {
+            dialogBuilder.setPositiveButton(getPositiveButtonText(), (_, _) -> {
                 persistStringSet(getValues());
                 notifyChanged();
             });
         if (getNegativeButtonText() != null)
-            dialogBuilder.setNegativeButton(getNegativeButtonText(), (dialog, which) -> dialog.dismiss());
+            dialogBuilder.setNegativeButton(getNegativeButtonText(), (dialog, _) -> dialog.dismiss());
         if (getEntries() != null)
-            dialogBuilder.setMultiChoiceItems(getEntries(), getSelectedItems(), (dialog, which, isChecked) -> {
+            dialogBuilder.setMultiChoiceItems(getEntries(), getSelectedItems(), (_, which, isChecked) -> {
                 getValues().remove(getEntryValues()[which].toString());
                 if (isChecked) getValues().add(getEntryValues()[which].toString());
                 persistStringSet(getValues());

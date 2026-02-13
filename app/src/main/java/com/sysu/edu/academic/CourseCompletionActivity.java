@@ -1,8 +1,9 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.widget.LinearLayout;
 
@@ -15,6 +16,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityPagerBinding;
@@ -23,41 +25,26 @@ import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.Pager2Adapter;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class CourseCompletionActivity extends AppCompatActivity {
 
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    ActivityPagerBinding binding;
-    String cookie;
-    Handler handler;
+    HttpManager http;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityPagerBinding.inflate(getLayoutInflater());
+        ActivityPagerBinding binding = ActivityPagerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         Params params = new Params(this);
-        cookie = params.getCookie();
-        params.setCallback(() -> {
-            cookie = params.getCookie();
-            getCreditHours();
-        });
+        params.setCallback(this::getCreditHours);
         binding.toolbar.setTitle(R.string.course_completion);
-        Pager2Adapter adp = new Pager2Adapter(this).add(StaggeredFragment.newInstance(0)).add(new CourseCompletionFragment());
-        binding.pager.setAdapter(adp);
+        StaggeredFragment page1 = StaggeredFragment.newInstance(0);
+        Pager2Adapter pager2Adapter = new Pager2Adapter(this).add(page1).add(new CourseCompletionFragment());
+        binding.pager.setAdapter(pager2Adapter);
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(List.of("学分学时情况", "课程完成情况").get(position))).attach();
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -68,11 +55,8 @@ public class CourseCompletionActivity extends AppCompatActivity {
                         if (response.get("data") != null) {
                             if (msg.what == 0) {
                                 response.getJSONArray("data").forEach(a -> {
-                                    ArrayList<String> values = new ArrayList<>();
-                                    for (String key : new String[]{"courseCategoryName", "trainingCredit", "exemptCredit", "actualCredit", "earnedCredit"}) {
-                                        values.add(((JSONObject) a).getString(key));
-                                    }
-                                    ((StaggeredFragment) adp.getItem(0)).staggeredAdapter.setListener(new AdapterListener() {
+                                    JSONObject item = (JSONObject) a;
+                                    page1.setListener(new AdapterListener() {
                                         @Override
                                         public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                                             List<String> item = ((StaggeredFragment.StaggeredAdapter) adapter).getValues(position);
@@ -91,7 +75,8 @@ public class CourseCompletionActivity extends AppCompatActivity {
                                             ((ItemCardBinding) binding).getRoot().addView(progress);
                                         }
                                     });
-                                    ((StaggeredFragment) adp.getItem(0)).add(CourseCompletionActivity.this, values.get(0), List.of("课程类别", "培养方案学分要求", "免修课程学分", "实际毕业学分要求", "实得"), values);
+                                    page1.add(CourseCompletionActivity.this, item.getString("courseCategoryName"), List.of("课程类别", "培养方案学分要求", "免修课程学分", "实际毕业学分要求", "实得"),
+                                            extractValue(item, new String[]{"courseCategoryName", "trainingCredit", "exemptCredit", "actualCredit", "earnedCredit"}));
                                 });
                             }
                         }
@@ -103,30 +88,12 @@ public class CourseCompletionActivity extends AppCompatActivity {
                     }
                 }
             }
-        };
+        });
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/gradua/");
         getCreditHours();
     }
 
     void getCreditHours() {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/creditHoursStu?cultureTypeCode=01")
-                .header("Cookie", cookie)
-                .post(RequestBody.create("", null))
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/gradua/")
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 0;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/creditHoursStu?cultureTypeCode=01", "", 0);
     }
 }

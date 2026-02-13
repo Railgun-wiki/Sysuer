@@ -48,7 +48,7 @@ public class SchoolWorkWarning extends AppCompatActivity {
             if (total > page * 10)
                 getWarning();
         });
-        fragment.viewTable(binding.toolbar);
+        fragment.setViewTableMenu(binding.toolbar);
         binding.toolbar.setTitle(R.string.school_work_warning);
         binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
         handler = new Handler(Looper.getMainLooper()) {

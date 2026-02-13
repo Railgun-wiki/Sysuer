@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,37 +21,29 @@ import androidx.viewbinding.ViewBinding;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.button.MaterialButton;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationManager;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class LeaveReturnListFragment extends StaggeredFragment {
 
-    final OkHttpClient http = new OkHttpClient();
     View view;
-    Handler handler;
-    String baseUrl = "https://xgxt.sysu.edu.cn";
+    HttpManager http;
+    AuthorizationManager authorizationManager;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (view == null) {
-            view = super.onCreateView(inflater, container, savedInstanceState);
-        }
+        view = super.onCreateView(inflater, container, savedInstanceState);
         LeaveReturnRegistrationViewModel viewModel = new ViewModelProvider(requireActivity()).get(LeaveReturnRegistrationViewModel.class);
         viewModel.year.observe(getViewLifecycleOwner(), this::getList);
-        handler = new Handler(Looper.getMainLooper()) {
+        authorizationManager = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt-443.webvpn.sysu.edu.cn/");
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -59,23 +53,19 @@ public class LeaveReturnListFragment extends StaggeredFragment {
                     boolean isJSON = msg.getData().getBoolean("isJSON");
                     if (isJSON) {
                         if (code == 200) {
-                            JSONObject json = JSONObject.parse(msg.getData().getString("response"));
+                            JSONObject json = JSONObject.parse((String) msg.obj);
                             if (json != null && json.getInteger("code") == 200) {
                                 clear();
-                                json.getJSONArray("data").forEach(e -> {
-                                    ArrayList<String> value = new ArrayList<>();
-                                    for (String i : new String[]{"blxn", "lxdjsj", "gzsm", "jjrmc", "jjrrq", "gzzt", "zt"})
-                                        value.add(((JSONObject) e).getString(i));
-                                    add(((JSONObject) e).getString("gzmc"), ((JSONObject) e).getInteger("gzztm") == 1 ? R.drawable.uncheck : R.drawable.check, List.of(getResources().getStringArray(R.array.registration_keys)), value);
-                                });
-                                staggeredAdapter.setListener(new AdapterListener() {
+                                json.getJSONArray("data").forEach(e -> add(((JSONObject) e).getString("gzmc"), ((JSONObject) e).getInteger("gzztm") == 1 ? R.drawable.uncheck : R.drawable.check, List.of(getResources().getStringArray(R.array.registration_keys)),
+                                        extractValue((JSONObject) e, new String[]{"blxn", "lxdjsj", "gzsm", "jjrmc", "jjrrq", "gzzt", "zt"})));
+                                setListener(new AdapterListener() {
                                     @Override
                                     public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                                         boolean isRegistering = json.getJSONArray("data").getJSONObject(position).getInteger("gzztm") == 1;
                                         String status = json.getJSONArray("data").getJSONObject(position).getString("zt");
                                         MaterialButton button = holder.itemView.findViewById(R.id.button);
                                         button.setText(isRegistering ? status.equals("registering") ? R.string.start_registration : R.string.modify_registration : R.string.view_detail);
-                                        button.setOnClickListener(v -> {
+                                        button.setOnClickListener(_ -> {
                                             if (isRegistering) {
                                                 Bundle arg = new Bundle();
                                                 arg.putString("Id", json.getJSONArray("data").getJSONObject(position).getString("cjlfxgzId"));
@@ -108,45 +98,18 @@ public class LeaveReturnListFragment extends StaggeredFragment {
                         }
                     } else {
                         params.toast(R.string.educational_wifi_warning);
-                        baseUrl = "https://xgxt-443.webvpn.sysu.edu.cn";
+                        authorizationManager.setAccessible(false);
                         getList(viewModel.year.getValue());
                     }
                 }
             }
-        };
+        });
+        http.setParams(params);
         return view;
     }
 
     void getList(String year) {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/work-list?blxn=" + year, 0);
-    }
-
-    void sendRequest(String url, int what) {
-        System.out.println(baseUrl);
-        http.newCall(new Request.Builder().url(baseUrl + url)
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                Bundle bundle = new Bundle();
-                bundle.putInt("code", response.code());
-                bundle.putBoolean("isJSON", response.headers("Content-Type").contains("application/json"));
-                bundle.putString("response", response.body().string());
-                msg.setData(bundle);
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-
-                handler.sendMessage(msg);
-            }
-        });
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/work-list?blxn=" + year, 0);
     }
 
 }

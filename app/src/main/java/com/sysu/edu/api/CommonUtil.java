@@ -3,6 +3,7 @@ package com.sysu.edu.api;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CommonUtil {
     /**
@@ -15,12 +16,14 @@ public class CommonUtil {
      */
     public static ArrayList<String> extractValue(JSONObject data, String[] keys) {
         ArrayList<String> values = new ArrayList<>();
-        for (String i : keys) {
-            values.add(data.getString(i));
-        }
+        for (String i : keys) values.add(data.getString(i));
         return values;
     }
-
+    public static ArrayList<String> extractValue(JSONObject data, List<String> keys) {
+        ArrayList<String> values = new ArrayList<>();
+        for (String i : keys) values.add(data.getString(i));
+        return values;
+    }
     /**
     * 将boolean值转换为字符串"1"或"0"
     * @param b 要转换的boolean值

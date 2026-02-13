@@ -26,45 +26,40 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.button.MaterialButton;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityCourseSelectedBinding;
 import com.sysu.edu.databinding.ItemCourseSelectedBinding;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class CourseSelectedActivity extends AppCompatActivity {
     final MutableLiveData<String> response = new MutableLiveData<>();
-    final OkHttpClient http = new OkHttpClient.Builder().build();
+    HttpManager http;
     Params params;
     ActivityResultLauncher<Intent> launcher;
     int page = 0;
-    Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityCourseSelectedBinding binding = ActivityCourseSelectedBinding.inflate(getLayoutInflater());
         params = new Params(this);
-        params.setCallback(this::getSelectedCourses);
+        CourseSelectedAdapter courseAdapter = new CourseSelectedAdapter();
+        params.setCallback(() -> {
+            page = 0;
+            courseAdapter.clear();
+            getSelectedCourses(binding.search.getQuery().toString());
+        });
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
         });
-        CourseSelectedAdapter adp = new CourseSelectedAdapter();
         setContentView(binding.getRoot());
         binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         binding.toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setOnMenuItemClickListener(_ -> {
-            startActivity(new Intent(this, MarkdownViewActivity.class).putExtra("content", adp.toMarkdown()).putExtra("title", getString(R.string.course_selected)),
+            startActivity(new Intent(this, MarkdownViewActivity.class).putExtra("content", courseAdapter.toMarkdown()).putExtra("title", getString(R.string.course_selected)),
                     ActivityOptionsCompat.makeSceneTransitionAnimation(this, binding.toolbar, "miniapp").toBundle());
             return true;
         });
@@ -77,72 +72,45 @@ public class CourseSelectedActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 page = 0;
-                adp.clear();
+                courseAdapter.clear();
                 getSelectedCourses(newText);
                 return true;
             }
         });
-
         binding.list.setLayoutManager(new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL));
-        binding.list.setAdapter(adp);
+        binding.list.setAdapter(courseAdapter);
         response.observe(this, d -> {
-            JSONObject data = JSONObject.parse(d);
-            if (data.getInteger("code") == 200) {
-                data.getJSONObject("data").getJSONArray("rows").forEach(o -> adp.add((JSONObject) o));
-                if (data.getJSONObject("data").getInteger("total") / 10.0 > page) {
-                    handler.postDelayed(() -> getSelectedCourses(binding.search.getQuery().toString()), 500);
-                }
+            JSONObject response = JSONObject.parse(d);
+            if (response.getInteger("code") == 200) {
+                JSONObject data = response.getJSONObject("data");
+                data.getJSONArray("rows").forEach(o -> courseAdapter.add((JSONObject) o));
+                if (data.getInteger("total") / 10.0 > page)
+                    getSelectedCourses(binding.search.getQuery().toString());
             } else {
                 params.toast(R.string.login_warning);
                 params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
             }
         });
-        handler = new Handler(getMainLooper()) {
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
-                    case -1:
-                        params.toast(R.string.no_wifi_warning);
-                    case 1:
-                        response.postValue((String) msg.obj);
-                        break;
+                    case -1 -> params.toast(R.string.no_wifi_warning);
+                    case 1 -> response.postValue((String) msg.obj);
                 }
             }
-        };
-        getSelectedCourses("");
-    }
-
-    public void getSelectedCourses() {
+        });
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE");
         getSelectedCourses("");
     }
 
     public void getSelectedCourses(String courseName) {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/selectedCourse/list")
-                .header("Cookie", params.getCookie())
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE")
-                .post(RequestBody.create(String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":10,\"total\":true,\"param\":{\"courseName\":\"%s\",\"successStatus\":\"1\",\"failureStatus\":\"0\",\"retiredClass\":\"0\",\"waitingScreen\":\"0\"}}", ++page, courseName), MediaType.parse("application/json"))).build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                handler.sendEmptyMessage(-1);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response r) throws IOException {
-                Message msg = Message.obtain();
-                msg.what = 1;
-                msg.obj = r.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/selectedCourse/list", String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":10,\"total\":true,\"param\":{\"courseName\":\"%s\",\"successStatus\":\"1\",\"failureStatus\":\"0\",\"retiredClass\":\"0\",\"waitingScreen\":\"0\"}}", ++page, courseName), 1);
     }
 
     public static class CourseSelectedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         final ArrayList<JSONObject> data = new ArrayList<>();
-
-        public CourseSelectedAdapter() {
-            super();
-        }
 
         public void add(JSONObject jsonObject) {
             data.add(jsonObject);
@@ -152,7 +120,6 @@ public class CourseSelectedActivity extends AppCompatActivity {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
             ViewHolder vh = new ViewHolder(ItemCourseSelectedBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
             vh.setInfo(data.get(viewType));
             return vh;
@@ -171,7 +138,6 @@ public class CourseSelectedActivity extends AppCompatActivity {
             });
             return md.toString();
         }
-
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {

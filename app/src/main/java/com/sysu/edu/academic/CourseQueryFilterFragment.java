@@ -50,14 +50,14 @@ public class CourseQueryFilterFragment extends PreferenceFragmentCompat {
 //        if (binding == null) {
         binding = FragmentCourseQueryFilterBinding.inflate(inflater, container, false);
         binding.getRoot().addView(super.onCreateView(inflater, container, savedInstanceState));
-        binding.fab.setOnClickListener(v -> {
+        binding.fab.setOnClickListener(_ -> {
             Bundle bundle = new Bundle();
             bundle.putString("params", getParams().toString());
             Navigation.findNavController(binding.getRoot()).navigate(R.id.query_to_result, bundle, new NavOptions.Builder().build());
         });
         Params params = new Params(requireActivity());
         params.setCallback(this, () -> getData(0));
-        Handler handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -111,8 +111,7 @@ public class CourseQueryFilterFragment extends PreferenceFragmentCompat {
                     }
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
         getData(0);
@@ -170,7 +169,6 @@ public class CourseQueryFilterFragment extends PreferenceFragmentCompat {
         SliderPreference week = findPreference("week");
         RangeSliderPreference weekRange = findPreference("weekRange");
         RangeSliderPreference classRange = findPreference("classRange");
-        SimpleMenuPreference endYear = findPreference("endYear");
         if (week != null && week.getValue() != 0) {
             params.put("weekDay", String.valueOf(week.getValue()));
         }
@@ -208,22 +206,17 @@ public class CourseQueryFilterFragment extends PreferenceFragmentCompat {
 
     private void insertMenuValue(JSONObject params, String key, String value) {
         SimpleMenuPreference preference = findPreference(key);
-        if (preference != null && (preference.getValue() == null || !preference.getValue().isEmpty())) {
+        if (preference != null && (preference.getValue() == null || !preference.getValue().isEmpty()))
             params.put(value, preference.getValue());
-        }
     }
 
     private void insertEditValue(JSONObject params, String key, String value) {
         EditPreference preference = findPreference(key);
-        if (preference != null) {
-            params.put(value, preference.getValue());
-        }
+        if (preference != null) params.put(value, preference.getValue());
     }
 
     private void insertFilterValue(JSONObject params, String key, String value) {
         FilterPreference preference = findPreference(key);
-        if (preference != null) {
-            params.put(value, preference.getValue());
-        }
+        if (preference != null) params.put(value, preference.getValue());
     }
 }

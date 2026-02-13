@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +35,12 @@ import java.util.Objects;
 
 public class GradeForLevelActivity extends AppCompatActivity {
 
+    final MutableLiveData<String> trainType = new MutableLiveData<>();
+    final MutableLiveData<String> year = new MutableLiveData<>();
+    final MutableLiveData<String> courseType = new MutableLiveData<>();
+    final MutableLiveData<String> courseName = new MutableLiveData<>();
+    final MutableLiveData<String> courseNumber = new MutableLiveData<>();
+    final MutableLiveData<String> minGrade = new MutableLiveData<>();
     HttpManager http;
     int page = 1;
     int total = -1;
@@ -40,15 +48,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
     PopupMenu yearPop;
     PopupMenu trainTypePop;
     PopupMenu courseTypePop;
-
-    final MutableLiveData<String> trainType = new MutableLiveData<>();
-    final MutableLiveData<String> year = new MutableLiveData<>();
-    final MutableLiveData<String> courseType = new MutableLiveData<>();
-    final MutableLiveData<String> courseName = new MutableLiveData<>();
-    final MutableLiveData<String> courseNumber = new MutableLiveData<>();
-    final MutableLiveData<String> minGrade = new MutableLiveData<>();
     MutableLiveData<String> input;
-    Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +60,13 @@ public class GradeForLevelActivity extends AppCompatActivity {
             getData(0);
             regetGrade();
         });
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         fragment = binding.fragment.getFragment();
         fragment.setScrollBottom(() -> {
             if ((page - 1) * 10 < total)
                 getGrade();
         });
-        binding.toolbar.getMenu().add("导出").setIcon(R.drawable.export).setOnMenuItemClickListener(item -> {
+        binding.toolbar.getMenu().add("导出").setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
             startActivity(new Intent(this, MarkdownViewActivity.class).putExtra("content", fragment.toTable()).putExtra("title", "成绩"),
                     ActivityOptionsCompat.makeSceneTransitionAnimation(this, binding.toolbar, "miniapp").toBundle());
             return false;
@@ -76,9 +76,9 @@ public class GradeForLevelActivity extends AppCompatActivity {
         courseTypePop = new PopupMenu(this, binding.courseType);
         PreferenceEditBinding courseNameEditText = PreferenceEditBinding.inflate(getLayoutInflater());
         PopupWindow courseNamePop = getPopupWindow(courseNameEditText);
-        binding.year.setOnClickListener(v -> yearPop.show());
-        binding.trainType.setOnClickListener(v -> trainTypePop.show());
-        binding.courseType.setOnClickListener(v -> courseTypePop.show());
+        binding.year.setOnClickListener(_ -> yearPop.show());
+        binding.trainType.setOnClickListener(_ -> trainTypePop.show());
+        binding.courseType.setOnClickListener(_ -> courseTypePop.show());
         binding.courseName.setOnClickListener(v -> {
             input = courseName;
             courseNamePop.showAsDropDown(v);
@@ -100,9 +100,9 @@ public class GradeForLevelActivity extends AppCompatActivity {
             courseNameEditText.textInputLayout.setHint(R.string.min_grade);
             courseNameEditText.textField.setText(minGrade.getValue());
         });
-        year.observe(this, s -> regetGrade());
-        trainType.observe(this, s -> regetGrade());
-        courseType.observe(this, s -> regetGrade());
+        year.observe(this, _ -> regetGrade());
+        trainType.observe(this, _ -> regetGrade());
+        courseType.observe(this, _ -> regetGrade());
         courseName.observe(this, s -> {
             binding.courseName.setText(s.isEmpty() ? getString(R.string.course_name) : s);
             regetGrade();
@@ -115,7 +115,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
             binding.minGrade.setText(s.isEmpty() ? getString(R.string.min_grade) : s);
             regetGrade();
         });
-        handler = new Handler(getMainLooper()) {
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -130,11 +130,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
                             if (total == -1)
                                 total = response.getJSONObject("data").getInteger("total");
                             response.getJSONObject("data").getJSONArray("rows").forEach(item -> {
-                                ArrayList<String> values = new ArrayList<>();
-                                for (String i : new String[]{"achievementPoint", "classesNum", "courseCategoryName", "courseId", "courseName", "courseNum", "credit", "examNatureName", "finalAchievementStr", "grade", "openClassUnitName", "schoolSemester", "sumHours", "trainingCategoryName", "totalAchievement"}) {
-                                    values.add(((JSONObject) item).getString(i));
-                                }
-
+                                ArrayList<String> values = extractValue((JSONObject) item, new String[]{"achievementPoint", "classesNum", "courseCategoryName", "courseId", "courseName", "courseNum", "credit", "examNatureName", "finalAchievementStr", "grade", "openClassUnitName", "schoolSemester", "sumHours", "trainingCategoryName", "totalAchievement"});
                                 fragment.add(values.get(4), List.of("绩点", "教学班编号", "课程类别", "课程ID", "课程名称", "课程编号", "学分", "考试性质", "等级", "年级", "开设单位", "学期", "总学时", "培养类别", "总成绩"), values);
                             });
                         } else {
@@ -145,7 +141,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
                             }
                             MutableLiveData<String> realLiveDataValue = List.of(trainType, year, courseType).get(what);
                             MaterialButton button = List.of(binding.trainType, binding.year, binding.courseType).get(what);
-                            menu.add(0, 0, 0, R.string.reset).setOnMenuItemClickListener(item -> {
+                            menu.add(0, 0, 0, R.string.reset).setOnMenuItemClickListener(_ -> {
                                 button.setText(List.of(R.string.train_type, R.string.year, R.string.course_type).get(what));
                                 realLiveDataValue.setValue("");
                                 return true;
@@ -168,8 +164,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
                     }
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
         getGrade();

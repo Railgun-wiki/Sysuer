@@ -53,11 +53,11 @@ import com.sysu.edu.academic.LeaveReturnRegistrationActivity;
 import com.sysu.edu.academic.MajorInfo;
 import com.sysu.edu.academic.PersonalInformationActivity;
 import com.sysu.edu.academic.PhysicalFitnessTestResultActivity;
-import com.sysu.edu.academic.RegisterInfo;
+import com.sysu.edu.academic.RegisterInfoActivity;
 import com.sysu.edu.academic.RoomQueryActivity;
 import com.sysu.edu.academic.SchoolEnrollmentActivity;
 import com.sysu.edu.academic.SchoolWorkWarning;
-import com.sysu.edu.academic.TrainingSchedule;
+import com.sysu.edu.academic.TrainingProgramActivity;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.SysuerPreferenceManager;
@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
         // 学术服务 (id: 1xx)
         actionMap.put(101, newActivity(SchoolEnrollmentActivity.class));           // 学籍
         actionMap.put(102, newActivity(CETActivity.class));          // 四六级
-        actionMap.put(103, newActivity(RegisterInfo.class));         // 注册
+        actionMap.put(103, newActivity(RegisterInfoActivity.class));         // 注册
         actionMap.put(104, newActivity(SchoolWorkWarning.class));    // 学业预警
         actionMap.put(105, newActivity(CourseCompletionActivity.class));     // 课程完成情况
         actionMap.put(106, newActivity(LeaveReturnRegistrationActivity.class));     // 请假返回登记
@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(707, newActivity(GradeActivity.class));                        // 成绩
         actionMap.put(708, newActivity(CourseQueryActivity.class));                  // 课程
         actionMap.put(709, browse("https://jwxt.sysu.edu.cn/jwxt/mk/#/personalTrainingProgramView")); // 个人培养方案
-        actionMap.put(710, newActivity(TrainingSchedule.class));             // 培养方案
+        actionMap.put(710, newActivity(TrainingProgramActivity.class));             // 培养方案
         actionMap.put(711, newActivity(MajorInfo.class));                    // 专业
         actionMap.put(712, newActivity(CourseSelectedActivity.class));                  // 已选课程
         actionMap.put(713, newActivity(AssistantInfoActivity.class));       // 助教信息

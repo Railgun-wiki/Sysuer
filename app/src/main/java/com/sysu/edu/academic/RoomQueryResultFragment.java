@@ -26,8 +26,7 @@ public class RoomQueryResultFragment extends StaggeredFragment {
     FragmentCourseQueryResultBinding courseQueryResultBinding;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         courseQueryResultBinding = FragmentCourseQueryResultBinding.inflate(inflater, container, false);
         courseQueryResultBinding.getRoot().addView(super.onCreateView(inflater, courseQueryResultBinding.getRoot(), savedInstanceState), -1, -1);
         params = new Params(requireActivity());
@@ -77,7 +76,6 @@ public class RoomQueryResultFragment extends StaggeredFragment {
         http = new HttpManager(handler);
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/schedule-web/");
-        clear();
         getRooms();
         return courseQueryResultBinding.getRoot();
     }

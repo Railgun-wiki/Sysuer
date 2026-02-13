@@ -83,11 +83,10 @@ public class DashboardFragment extends Fragment {
     final LinkedList<JSONObject> thisWeekExams = new LinkedList<>();
     final LinkedList<JSONObject> nextWeekExams = new LinkedList<>();
     HttpManager http;
-    String cookie;
     Params params;
     HomeCollectionHelper db;
     FragmentDashboardBinding binding;
-    boolean refresh = true;
+    boolean isRefreshRequired = true;
     HomeViewModel viewModel;
     BottomSheetDialog orderDialog;
     CollectionAdapter collectionAdapter;
@@ -97,12 +96,12 @@ public class DashboardFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (refresh) {
+        if (isRefreshRequired) {
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
             db = new HomeCollectionHelper(requireContext());
             viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
-            viewModel.updateDashboardShortcut.observe(requireActivity(), b -> getShortcutCollection());
-            binding.scan.setOnClickListener(v -> {
+            viewModel.updateDashboardShortcut.observe(requireActivity(), _ -> getShortcutCollection());
+            binding.scan.setOnClickListener(_ -> {
                 try {
                     Intent intent = new Intent();
                     intent.setComponent(new ComponentName("com.tencent.mm", "com.tencent.mm.ui.LauncherUI"));
@@ -113,7 +112,7 @@ public class DashboardFragment extends Fragment {
                 } catch (ActivityNotFoundException ignored) {
                 }
             });
-            binding.qrcode.setOnClickListener(v -> {
+            binding.qrcode.setOnClickListener(_ -> {
                 String linking = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("qrcode", "");
                 if (!linking.isEmpty()) {
                     try {
@@ -131,23 +130,19 @@ public class DashboardFragment extends Fragment {
             binding.examList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.examList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             params = new Params(requireActivity());
-            cookie = params.getCookie();
-            params.setCallback(this, () -> {
-                cookie = params.getCookie();
-                getTerm();
-            });
+            params.setCallback(this, this::getTerm);
             CourseAdapter courseAdapter = new CourseAdapter(requireActivity());
             courseAdapter.setOnClick((jsonObject, view) -> startActivity(new Intent(getContext(), CourseDetailActivity.class).putExtra("code", jsonObject.getString("courseNum")).putExtra("class", jsonObject.getString("classesNum")), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle()));
             binding.courseList.setAdapter(courseAdapter);
             ExamAdapter examAdapter = new ExamAdapter(requireActivity());
             binding.examList.setAdapter(examAdapter);
-            binding.toggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            binding.toggle.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
                 if (R.id.today == checkedId) {
                     courseAdapter.set(isChecked ? todayCourse : tomorrowCourse);
                     binding.noClass.setVisibility(courseAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
                 }
             });
-            binding.toggle2.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            binding.toggle2.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
                 if (R.id.week_18 == checkedId) {
                     examAdapter.set(isChecked ? thisWeekExams : nextWeekExams);
                     binding.noExam.setVisibility(examAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
@@ -189,7 +184,7 @@ public class DashboardFragment extends Fragment {
                                     @Override
                                     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
                                         super.configureSpansFactory(builder);
-                                        builder.appendFactory(Heading.class, (heading, configuration) -> {
+                                        builder.appendFactory(Heading.class, (_, configuration) -> {
                                             if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
                                                 return new ForegroundColorSpan(Color.parseColor("#6750a4"));
                                             return null;
@@ -232,35 +227,33 @@ public class DashboardFragment extends Fragment {
                                 break;
                             case 2:
                                 JSONArray dataArray = response.getJSONArray("data");
-                                if (dataArray.isEmpty()) {
+                                if (!dataArray.isEmpty()) {
+                                    for (int i = 0; i < dataArray.size(); i++) {
+                                        LinkedList<JSONObject> exams = List.of(thisWeekExams, nextWeekExams).get(i);
+                                        TreeMap<Integer, JSONArray> sortedTimetable = new TreeMap<>();
+                                        dataArray.getJSONObject(i).getJSONObject("timetable").forEach((s, t) -> {
+                                            if (t != null)
+                                                sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
+                                        });
+                                        sortedTimetable.forEach((key, value) -> {
+                                            if (key.equals(sortedTimetable.firstKey())) {
+                                                value.forEach(c -> exams.addFirst((JSONObject) c));
+                                            } else {
+                                                value.forEach(c -> exams.addLast((JSONObject) c));
+                                            }
+                                        });
+                                    }
+                                    binding.toggle2.clearChecked();
+                                    binding.toggle2.check(R.id.week_18);
                                     break;
                                 }
-                                for (int i = 0; i < dataArray.size(); i++) {
-                                    LinkedList<JSONObject> exams = List.of(thisWeekExams, nextWeekExams).get(i);
-                                    TreeMap<Integer, JSONArray> sortedTimetable = new TreeMap<>();
-                                    dataArray.getJSONObject(i).getJSONObject("timetable").forEach((s, t) -> {
-                                        if (t != null) {
-                                            sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
-                                        }
-                                    });
-                                    sortedTimetable.forEach((key, value) -> {
-                                        if (key.equals(sortedTimetable.firstKey())) {
-                                            value.forEach(c -> exams.addFirst((JSONObject) c));
-                                        } else {
-                                            value.forEach(c -> exams.addLast((JSONObject) c));
-                                        }
-                                    });
-                                }
-                                binding.toggle2.clearChecked();
-                                binding.toggle2.check(R.id.week_18);
-                                break;
                             case 3:
                                 String term = response.getJSONObject("data").getString("acadYearSemester");
                                 binding.date.setText(String.format("第%s学期\n%s\n星期%s", term, new SimpleDateFormat("M月dd日", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
                                 getTodayCourses(term);
                                 getExams(term);
                                 getWeek(term);
-                                refresh = false;
+                                isRefreshRequired = false;
                                 break;
                             case 4:
                                 String week = response.getJSONArray("data").getJSONObject(0).getString("weekTimes");
@@ -295,8 +288,8 @@ public class DashboardFragment extends Fragment {
             InitTodo initTodo = new InitTodo(requireActivity(), todoFragment);
             initTodo.filterStatus(todoFragment, TodoInfo.DONE);
             binding.noTodo.setVisibility(initTodo.getCount() != 0 ? View.GONE : View.VISIBLE);
-            binding.noTodo.setOnClickListener(v -> initTodo.showTodoAddDialog());
-            binding.toggle3.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            binding.noTodo.setOnClickListener(_ -> initTodo.showTodoAddDialog());
+            binding.toggle3.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
                 if (checkedId == R.id.filter_todo) {
                     initTodo.filterStatus(todoFragment, isChecked ? TodoInfo.TODO : TodoInfo.DONE);
                     binding.noTodo.setVisibility(initTodo.getCount() != 0 ? View.GONE : View.VISIBLE);
@@ -341,14 +334,13 @@ public class DashboardFragment extends Fragment {
             Date fromDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(from);
             Date toDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(to);
             return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException ignored) {
-        }
+        } catch (ParseException ignored) {}
         return "before";
     }
 
     void getShortcutCollection() {
         if (binding.shortcutGroup.getChildCount() > 4)
-            IntStream.range(3, binding.shortcutGroup.getChildCount() - 1).forEach(i -> binding.shortcutGroup.removeViewAt(3));
+            IntStream.range(3, binding.shortcutGroup.getChildCount() - 1).forEach(_ -> binding.shortcutGroup.removeViewAt(3));
         try (Cursor cursor = db.getWritableDatabase().query("dashboard_shortcut_collection", null, null, null, null, null, "position")) {
             if (cursor.moveToFirst()) {
                 collectionAdapter.clear();
@@ -360,7 +352,7 @@ public class DashboardFragment extends Fragment {
                     binding.shortcutGroup.addView(button);
                     if (viewModel.actionMap.containsKey(id))
                         button.setOnClickListener(viewModel.actionMap.get(id));
-                    button.setOnLongClickListener(v -> action(shortcut));
+                    button.setOnLongClickListener(_ -> action(shortcut));
                     collectionAdapter.add(shortcut);
                 } while (cursor.moveToNext());
             }
@@ -374,7 +366,7 @@ public class DashboardFragment extends Fragment {
         orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(context));
         collectionAdapter = new CollectionAdapter();
         orderBinding.recyclerView.setAdapter(collectionAdapter);
-        orderBinding.confirm.setOnClickListener(v -> {
+        orderBinding.confirm.setOnClickListener(_ -> {
             updateShortcut();
             getShortcutCollection();
             orderDialog.dismiss();
@@ -409,7 +401,7 @@ public class DashboardFragment extends Fragment {
     void initAction(@NonNull LayoutInflater inflater) {
         actionDialog = new BottomSheetDialog(requireContext());
         actionBinding = DialogServiceActionBinding.inflate(inflater);
-        actionBinding.order.setOnClickListener(v -> orderDialog.show());
+        actionBinding.order.setOnClickListener(_ -> orderDialog.show());
         actionDialog.setContentView(actionBinding.getRoot());
     }
 
@@ -419,7 +411,7 @@ public class DashboardFragment extends Fragment {
         MutableLiveData<Boolean> isShortcutCollected = new MutableLiveData<>(db.isDashboardShortcutCollected(itemId));
         actionBinding.collect.setText(Boolean.TRUE.equals(isServiceCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
         actionBinding.addShortcut.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_shortcut);
-        actionBinding.collect.setOnClickListener(w -> {
+        actionBinding.collect.setOnClickListener(_ -> {
             boolean isServiceCollect = Boolean.TRUE.equals(isServiceCollected.getValue());
             if (isServiceCollect) {
                 db.deleteService(itemId);
@@ -432,7 +424,7 @@ public class DashboardFragment extends Fragment {
             actionBinding.collect.setText(isServiceCollect ? R.string.collect : R.string.cancel_collect);
             isServiceCollected.setValue(!isServiceCollect);
         });
-        actionBinding.addShortcut.setOnClickListener(w -> {
+        actionBinding.addShortcut.setOnClickListener(_ -> {
             boolean isShortcutCollect = Boolean.TRUE.equals(isShortcutCollected.getValue());
             if (isShortcutCollect) {
                 db.deleteDashboardShortcut(itemId);
@@ -445,7 +437,7 @@ public class DashboardFragment extends Fragment {
             actionBinding.addShortcut.setText(isShortcutCollect ? R.string.add_shortcut : R.string.cancel_add_shortcut);
             isShortcutCollected.setValue(!isShortcutCollect);
         });
-        actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        actionBinding.feedback.setOnClickListener(_ -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
         Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
         actionDialog.show();
         return true;
@@ -492,7 +484,7 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ItemCourseBinding binding = ItemCourseBinding.bind(holder.itemView);
         BiConsumer<Integer, String> a = (id, s) -> {
             ((TextView) holder.itemView.findViewById(id)).setText(data.get(position).getString(s));
-            holder.itemView.findViewById(id).setOnLongClickListener(v -> {
+            holder.itemView.findViewById(id).setOnLongClickListener(_ -> {
                 params.copy(s + "：", data.get(position).getString(s));
                 params.toast(R.string.copy_successfully);
                 return true;
@@ -546,15 +538,13 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(context)).getRoot()) {
-        };
+        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(context)).getRoot()) {};
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemExamBinding binding = ItemExamBinding.bind(holder.itemView);
-        holder.itemView.setOnClickListener(v -> {
-        });
+        holder.itemView.setOnClickListener(_ -> {});
         JSONObject examData = data.get(position);
         int startClassTimes = examData.getIntValue("startClassTimes");
         int endClassTimes = examData.getIntValue("endClassTimes");
@@ -566,20 +556,11 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 String.format(context.getString(R.string.section_range), startClassTimes, endClassTimes),
                 String.format("%s：%s", context.getString(R.string.exam_mode), examData.getString("examMode")),
                 String.format("%s：%s", context.getString(R.string.exam_stage), examData.getString("examStage"))};
-        TextView[] materialTextButtons = {
-                binding.examName,
-                binding.examLocation,
-                binding.examDate,
-                binding.examDuration,
-                binding.examTime,
-                binding.examClassTime,
-                binding.examMode,
-                binding.examStage,
-        };
+        TextView[] materialTextButtons = {binding.examName,binding.examLocation,binding.examDate,binding.examDuration,binding.examTime, binding.examClassTime,binding.examMode,binding.examStage};
         for (int i = 0; i < 8; i++) {
             materialTextButtons[i].setText(text[i]);
             int finalI = i;
-            materialTextButtons[i].setOnClickListener(v -> {
+            materialTextButtons[i].setOnClickListener(_ -> {
                 params.copy(finalI + "：", text[finalI]);
                 params.toast(R.string.copy_successfully);
             });

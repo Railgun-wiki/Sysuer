@@ -72,8 +72,7 @@ public class NewsFragment extends Fragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context)).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context)).getRoot()) {};
         }
 
         public void add(JSONObject json) {

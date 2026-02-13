@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.trim;
+
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -47,7 +49,7 @@ public class CourseSelectionSelectedFragment extends Fragment {
     int failure = 1;
     int retired = 1;
     int waiting = 1;
-    int total = 0;
+    int total = -1;
     String category;
     StaggeredGridLayoutManager layoutManager;
     Params params;
@@ -166,7 +168,7 @@ public class CourseSelectionSelectedFragment extends Fragment {
 
     void regetSelectedCourses() {
         page = 1;
-        total = 0;
+        total = -1;
         adapter.clear();
         getSelectedCourses();
     }
@@ -180,106 +182,104 @@ public class CourseSelectionSelectedFragment extends Fragment {
         super.onConfigurationChanged(newConfig);
         layoutManager.setSpanCount(params.getColumn());
     }
-}
 
-class CourseSelectedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    static class CourseSelectedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    final String[] info = new String[]{"credit", "teachingClassNum", "scheduleExamTime", "examFormName"};
-    final ArrayList<JSONObject> data = new ArrayList<>();
-    Consumer<Integer> selectAction;
-    BiConsumer<String, String> likeAction;
+        final String[] info = new String[]{"credit", "teachingClassNum", "scheduleExamTime", "examFormName"};
+        final ArrayList<JSONObject> data = new ArrayList<>();
+        Consumer<Integer> selectAction;
+        BiConsumer<String, String> likeAction;
 
-    public void add(JSONObject e) {
-        data.add(e);
-        notifyItemInserted(getItemCount() - 1);
-    }
+        public void add(JSONObject e) {
+            data.add(e);
+            notifyItemInserted(getItemCount() - 1);
+        }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.inflate(LayoutInflater.from(context), parent, false);
-        for (int i = 0; i < info.length; i++) {
-            Chip chip = (Chip) LayoutInflater.from(context).inflate(R.layout.item_action_chip, binding.courseInfo, false);
-            chip.setOnLongClickListener(a -> {
-                ((ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("", ((Chip) a).getText()));
-                return false;
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            Context context = parent.getContext();
+            ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.inflate(LayoutInflater.from(context), parent, false);
+            for (int i = 0; i < info.length; i++) {
+                Chip chip = (Chip) LayoutInflater.from(context).inflate(R.layout.item_action_chip, binding.courseInfo, false);
+                chip.setOnLongClickListener(a -> {
+                    ((ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("", ((Chip) a).getText()));
+                    return false;
+                });
+                chip.setOnClickListener(a -> Snackbar.make(context, chip, ((Chip) a).getText(), Snackbar.LENGTH_LONG).show());
+                binding.courseInfo.addView(chip);
+            }
+            return new RecyclerView.ViewHolder(binding.getRoot()) {
+            };
+        }
+
+
+        public void setSelectAction(Consumer<Integer> action) {
+            this.selectAction = action;
+        }
+
+        public JSONObject getItem(int position) {
+            return data.get(position);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.bind(holder.itemView);
+            Context context = binding.getRoot().getContext();
+            binding.courseName.setText(String.format("%s-%s", convert(position, "courseNum"), convert(position, "courseName")));
+            JSONObject item = data.get(position);
+            Integer status = item.getInteger("status");
+            binding.select.setSelected(status == 3 || status == 4);
+
+            boolean canPNP = status == 4 && Objects.equals(item.getString("isInTwoTierSet"), "1") && Arrays.asList(item.getString("courseCateList").split(",")).contains(item.getString("courseCateCode"));
+
+            binding.select.setText(binding.select.isSelected() ? context.getString(R.string.drop_course) : context.getString(R.string.select_course));
+            binding.filtering.setText(String.format("%s：%s", context.getString(R.string.status), "\n" + context.getString(status == 4 ? R.string.status_selected : status == 3 ? R.string.filtering : status == 1 ? R.string.retired : R.string.unselected)));
+            binding.select.setOnClickListener(_ -> {
+                if (selectAction != null)
+                    selectAction.accept(position);
             });
-            chip.setOnClickListener(a -> Snackbar.make(context, chip, ((Chip) a).getText(), Snackbar.LENGTH_LONG).show());
-            binding.courseInfo.addView(chip);
+            binding.open.setOnClickListener(v -> context.startActivity(new Intent(context, CourseDetailActivity.class).putExtra("code", convert(position, "courseNum")).putExtra("id", convert(position, "courseId")).putExtra("class", convert(position, "clazzNum")), ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context, v, "miniapp").toBundle()));
+            binding.head.setText(convert(position, "teachingTimePlace").replace(";", " | ").replace(",", "\n"));
+
+            binding.like.setVisibility(canPNP ? View.VISIBLE : View.GONE);
+            if (canPNP) {
+                boolean isPNP = item.getString("isTwoTier") == null || item.getString("isTwoTier").equals("0");
+                binding.like.setText(isPNP ? R.string.set_pnp : R.string.cancel_pnp);
+                binding.like.setOnClickListener(_ -> likeAction.accept(isPNP ? "1" : "0", item.getString("teachingClassId")));
+            }
+            String[] courseInfoLabels = context.getResources().getStringArray(R.array.course_info_labels);
+            String[] seatInfoLabels = context.getResources().getStringArray(R.array.seat_info_labels);
+            ArrayList<String> infoList = new ArrayList<>(Arrays.asList(seatInfoLabels));
+            infoList.remove(1);
+            for (int i = 0; i < info.length; i++) {
+                String content = convert(position, info[i]);
+                ((Chip) binding.courseInfo.getChildAt(i)).setText(String.format("%s：%s", courseInfoLabels[i], content));
+            }
+            String[] seats = new String[]{"baseReceiveNum", "selectCount"};
+            for (int i = 0; i < seats.length; i++) {
+                String content = convert(position, seats[i]);
+                (new MaterialButton[]{binding.left, binding.selected}[i]).setText(String.format("%s\n%s", infoList.get(i), content));
+            }
         }
-//        binding.like.setVisibility(View.GONE);
-        return new RecyclerView.ViewHolder(binding.getRoot()) {
-        };
-    }
 
-
-    public void setSelectAction(Consumer<Integer> action) {
-        this.selectAction = action;
-    }
-
-    public JSONObject getItem(int position) {
-        return data.get(position);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.bind(holder.itemView);
-        Context context = binding.getRoot().getContext();
-        binding.courseName.setText(String.format("%s-%s", convert(position, "courseNum"), convert(position, "courseName")));
-        JSONObject item = data.get(position);
-        Integer status = item.getInteger("status");
-        binding.select.setSelected(status == 3 || status == 4);
-
-        boolean canPNP = status == 4 && Objects.equals(item.getString("isInTwoTierSet"), "1") && Arrays.asList(item.getString("courseCateList").split(",")).contains(item.getString("courseCateCode"));
-
-        binding.select.setText(binding.select.isSelected() ? context.getString(R.string.drop_course) : context.getString(R.string.select_course));
-        binding.filtering.setText(String.format("%s：%s", context.getString(R.string.status), "\n" + context.getString(status == 4 ? R.string.status_selected : status == 3 ? R.string.filtering : status == 1 ? R.string.retired : R.string.unselected)));
-        binding.select.setOnClickListener(_ -> {
-            if (selectAction != null)
-                selectAction.accept(position);
-        });
-        binding.open.setOnClickListener(v -> context.startActivity(new Intent(context, CourseDetailActivity.class).putExtra("code", convert(position, "courseNum")).putExtra("id", convert(position, "courseId")).putExtra("class", convert(position, "clazzNum")), ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context, v, "miniapp").toBundle()));
-        binding.head.setText(convert(position, "teachingTimePlace").replace(";", " | ").replace(",", "\n"));
-
-        binding.like.setVisibility(canPNP ? View.VISIBLE : View.GONE);
-        if (canPNP) {
-            boolean isPNP = item.getString("isTwoTier") == null || item.getString("isTwoTier").equals("0");
-            binding.like.setText(isPNP ? "设置PNP" : "取消PNP");
-            binding.like.setOnClickListener(_ -> likeAction.accept( isPNP ? "1" : "0",item.getString("teachingClassId")));
+        @Override
+        public int getItemCount() {
+            return data.size();
         }
-        String[] courseInfoLabels = context.getResources().getStringArray(R.array.course_info_labels);
-        String[] seatInfoLabels = context.getResources().getStringArray(R.array.seat_info_labels);
-        ArrayList<String> infoList = new ArrayList<>(Arrays.asList(seatInfoLabels));
-        infoList.remove(1);
-        for (int i = 0; i < info.length; i++) {
-            String content = convert(position, info[i]);
-            ((Chip) binding.courseInfo.getChildAt(i)).setText(String.format("%s：%s", courseInfoLabels[i], content));
+
+        public String convert(int position, String key) {
+            return trim(data.get(position).getString(key)).replace("\n\n", "\n");
         }
-        String[] seats = new String[]{"baseReceiveNum", "selectCount"};
-        for (int i = 0; i < seats.length; i++) {
-            String content = convert(position, seats[i]);
-            (new MaterialButton[]{binding.left, binding.selected}[i]).setText(String.format("%s\n%s", infoList.get(i), content));
+
+        public void clear() {
+            int tmp = getItemCount();
+            data.clear();
+            notifyItemRangeRemoved(0, tmp);
         }
-    }
 
-    @Override
-    public int getItemCount() {
-        return data.size();
-    }
-
-    public String convert(int position, String key) {
-        String a = data.get(position).getString(key);
-        return (a == null ? "" : a).replace("\n\n", "\n");
-    }
-
-    public void clear() {
-        int tmp = getItemCount();
-        data.clear();
-        notifyItemRangeRemoved(0, tmp);
-    }
-
-    public void setLikeAction(BiConsumer<String, String> action) {
-        this.likeAction = action;
+        public void setLikeAction(BiConsumer<String, String> action) {
+            this.likeAction = action;
+        }
     }
 }

@@ -20,7 +20,7 @@ public class RoomQueryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ActivityRoomQueryBinding binding = ActivityRoomQueryBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         NavHostFragment nav = (NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.fragment));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         NavigationUI.setupWithNavController(binding.toolbar, nav.getNavController(), new AppBarConfiguration.Builder().setFallbackOnNavigateUpListener(() -> {

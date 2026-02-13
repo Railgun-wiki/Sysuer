@@ -11,39 +11,30 @@ import androidx.lifecycle.ViewModelProvider;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationManager;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityLeaveReturnRegistrationBinding;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class LeaveReturnRegistrationActivity extends AppCompatActivity {
 
-    final OkHttpClient http = new OkHttpClient();
-    Handler handler;
-    Params params;
-    String baseUrl = "https://xgxt.sysu.edu.cn";
-    boolean isAccessible = true;
-
+    HttpManager http;
+    AuthorizationManager authorizationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityLeaveReturnRegistrationBinding binding = ActivityLeaveReturnRegistrationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        params = new Params(this);
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+        Params params = new Params(this);
         params.setCallback(this::getYears);
         LeaveReturnRegistrationViewModel viewModel = new ViewModelProvider(this).get(LeaveReturnRegistrationViewModel.class);
-        handler = new Handler(getMainLooper()) {
+        authorizationManager = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt-443.webvpn.sysu.edu.cn/");
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -51,7 +42,7 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                 } else if (msg.what == 0) {
                     int code = msg.getData().getInt("code");
                     if (code == 200) {
-                        String response = msg.getData().getString("response");
+                        String response = (String) msg.obj;
                         if (msg.getData().getBoolean("isJSON")) {
                             JSONObject json = JSONObject.parse(response);
                             JSONArray data;
@@ -59,68 +50,33 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                                 ArrayList<String> years = new ArrayList<>();
                                 data.forEach(o -> years.add(((JSONObject) o).getString("label") == null ? "" : ((JSONObject) o).getString("label")));
                                 binding.years.setSimpleItems(years.toArray(new String[0]));
-                                binding.years.setOnItemClickListener((parent, view, position, id) -> viewModel.year.setValue(data.getJSONObject(position).getString("value")));
+                                binding.years.setOnItemClickListener((_, _, position, _) -> viewModel.year.setValue(data.getJSONObject(position).getString("value")));
                                 binding.years.setText(years.isEmpty() ? "" : years.get(0), false);
                                 viewModel.year.setValue(data.getJSONObject(0).getString("value"));
-                            } else {
-                                params.toast(msg.getData().getString("message"));
+                            } /*else {
+                                params.toast(data.getString("message"));
+                            }*/
+                        } else {
+                            if (!authorizationManager.isAuthorized(response)) {
+                                params.toast(R.string.login_warning);
+                                params.gotoLogin(binding.toolbar, authorizationManager.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
+                            } else if (!authorizationManager.isAccessible(response)) {
+                                params.toast(R.string.educational_wifi_warning);
+                                getYears();
                             }
-                        } else if (getAccessibility(response)) {
-                            isAccessible = false;
-                            params.toast(R.string.educational_wifi_warning);
-                            baseUrl = "https://xgxt-443.webvpn.sysu.edu.cn";
-                            getYears();
-                            //params.gotoLogin(binding.toolbar, TargetUrl.XGXT_WEBVPN);
-                        } else if (getAuthorization(response)) {
-                            params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.toolbar, isAccessible ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                         }
                     } else if (code == 302) {
-                        params.gotoLogin(binding.toolbar, TargetUrl.XGXT_WEBVPN);
+                        params.gotoLogin(binding.toolbar, authorizationManager.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                     } else {
                         params.toast(R.string.educational_wifi_warning);
                     }
                 }
             }
-        };
+        });
         getYears();
     }
 
     void getYears() {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/school-year", 0);
-    }
-
-    void sendRequest(String url, int what) {
-        http.newCall(new Request.Builder().url(baseUrl + url)
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                Bundle bundle = new Bundle();
-                bundle.putInt("code", response.code());
-                bundle.putString("response", response.body().string());
-                bundle.putBoolean("isJSON", response.headers("Content-Type").contains("application/json"));
-                msg.setData(bundle);
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-        });
-    }
-
-    boolean getAccessibility(String content) {
-        return Pattern.compile("Access Forbidden").matcher(content).find();
-    }
-
-    boolean getAuthorization(String content) {
-        return Pattern.compile("中山大学统一身份认证").matcher(content).find();
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/school-year", 0);
     }
 }

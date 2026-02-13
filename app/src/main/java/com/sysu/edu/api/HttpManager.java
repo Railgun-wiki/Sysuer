@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 
@@ -26,7 +27,10 @@ public class HttpManager {
     String authorization;
     Params params;
     String ua;
+    String target;
     boolean isAuthorizationRequired;
+    boolean isTokenRequired;
+    CookieManager cookieManager = CookieManager.getInstance();
 
     public HttpManager(Handler handler) {
         http = new OkHttpClient();
@@ -53,12 +57,20 @@ public class HttpManager {
         this.authorization = authorization;
     }
 
-    public void setAuthorization(boolean isAuthorizationRequired) {
+    public void setAuthorizationRequired(boolean isAuthorizationRequired) {
         this.isAuthorizationRequired = isAuthorizationRequired;
+    }
+
+    public void setTokenRequired(boolean isTokenRequired) {
+        this.isTokenRequired = isTokenRequired;
     }
 
     public void setUA(String ua) {
         this.ua = ua;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
     }
 
     private void sendRequest(@NonNull String url, String data, String type, int what) {
@@ -68,14 +80,20 @@ public class HttpManager {
         }
         Request.Builder request = new Request.Builder()
                 .url(url);
-        if (params != null) request.header("Cookie", params.getCookie());
+//        if (params != null) request.header("Cookie", params.getCookie());
         if (cookie != null) request.header("Cookie", cookie);
+        if (target != null && cookieManager.getCookie(target) != null) {
+            request.header("Cookie", cookieManager.getCookie(target));
+        } else if (cookieManager.getCookie(url) != null) {
+            request.header("Cookie", cookieManager.getCookie(url));
+        }
         if (isAuthorizationRequired && params != null)
             request.header("Authorization", params.getAuthorization());
         if (authorization != null) request.header("Authorization", authorization);
         if (referrer != null) request.header("Referer", referrer);
         if (ua != null) request.header("User-Agent", ua);
         if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
+        if (isTokenRequired && params != null) request.header("token", params.getToken());
         http.newCall(request.build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {

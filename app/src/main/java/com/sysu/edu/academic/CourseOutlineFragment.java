@@ -39,9 +39,7 @@ public class CourseOutlineFragment extends Fragment {
             binding.fab.setOnClickListener(v -> startActivity(new Intent(requireContext(), MarkdownViewActivity.class).putExtra("content", adp.toMarkdown()).putExtra("title", getString(R.string.course_outline))));
             if (data != null) {
                 data.forEach(e -> {
-                    if (e != null && adp != null) {
-                        adp.add((JSONObject) e);
-                    }
+                    if (e != null) adp.add((JSONObject) e);
                 });
             }
             root = binding.getRoot();
@@ -51,56 +49,52 @@ public class CourseOutlineFragment extends Fragment {
 
     @Override
     public void setArguments(@Nullable Bundle args) {
-        if (args != null) {
-            data = JSONArray.parse(args.getString("data"));
-        }
+        if (args != null) data = JSONArray.parse(args.getString("data"));
         super.setArguments(args);
     }
-}
+    static class CourseOutlineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        final ArrayList<JSONObject> data = new ArrayList<>();
 
-class CourseOutlineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    final ArrayList<JSONObject> data = new ArrayList<>();
+        public void add(JSONObject json) {
+            data.add(json);
+            notifyItemInserted(getItemCount() - 1);
+        }
 
-    public void add(JSONObject json) {
-        data.add(json);
-        notifyItemInserted(getItemCount());
-    }
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new RecyclerView.ViewHolder(ItemCourseOutlineBinding.inflate(LayoutInflater.from(parent.getContext())).getRoot()) {};
+        }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemCourseOutlineBinding.inflate(LayoutInflater.from(parent.getContext())).getRoot()) {
-        };
-    }
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            ItemCourseOutlineBinding binding = ItemCourseOutlineBinding.bind(holder.itemView);
+            binding.title.setText(String.format("%s（ %s %s）", convert(position, "sectionDesignation"), convert(position, "teachingHours"), holder.itemView.getResources().getString(R.string.study_hour)));
+            binding.intro.setText(String.format("教学内容：%s\n育人元素：%s\n重点、难点：%s", convert(position, "teachingMainContent"), convert(position, "courseElements"), convert(position, "keyPoints")));
+        }
 
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ItemCourseOutlineBinding binding = ItemCourseOutlineBinding.bind(holder.itemView);
-        binding.title.setText(String.format("%s（ %s %s）", convert(position, "sectionDesignation"), convert(position, "teachingHours"), holder.itemView.getResources().getString(R.string.study_hour)));
-        binding.intro.setText(String.format("教学内容：%s\n育人元素：%s\n重点、难点：%s", convert(position, "teachingMainContent"), convert(position, "courseElements"), convert(position, "keyPoints")));
-    }
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
 
-    @Override
-    public int getItemCount() {
-        return data.size();
-    }
+        String convert(int position, String key) {
+            return trim(data.get(position).getString(key)).replaceAll("\n\n", "\n");
+        }
 
-    String convert(int position, String key) {
-        return trim(data.get(position).getString(key)).replaceAll("\n\n", "\n");
-    }
-
-    public String toMarkdown() {
-        StringBuilder md = new StringBuilder();
-        md.append("|章节|学时|教学内容|育人元素|重点、难点|\n|---|---|---|---|---|\n");
-        data.forEach(e -> {
-            if (e != null) {
-                md.append(trim(e.getString("sectionDesignation")).replace("\n", ";")).append("|");
-                md.append(trim(e.getString("teachingHours"))).append("|");
-                md.append(trim(e.getString("teachingMainContent")).replace("\n", "")).append("|");
-                md.append(trim(e.getString("courseElements")).replace("\n", "")).append("|");
-                md.append(trim(e.getString("keyPoints")).replace("\n", "")).append("|\n");
-            }
-        });
-        return md.toString();
+        public String toMarkdown() {
+            StringBuilder md = new StringBuilder();
+            md.append("|章节|学时|教学内容|育人元素|重点、难点|\n|---|---|---|---|---|\n");
+            data.forEach(e -> {
+                if (e != null) {
+                    md.append(trim(e.getString("sectionDesignation")).replace("\n", ";")).append("|");
+                    md.append(trim(e.getString("teachingHours"))).append("|");
+                    md.append(trim(e.getString("teachingMainContent")).replace("\n", "")).append("|");
+                    md.append(trim(e.getString("courseElements")).replace("\n", "")).append("|");
+                    md.append(trim(e.getString("keyPoints")).replace("\n", "")).append("|\n");
+                }
+            });
+            return md.toString();
+        }
     }
 }

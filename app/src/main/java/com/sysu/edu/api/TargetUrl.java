@@ -13,5 +13,6 @@ public class TargetUrl {
     public static final String XGXT = "https://xgxt.sysu.edu.cn/#/index";
     public static final String XGXT_WEBVPN = "https://xgxt-443.webvpn.sysu.edu.cn/#/index";
     public static final String TICE = "https://tice.sysu.edu.cn";
+    public static final String PJXT = "https://pjxt.sysu.edu.cn";
     //static String CAS = "https://cas.sysu.edu.cn/cas/login";
 }

@@ -107,9 +107,7 @@ public class AboutActivity extends AppCompatActivity {
         new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://sysu-tang.github.io/latest.json").build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
+                handler.sendEmptyMessage(-1);
             }
 
             @Override

@@ -149,8 +149,8 @@ public class CalendarActivity extends AppCompatActivity {
         ActivityCalendarBinding binding = ActivityCalendarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         params = new Params(this);
-        binding.toolbar.setNavigationOnClickListener(view -> finishAfterTransition());
-        binding.scroll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+        binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
+        binding.scroll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (_, _, scrollY, _, oldScrollY) -> {
             if (top > scrollY && binding.tabs.getSelectedTabPosition() == 1 && scrollY < oldScrollY) {
                 Objects.requireNonNull(binding.tabs.getTabAt(0)).select();
             } else if (top <= scrollY && binding.tabs.getSelectedTabPosition() == 0 && scrollY > oldScrollY) {
@@ -205,14 +205,14 @@ public class CalendarActivity extends AppCompatActivity {
                                 ImageView image = new ImageView(CalendarActivity.this);
                                 String url = "https://jwb.sysu.edu.cn/" + n.group(1);
                                 Glide.with(CalendarActivity.this).load(url).skipMemoryCache(false).diskCacheStrategy(DiskCacheStrategy.AUTOMATIC).into(image);
-                                image.setOnLongClickListener(view -> {
+                                image.setOnLongClickListener(_ -> {
                                     PopupMenu pop = new PopupMenu(CalendarActivity.this, image, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
                                     Menu menu = pop.getMenu();
-                                    menu.add(R.string.save).setOnMenuItemClickListener(item -> {
+                                    menu.add(R.string.save).setOnMenuItemClickListener(_ -> {
                                         params.toast(save(url, System.currentTimeMillis() + ".jpg") ? R.string.save_successfully : R.string.save_fail);
                                         return true;
                                     });
-                                    menu.add(R.string.share).setOnMenuItemClickListener(item -> {
+                                    menu.add(R.string.share).setOnMenuItemClickListener(_ -> {
                                         String fileName = System.currentTimeMillis() + ".jpg";
                                         save(url, Objects.requireNonNull(getExternalCacheDir()).getPath(), fileName, false);
                                         startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("image/jpeg").putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(CalendarActivity.this, "com.sysu.edu.fileProvider", new File(Objects.requireNonNull(getExternalCacheDir()).getPath() + "/" + fileName))), getString(R.string.share)));
@@ -232,9 +232,7 @@ public class CalendarActivity extends AppCompatActivity {
         new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://jwb.sysu.edu.cn/school-calendar").build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
+                handler.sendEmptyMessage(-1);
             }
 
             @Override

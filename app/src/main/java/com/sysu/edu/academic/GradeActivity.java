@@ -18,13 +18,13 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityGradeBinding;
 import com.sysu.edu.databinding.ItemScoreBinding;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,14 +33,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.noties.markwon.Markwon;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Interceptor;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class GradeActivity extends AppCompatActivity {
 
@@ -48,38 +40,23 @@ public class GradeActivity extends AppCompatActivity {
     final MutableLiveData<String> year = new MutableLiveData<>();
     final MutableLiveData<Integer> term = new MutableLiveData<>();
     final Map<String, Integer> gradeMap = Map.of("A", 100, "B", 90, "C", 80, "D", 70, "F", 60);
-    ActivityGradeBinding binding;
-    Handler handler;
     PopupMenu termPop;
     PopupMenu yearPop;
     PopupMenu typePop;
     GridLayoutManager gridLayoutManager;
-    Params params;
-    final OkHttpClient http = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
-        @NonNull
-        @Override
-        public Response intercept(@NonNull Chain chain) throws IOException {
-            Request origin = chain.request();
-            return chain.proceed(origin.newBuilder()
-                    .header("Cookie", params.getCookie())
-                    .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/")
-                    .method(origin.method(), origin.body())
-                    .build());
-        }
-    }).build();
-
+    HttpManager http;
     ArrayList<String> years;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityGradeBinding.inflate(getLayoutInflater());
+        ActivityGradeBinding binding = ActivityGradeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         termPop = new PopupMenu(GradeActivity.this, binding.term, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
         String[] terms = getResources().getStringArray(R.array.terms);
         for (int i = 0; i < terms.length; i++) {
             int finalI = i + 1;
-            termPop.getMenu().add(terms[i]).setOnMenuItemClickListener(menuItem -> {
+            termPop.getMenu().add(terms[i]).setOnMenuItemClickListener(_ -> {
                 term.postValue(finalI);
                 return false;
             });
@@ -87,20 +64,20 @@ public class GradeActivity extends AppCompatActivity {
         binding.tabs.setHorizontalScrollBarEnabled(false);
         yearPop = new PopupMenu(this, binding.year, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
         typePop = new PopupMenu(this, binding.type, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        binding.term.setOnClickListener(v -> termPop.show());
-        binding.year.setOnClickListener(v -> yearPop.show());
-        binding.type.setOnClickListener(v -> typePop.show());
-        yearPop.getMenu().add(R.string.all).setOnMenuItemClickListener(menuItem -> {
-            sendRequest(String.format("https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/list?trainTypeCode=%s&addScoreFlag=true", trainType.getValue()), 1);
-            sendRequest(String.format(Locale.getDefault(), "https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getSortByYear?trainTypeCode=%s&addScoreFlag=true", trainType.getValue()), 4);
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+        binding.term.setOnClickListener(_ -> termPop.show());
+        binding.year.setOnClickListener(_ -> yearPop.show());
+        binding.type.setOnClickListener(_ -> typePop.show());
+        yearPop.getMenu().add(R.string.all).setOnMenuItemClickListener(_ -> {
+            http.getRequest(String.format("https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/list?trainTypeCode=%s&addScoreFlag=true", trainType.getValue()), 1);
+            http.getRequest(String.format(Locale.getDefault(), "https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getSortByYear?trainTypeCode=%s&addScoreFlag=true", trainType.getValue()), 4);
             binding.year.setText(R.string.all);
             return false;
         });
-
+        Params params = new Params(this);
+        params.setCallback(this::getPull);
         ScoreAdapter adp = new ScoreAdapter();
         binding.scores.setAdapter(adp);
-
         class GradeManager {
             String classNumber;
             int grade = -1;
@@ -118,7 +95,7 @@ public class GradeActivity extends AppCompatActivity {
                 if (position < 0) {
                     position = pos;
                 }
-                postRequest("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/studentCourse", String.format("{\"pageNo\":1,\"pageSize\":10,\"total\":true,\"param\":{\"achievementCourseNumber\":\"%s\",\"beforeAchievementPoint\":\"%s\",\"afterAchievementPoint\":\"%s\",\"cultureTypeCode\":\"01\"}}", classNumber, maxGrade, maxGrade), 5);
+                http.postRequest("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/studentCourse", String.format("{\"pageNo\":1,\"pageSize\":10,\"total\":true,\"param\":{\"achievementCourseNumber\":\"%s\",\"beforeAchievementPoint\":\"%s\",\"afterAchievementPoint\":\"%s\",\"cultureTypeCode\":\"01\"}}", classNumber, maxGrade, maxGrade), 5);
             }
 
             void getGrade() {
@@ -150,13 +127,11 @@ public class GradeActivity extends AppCompatActivity {
             }
         });
 
-        params = new Params(this);
-        params.setCallback(this::getPull);
         gridLayoutManager = new GridLayoutManager(this, params.getColumn());
         binding.scores.setLayoutManager(gridLayoutManager);
         StaggeredFragment header = binding.header.getFragment();
         header.setNested(false);
-        trainType.observe(this, s -> getScore());
+        trainType.observe(this, _ -> getScore());
         year.observe(this, s -> {
             if (year.getValue() != null && term.getValue() != null) {
                 binding.year.setText(s);
@@ -168,7 +143,7 @@ public class GradeActivity extends AppCompatActivity {
             binding.term.setText(terms[s - 1]);
             getScore();
         });
-        handler = new Handler(getMainLooper()) {
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -176,7 +151,6 @@ public class GradeActivity extends AppCompatActivity {
                     return;
                 }
                 JSONObject dataString = JSON.parseObject((String) msg.obj);
-//                System.out.println(dataString);
                 if (dataString.getInteger("code") == 200) {
                     switch (msg.what) {
                         case 1:
@@ -191,7 +165,7 @@ public class GradeActivity extends AppCompatActivity {
                             type.forEach(a ->
                             {
                                 JSONObject typeItem = (JSONObject) a;
-                                typePop.getMenu().add(typeItem.getString("dataName")).setOnMenuItemClickListener(menuItem -> {
+                                typePop.getMenu().add(typeItem.getString("dataName")).setOnMenuItemClickListener(_ -> {
                                     binding.type.setText(typeItem.getString("dataName"));
                                     trainType.setValue(typeItem.getString("dataNumber"));
                                     return false;
@@ -212,7 +186,7 @@ public class GradeActivity extends AppCompatActivity {
                             if (selectYearPull != null && !selectYearPull.isEmpty()) {
                                 selectYearPull.forEach(a -> {
                                     years.add(((JSONObject) a).getString("dataName"));
-                                    yearPop.getMenu().add(((JSONObject) a).getString("dataName")).setOnMenuItemClickListener(menuItem -> {
+                                    yearPop.getMenu().add(((JSONObject) a).getString("dataName")).setOnMenuItemClickListener(_ -> {
                                         year.postValue(((JSONObject) a).getString("dataName"));
                                         binding.year.setText(((JSONObject) a).getString("dataNumber"));
                                         return false;
@@ -228,7 +202,7 @@ public class GradeActivity extends AppCompatActivity {
                             // 初始化学期选项
                             JSONObject pull = dataString.getJSONObject("data");
                             if (years != null && !years.contains(pull.getString("acadYear"))) {
-                                yearPop.getMenu().add(pull.getString("acadYear")).setOnMenuItemClickListener(menuItem -> {
+                                yearPop.getMenu().add(pull.getString("acadYear")).setOnMenuItemClickListener(_ -> {
                                     term.postValue(pull.getInteger("acadSemester"));
                                     year.postValue(pull.getString("acadYear"));
                                     return false;
@@ -246,9 +220,10 @@ public class GradeActivity extends AppCompatActivity {
                             String totalCredit = compulsorySelectTotal.getString("totalCredit");
                             String rank = "";
                             String point = "";
-                            if (!pull.getJSONArray("compulsorySelectList").isEmpty()) {
-                                rank = pull.getJSONArray("compulsorySelectList").getJSONObject(0).getString("rank");
-                                point = pull.getJSONArray("compulsorySelectList").getJSONObject(0).getString("vegPoint");
+                            JSONArray compulsorySelectList = pull.getJSONArray("compulsorySelectList");
+                            if (!compulsorySelectList.isEmpty()) {
+                                rank = compulsorySelectList.getJSONObject(0).getString("rank");
+                                point = compulsorySelectList.getJSONObject(0).getString("vegPoint");
                             }
                             String total = pull.getString("stuTotal");
                             JSONObject stuCredit = pull.getJSONObject("stuCredit");
@@ -263,7 +238,6 @@ public class GradeActivity extends AppCompatActivity {
                             break;
                         }
                         case 5:
-//                            System.out.println(dataString);
                             if (dataString.containsKey("data") && !dataString.getJSONObject("data").getInteger("total").equals(0)) {
                                 gradeManager.setGrade();
                             } else {
@@ -277,7 +251,9 @@ public class GradeActivity extends AppCompatActivity {
                     params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
                 }
             }
-        };
+        });
+        http.setParams(params);
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/");
         getPull();
     }
 
@@ -287,47 +263,8 @@ public class GradeActivity extends AppCompatActivity {
         gridLayoutManager.setSpanCount(new Params(this).getColumn());
     }
 
-    void sendRequest(String url, int what) {
-        http.newCall(new Request.Builder().url(url).build()).enqueue(new Callback() {
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message message = new Message();
-                message.what = what;
-                message.obj = response.body().string();
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-        });
-    }
-
-    void postRequest(String url, String data, int what) {
-        http.newCall(new Request.Builder().url(url)
-                .post(RequestBody.create(data, MediaType.parse("application/json"))).build()).enqueue(new Callback() {
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message message = new Message();
-                message.what = what;
-                message.obj = response.body().string();
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-        });
-    }
-
     void getNow() {
-        sendRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist", 3);
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist", 3);
     }
 
     void getScore() {
@@ -339,15 +276,15 @@ public class GradeActivity extends AppCompatActivity {
     }
 
     void getScore(String year, int term, String type) {
-        sendRequest(String.format(Locale.getDefault(), "https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/list?scoSchoolYear=%s&trainTypeCode=%s&addScoreFlag=true&scoSemester=%d", year, type, term), 1);
+        http.getRequest(String.format(Locale.getDefault(), "https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/list?scoSchoolYear=%s&trainTypeCode=%s&addScoreFlag=true&scoSemester=%d", year, type, term), 1);
     }
 
     void getTotalScore(String year, int term, String type) {
-        sendRequest(String.format(Locale.getDefault(), "https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getSortByYear?scoSchoolYear=%s&trainTypeCode=%s&addScoreFlag=true&scoSemester=%d", year, type, term), 4);
+        http.getRequest(String.format(Locale.getDefault(), "https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getSortByYear?scoSchoolYear=%s&trainTypeCode=%s&addScoreFlag=true&scoSemester=%d", year, type, term), 4);
     }
 
     void getPull() {
-        sendRequest("https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getPull", 2);
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getPull", 2);
     }
 
     static class ScoreAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -357,8 +294,7 @@ public class GradeActivity extends AppCompatActivity {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemScoreBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemScoreBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
         }
 
         public void setAction(Consumer<Integer> action) {
@@ -382,10 +318,8 @@ public class GradeActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemScoreBinding binding = ItemScoreBinding.bind(holder.itemView);
             JSONObject info = data.get(position);
-            binding.getRoot().setOnClickListener(view -> {
-                if (info.getString("originalScore") == null) {
-                    action.accept(position);
-                }
+            binding.getRoot().setOnClickListener(_ -> {
+                if (info.getString("originalScore") == null) action.accept(position);
             });
             MutableLiveData<String> grade = new MutableLiveData<>("");
             if (info.containsKey("scoreList"))
@@ -407,9 +341,8 @@ public class GradeActivity extends AppCompatActivity {
         }
 
         public void add(JSONObject a) {
-            int tmp = getItemCount();
             data.add(a);
-            notifyItemInserted(tmp);
+            notifyItemInserted(getItemCount() - 1);
         }
 
         public void clear() {

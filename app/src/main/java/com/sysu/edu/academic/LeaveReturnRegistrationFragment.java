@@ -23,13 +23,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationManager;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.databinding.DialogRegionBinding;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.databinding.ItemTitleBinding;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,22 +40,13 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class LeaveReturnRegistrationFragment extends StaggeredFragment {
-    final OkHttpClient http = new OkHttpClient();
     final MutableLiveData<Long> leaveDate = new MutableLiveData<>();
     final MutableLiveData<Long> returnDate = new MutableLiveData<>();
     final ArrayList<String> leaveKeys = new ArrayList<>(List.of("假期去向", "预计离校时间", "预计返校时间", "去向类型", "交通工具", "外出地"));
     final ArrayList<String> stayKeys = new ArrayList<>(List.of("假期去向", "留校原因"));
+    HttpManager http;
     View view;
-    Handler handler;
     JSONArray transportation;
     JSONArray destination;
     String country = "";
@@ -64,7 +56,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
     ArrayList<String> leave;
     ArrayList<String> stay;
     String id;
-    String baseUrl = "https://xgxt.sysu.edu.cn";
+    AuthorizationManager authorizationManager = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt.sysu.edu.cn/");
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -89,7 +81,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
             dialogRegionBinding.county.recyclerView.setAdapter(cityAdapter);
             dialogRegionBinding.county.recyclerView.setNestedScrollingEnabled(false);
             dialogRegionBinding.county.recyclerView.setOverScrollMode(RecyclerView.OVER_SCROLL_ALWAYS);
-            handler = new Handler(Looper.getMainLooper()) {
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
@@ -97,7 +89,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                     } else {
                         int code = msg.getData().getInt("code");
                         if (code == 200) {
-                            JSONObject json = JSONObject.parse(msg.getData().getString("response"));
+                            JSONObject json = JSONObject.parse((String) msg.obj);
                             if (json != null && json.getInteger("code") == 200) {
                                 if (msg.what == 0) {
                                     ArrayList<String> value = new ArrayList<>();
@@ -118,7 +110,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                         }
                                         returnDate.postValue(Objects.requireNonNull((new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())).parse(data.getString("yjfxsj"))).getTime());
                                     } catch (ParseException e) {
-                                        //throw new RuntimeException(e);
+                                        //throw new RuntimeException(e)
                                     }
 
                                     country = data.getString("wcdgj");
@@ -181,24 +173,24 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                             }
                         } else {
                             params.toast(R.string.educational_wifi_warning);
-                            baseUrl = "https://xgxt-443.webvpn.sysu.edu.cn";
+                            authorizationManager.setAccessible(false);
                             getInfo(id);
                         }
                     }
                 }
-            };
-            staggeredAdapter.setListener(new AdapterListener() {
+            });
+            setListener(new AdapterListener() {
                 @Override
                 public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                     staggeredAdapter.getTwoColumnsAdapter(position).setListener(new AdapterListener() {
                         @Override
                         public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int pos) {
 
-                            holder.itemView.setOnClickListener(v -> {
+                            holder.itemView.setOnClickListener(_ -> {
                                 if (position == 1) {
                                     if (pos == 0) {
                                         PopupMenu menu = new PopupMenu(requireContext(), holder.itemView);
-                                        List.of("离校", "留校").forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(item -> {
+                                        List.of("离校", "留校").forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(_ -> {
                                             //value.set(pos, i);
                                             isStay = i.equals("离校") ? "0" : "1";
                                             ((TwoColumnsAdapter) adapter).setValue(i.equals("离校") ? leave : stay);
@@ -210,7 +202,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                     if (adapter.getItemCount() == 6) {
                                         if (pos == 3 || pos == 4) {
                                             PopupMenu menu = new PopupMenu(requireContext(), holder.itemView);
-                                            (pos == 4 ? transportation : destination).forEach(e -> menu.getMenu().add(((JSONObject) e).getString("label")).setOnMenuItemClickListener(item -> {
+                                            (pos == 4 ? transportation : destination).forEach(e -> menu.getMenu().add(((JSONObject) e).getString("label")).setOnMenuItemClickListener(_ -> {
                                                 leave.set(pos, ((JSONObject) e).getString("label"));
                                                 ((TwoColumnsAdapter) adapter).setValue(leave);
                                                 return true;
@@ -229,7 +221,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                             });
                                         } else if (pos == 5) {
                                             regionDialog.show();
-                                            dialogRegionBinding.confirm.setOnClickListener(view -> {
+                                            dialogRegionBinding.confirm.setOnClickListener(_ -> {
                                                 leave.set(pos, countryAdapter.getResult() + " " + provinceAdapter.getResult() + " " + cityAdapter.getResult());
                                                 ((TwoColumnsAdapter) adapter).setValue(leave);
                                                 regionDialog.dismiss();
@@ -238,7 +230,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                     } else if (adapter.getItemCount() == 2) {
                                         if (pos == 1) {
                                             PopupMenu menu = new PopupMenu(requireContext(), holder.itemView);
-                                            List.of(getResources().getStringArray(R.array.registration_info_keys)).forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(item -> {
+                                            List.of(getResources().getStringArray(R.array.registration_info_keys)).forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(_ -> {
                                                 stay.set(pos, i);
                                                 ((TwoColumnsAdapter) adapter).setValue(stay);
                                                 return true;
@@ -267,7 +259,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                     lp.gravity = Gravity.END;
                     lp.setMargins(0, 0, params.dpToPx(16), params.dpToPx(16));
                     button.setLayoutParams(lp);
-                    button.setOnClickListener(v -> {
+                    button.setOnClickListener(_ -> {
                         if (isStay.equals("0")) {
                             save(id, isStay, leaveDate.getValue() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(leaveDate.getValue())), returnDate.getValue() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(returnDate.getValue()), leave.get(3), leave.get(4), country, province, city);
                         } else {
@@ -284,59 +276,8 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
         return view;
     }
 
-    void sendRequest(String url, int what) {
-        http.newCall(new Request.Builder().url(baseUrl + url)
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                Bundle bundle = new Bundle();
-                bundle.putInt("code", response.code());
-                bundle.putString("response", response.body().string());
-                msg.setData(bundle);
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-        });
-    }
-
-    void postRequest(String url, String data, int what) {
-        http.newCall(new Request.Builder().url(baseUrl + url)
-                .header("Cookie", params.getCookie())
-                .post(RequestBody.create(data, MediaType.parse("application/json")))
-                .build()).enqueue(new Callback() {
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                Bundle bundle = new Bundle();
-                bundle.putInt("code", response.code());
-                bundle.putString("response", response.body().string());
-                msg.setData(bundle);
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-        });
-    }
-
     void save(String id, String isStay, String leaveTime, String returnTime, String leaveType, String transportation, String country, String province, String city) {
-        postRequest("/jjrlfx/api/sm-jjrlfx/student/register",
+        http.postRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/register",
                 String.format(
                         "{\"cjlfxgzId\":\"%s\",\"sflx\":\"%s\",\"yjlxsj\":\"%s\",\"yjfxsj\":\"%s\",\"qxlx\":\"%s\",\"jtgj\":\"%s\",\"wcd\":{\"gj\":\"%s\",\"sf\":\"%s\",\"cs\":\"%s\"},\"wcdgj\":\"%s\",\"wcdsf\":\"%s\",\"wcdcs\":\"%s\"}\n",
                         id, isStay, leaveTime, returnTime, leaveType, transportation, country, province, city, country, province, city
@@ -344,34 +285,33 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
     }
 
     void save(String id, String isStay, String reason) {
-        postRequest("/jjrlfx/api/sm-jjrlfx/student/register",
+        http.postRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/register",
                 String.format("{\"cjlfxgzId\":\"%s\",\"sflx\":\"%s\",\"lxyy\":\"%s\"}", id, isStay, reason), 6);
     }
 
     void getInfo(String id) {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/" + id + "/info", 0);
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/" + id + "/info", 0);
     }
 
     void getTransportation() {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/transport", 1);
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/transport", 1);
     }
 
     void getDestination() {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/destination-type", 2);
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/destination-type", 2);
     }
 
     void getCountry() {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/country/drop", 3);
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/country/drop", 3);
     }
 
     void getProvince() {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/province/drop?0=%E4%B8%AD&1=%E5%9B%BD", 4);
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/province/drop?0=%E4%B8%AD&1=%E5%9B%BD", 4);
     }
 
     void getCity(String province) {
-        sendRequest("/jjrlfx/api/sm-jjrlfx/student/city/drop?fdm=" + province, 5);
+        http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/city/drop?fdm=" + province, 5);
     }
-
 
     static class OneColumnAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -382,8 +322,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
         }
 
         public void add(String value) {
@@ -401,14 +340,13 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
             this.action = action;
         }
 
-
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int pos) {
             int position = holder.getBindingAdapterPosition();
             ItemTitleBinding binding = ItemTitleBinding.bind(holder.itemView);
             binding.title.setText(value.get(position));
             binding.getRoot().setBackgroundResource(position == selection ? R.drawable.bg_selected : R.drawable.box_background);
-            binding.getRoot().setOnClickListener(v -> {
+            binding.getRoot().setOnClickListener(_ -> {
                 if (action != null)
                     action.accept(position);
                 selection = position;
@@ -428,9 +366,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
         }
 
         public void setResult(String result) {
-            if (value.contains(result)) {
-                selection = value.indexOf(result);
-            }
+            if (value.contains(result)) selection = value.indexOf(result);
         }
     }
 }

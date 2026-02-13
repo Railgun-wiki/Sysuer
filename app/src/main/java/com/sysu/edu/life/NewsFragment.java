@@ -20,7 +20,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.bumptech.glide.Glide;
@@ -30,35 +29,24 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.BrowserActivity;
 import com.sysu.edu.api.AuthorizationManager;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemNewsBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class NewsFragment extends Fragment {
 
     final int position;
-    final OkHttpClient http = new OkHttpClient.Builder().build();
+    HttpManager http;
     RecyclerViewScrollBinding binding;
-    Handler handler;
     int page = 1;
     Runnable run;
-    Params params;
     AuthorizationManager authorizationManager;
 
     public NewsFragment(int pos) {
@@ -70,33 +58,28 @@ public class NewsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             binding = RecyclerViewScrollBinding.inflate(inflater);
-            params = new Params(requireActivity());
+            Params params = new Params(requireActivity());
             authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
             params.setCallback(this, () -> run.run());
-            RecyclerView list = binding.recyclerView;
-            list.setLayoutManager(new GridLayoutManager(requireContext(), params.getColumn()));
-            list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            binding.recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), params.getColumn()));
+            binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    if (!recyclerView.canScrollVertically(1) && position != 0 && dy > 0) {
-                        run.run();
-                    }
-                    super.onScrolled(recyclerView, dx, dy);
+                    if (!recyclerView.canScrollVertically(1) && position != 0 && dy > 0) run.run();
                 }
             });
             NewsAdapter newsAdapter = new NewsAdapter(requireActivity());
-            list.setAdapter(newsAdapter);
-            handler = new Handler(Looper.getMainLooper()) {
+            binding.recyclerView.setAdapter(newsAdapter);
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
-                    Bundle rdata = msg.getData();
-                    boolean isJson = rdata.getBoolean("isJson");
-                    String json = rdata.getString("data");
+                    boolean isJSON = msg.getData().getBoolean("isJSON");
+                    String json = (String) msg.obj;
                     if (json == null) {
                         params.toast(R.string.no_wifi_warning);
                         return;
                     }
-                    if (!isJson) {
+                    if (!isJSON) {
                         if (!authorizationManager.isAuthorized(json)) {
                             params.toast(R.string.login_warning);
                             params.gotoLogin(binding.getRoot(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
@@ -104,69 +87,65 @@ public class NewsFragment extends Fragment {
                         }
                         if (!authorizationManager.isAccessible(json)) {
                             params.toast(R.string.educational_wifi_warning);
+                            http.setTarget(TargetUrl.NEWS_WEBVPN);
                             run.run();
                             return;
                         }
+                        return;
                     }
-                    System.out.println(json);
-                    JSONObject data = Objects.requireNonNull(JSON.parseObject(json));
+//                    System.out.println(json);
+                    JSONObject data = JSONObject.parseObject(json);
                     if (msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
                     } else {
                         Integer code = data.getInteger("code");
                         JSONObject response = null;
-                        if (msg.what != 3) {
-                            response = data.getJSONObject("data");
-                        }
+                        if (msg.what != 3) response = data.getJSONObject("data");
                         if (code == 10000) {
                             switch (msg.what) {
                                 case 2:
                                     response.getJSONArray("records").forEach(e -> {
-                                        JSONObject dataItem = (JSONObject) e;
-                                        JSONArray cover = dataItem.getJSONArray("coversPicList");
+                                        JSONObject item = (JSONObject) e;
+                                        JSONArray cover = item.getJSONArray("coversPicList");
                                         String image = "";
                                         if (cover != null && !cover.isEmpty()) {
-                                            if (cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null) {
+                                            if (cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
                                                 image = cover.getJSONObject(0).getString("outLink");
-                                            }
                                         }
-                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
                                     });
                                     //
                                     break;
                                 case 3:
                                     data.getJSONArray("data").forEach(e -> {
-                                        JSONObject dataItem = (JSONObject) e;
-                                        JSONArray cover = dataItem.getJSONArray("coversPicList");
+                                        JSONObject item = (JSONObject) e;
+                                        JSONArray cover = item.getJSONArray("coversPicList");
                                         String image = "";
-                                        if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null) {
+                                        if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
                                             image = cover.getJSONObject(0).getString("outLink");
-                                        }
-                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
                                     });
                                     //
                                     break;
                                 case 4:
                                     response.getJSONArray("records").forEach(e -> {
-                                        JSONObject dataItem = (JSONObject) e;
-                                        JSONArray cover = dataItem.getJSONArray("coversPicList");
+                                        JSONObject item = (JSONObject) e;
+                                        JSONArray cover = item.getJSONArray("coversPicList");
                                         String image = "";
-                                        if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null) {
+                                        if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
                                             image = cover.getJSONObject(0).getString("outLink");
-                                        }
-                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
                                     });
                                     //通知
                                     break;
                                 case 5:
                                     response.getJSONArray("records").forEach(e -> {
-                                        JSONObject dataItem = (JSONObject) e;
-                                        JSONArray cover = dataItem.getJSONArray("coversPicList");
+                                        JSONObject item = (JSONObject) e;
+                                        JSONArray cover = item.getJSONArray("coversPicList");
                                         String image = "";
-                                        if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null) {
+                                        if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
                                             image = cover.getJSONObject(0).getString("outLink");
-                                        }
-                                        newsAdapter.add(dataItem.getString("title"), image, dataItem.getString("url"), dataItem.getString("createTime"), dataItem.getJSONObject("source").getString("seedName"));
+                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
                                     });
                                     break;
                             }
@@ -179,7 +158,10 @@ public class NewsFragment extends Fragment {
                     } //今日中大
 
                 }
-            };
+            });
+            http.setAuthorizationRequired(true);
+            http.setParams(params);
+            http.setTarget(TargetUrl.NEWS);
         }
         run = List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position);
         run.run();
@@ -187,186 +169,49 @@ public class NewsFragment extends Fragment {
     }
 
     void getNews() {
-        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/recommend/query-recommend")
-                .post(RequestBody.create("", MediaType.parse("application/json")))
-                .header("Authorization", params.getAuthorization())
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 3;
-                Bundle data = new Bundle();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", response.body().string());
-                msg.setData(data);
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/recommend/query-recommend", "", 3);
     }
 
     void getSubscription() {
-        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page")
-                .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytr4e6c\",\"notice\":false}", MediaType.parse("application/json")))
-                .header("Authorization", params.getAuthorization())
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 2;
-                Bundle data = new Bundle();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", response.body().string());
-                msg.setData(data);
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytr4e6c\",\"notice\":false}", 2);
     }
 
-//    void getAuthorization() {
-//        http.newCall(new Request.Builder().url("https://iportal.sysu.edu.cn/ai_service/auth-center/account/zscasLogin?clientid=zssearch_100050;zsshow")
-//                .header("Cookie", cookie)
-//                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0")
-//                .build()).enqueue(new Callback() {
-//            @Override
-//            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                Message message = new Message();
-//                message.what=-1;
-//                handler.sendMessage(message);
-//            }
-//
-//            @Override
-//            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                Message msg = new Message();
-//                msg.what = 1;
-//                Bundle data = new Bundle();
-//                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-//                data.putString("data", response.body().string());
-//                msg.setData(data);
-//                handler.sendMessage(msg);
-//            }
-//        });
-//    }
-
     void getNotice() {
-        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page")
-                .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytunvv6\",\"notice\":false}", MediaType.parse("application/json")))
-                .header("Authorization", params.getAuthorization())
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 4;
-                Bundle data = new Bundle();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", response.body().string());
-                msg.setData(data);
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytunvv6\",\"notice\":false}", 4);
     }
 
     void getDailyNews() {
-        http.newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page")
-                .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"4cef8rqw\",\"notice\":false}", MediaType.parse("application/json")))
-                .header("Authorization", params.getAuthorization())
-                .header("Cookie", params.getCookie())
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 5;
-                Bundle data = new Bundle();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", response.body().string());
-                msg.setData(data);
-                handler.sendMessage(msg);
-            }
-        });
-    }
-//    void getContent() {
-//        http.newCall(new Request.Builder().url("https://iportal.sysu.edu.cn/ai_service/content-portal/user/content/page")
-//                .post(RequestBody.create("{\"pageSize\":20,\"currentPage\":"+page+",\"apiCode\":\"4cef8rqw\",\"notice\":false}", MediaType.parse("application/json")))
-//                //.header("Authorization", authorization)
-//                .header("Cookie", cookie).build()).enqueue(new Callback() {
-//            @Override
-//            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                Message message = new Message();
-//                message.what=-1;
-//                handler.sendMessage(message);
-//            }
-//            @Override
-//            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                Message msg = new Message();
-//                msg.what = 5;
-//                Bundle data = new Bundle();
-//                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-//                data.putString("data",response.body().string());
-//                msg.setData(data);
-//                handler.sendMessage(msg);
-//            }
-//        });
-//    }
-}
-
-class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    final ArrayList<HashMap<String, String>> data = new ArrayList<>();
-    final FragmentActivity context;
-    final Params params;
-
-    public NewsAdapter(FragmentActivity context) {
-        super();
-        this.context = context;
-        params = new Params(context);
+        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"4cef8rqw\",\"notice\":false}", 5);
     }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-        };
-    }
+    static class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        final ArrayList<HashMap<String, String>> data = new ArrayList<>();
+        final FragmentActivity context;
+        final Params params;
 
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ItemNewsBinding binding = ItemNewsBinding.bind(holder.itemView);
-        HashMap<String, String> item = data.get(position);
-        holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(item.get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle()));
-        binding.title.setText(item.getOrDefault("title", ""));
-        binding.content.setText(String.format("#%s #%s", item.getOrDefault("source", ""), item.getOrDefault("time", "")));
-        String img = trim(item.get("image"));
-        if (!img.isEmpty()) {
-            Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
+        public NewsAdapter(FragmentActivity context) {
+            super();
+            this.context = context;
+            params = new Params(context);
+        }
+
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+            };
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            ItemNewsBinding binding = ItemNewsBinding.bind(holder.itemView);
+            HashMap<String, String> item = data.get(position);
+            holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(item.get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle()));
+            binding.title.setText(item.getOrDefault("title", ""));
+            binding.content.setText(String.format("#%s #%s", item.getOrDefault("source", ""), item.getOrDefault("time", "")));
+            String img = trim(item.get("image"));
+            if (!img.isEmpty())
+                Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
                             .addHeader("Cookie", params.getCookie())
                             .addHeader("Authorization", params.getAuthorization())
                             .build()))
@@ -374,15 +219,15 @@ class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
                     .into(binding.image);
         }
-    }
 
-    void add(String title, String image, String url, String time, String source) {
-        data.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", source)));
-        notifyItemInserted(getItemCount());
-    }
+        void add(String title, String image, String url, String time, String source) {
+            data.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", source)));
+            notifyItemInserted(getItemCount() - 1);
+        }
 
-    @Override
-    public int getItemCount() {
-        return data.size();
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
     }
 }

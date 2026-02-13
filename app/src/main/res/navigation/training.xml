@@ -5,7 +5,7 @@
     app:startDestination="@+id/schedule">
     <fragment
         android:id="@+id/schedule"
-        android:name="com.sysu.edu.academic.TrainingScheduleFragment"
+        android:name="com.sysu.edu.academic.TrainingProgramFragment"
         tools:layout="@layout/fragment_training_schedule">
         <action
             android:id="@+id/confirmationAction"

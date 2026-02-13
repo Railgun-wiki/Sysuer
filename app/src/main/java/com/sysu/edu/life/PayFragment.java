@@ -22,6 +22,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentPayNeedBinding;
@@ -30,26 +31,16 @@ import com.sysu.edu.databinding.FragmentPaySituationBinding;
 import com.sysu.edu.databinding.ItemFilterChipBinding;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class PayFragment extends StaggeredFragment {
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    public View view;
-    Handler handler;
+
     String token;
-    Params params;
+    public View view;
     int order = 0;
+    HttpManager http;
 
     public static PayFragment newInstance(int position) {
         PayFragment f = new PayFragment();
@@ -60,7 +51,7 @@ public class PayFragment extends StaggeredFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        params = new Params(requireActivity());
+        Params params = new Params(requireActivity());
         params.setCallback(this, () -> {
             token = params.getToken();
             getPage();
@@ -99,7 +90,7 @@ public class PayFragment extends StaggeredFragment {
                 });
                 b1.spinner.setText(String.valueOf(Params.getYear()));
                 b1.spinner.setSimpleItems(years.toArray(new String[]{}));
-                b1.spinner.setOnItemClickListener((adapterView, view1, i, l) -> {
+                b1.spinner.setOnItemClickListener((_, _, i, _) -> {
                     clear();
                     getFeeList(String.valueOf(yearCodes.get(i)));
                 });
@@ -113,7 +104,7 @@ public class PayFragment extends StaggeredFragment {
                 b2.getRoot().addView(view);
                 view = b2.getRoot();
                 b2.from.setText(dm.getFromDateString());
-                b2.from.setOnClickListener(view2 -> {
+                b2.from.setOnClickListener(_ -> {
                     MaterialDatePicker<Long> fromDatePicker = MaterialDatePicker.Builder.datePicker().setSelection(dm.getFromDateTimeMillis()).setCalendarConstraints(new CalendarConstraints.Builder()
                             .setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(dm.getToDateTimeMillis())))).build()).build();
                     fromDatePicker.addOnPositiveButtonClickListener(selection -> {
@@ -125,7 +116,7 @@ public class PayFragment extends StaggeredFragment {
                     fromDatePicker.show(requireActivity().getSupportFragmentManager(), null);
                 });
                 b2.to.setText(dm.getToDateString());
-                b2.to.setOnClickListener(view2 -> {
+                b2.to.setOnClickListener(_ -> {
                     MaterialDatePicker<Long> toDatePicker = MaterialDatePicker.Builder.datePicker().setSelection(dm.getToDateTimeMillis()).setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(dm.getFromDateTimeMillis())))).build()).build();
                     toDatePicker.addOnPositiveButtonClickListener(selection -> {
                         dm.toDate = new Date(selection);
@@ -139,12 +130,11 @@ public class PayFragment extends StaggeredFragment {
                     @Override
                     public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                         b2.row.setElevation(recyclerView.canScrollVertically(-1) ? 6 : 0);
-                        super.onScrolled(recyclerView, dx, dy);
                     }
                 });
                 break;
         }
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -209,7 +199,10 @@ public class PayFragment extends StaggeredFragment {
                     }
                 }
             }
-        };
+        });
+        http.setParams(params);
+        http.setReferrer("https://pay.sysu.edu.cn/");
+        http.setTokenRequired(true);
         getPage();
         return view;
     }
@@ -227,38 +220,28 @@ public class PayFragment extends StaggeredFragment {
 
     void getPage() {
         switch (position) {
-            case 0:
-                getToPayList();
-                break;
-            case 1:
-                getSelectivePayList();
-                break;
-            case 2:
-                getFeeList(String.valueOf(Params.getYear()));
-                break;
-            case 3:
-                getPaymentList();
-                break;
-            case 4:
-                getRefundList();
-                break;
+            case 0 -> getToPayList();
+            case 1 -> getSelectivePayList();
+            case 2 -> getFeeList(String.valueOf(Params.getYear()));
+            case 3 -> getPaymentList();
+            case 4 -> getRefundList();
         }
     }
 
     void getToPayList() {
-        getList("https://pay.sysu.edu.cn/client/api/client/necessary/list", "{}", 0);
+        http.postRequest("https://pay.sysu.edu.cn/client/api/client/necessary/list", "{}", 0);
     }
 
     void getSelectivePayList() {
-        getList("https://pay.sysu.edu.cn/client/api/client/chooce/list", "{}", 1);
+        http.postRequest("https://pay.sysu.edu.cn/client/api/client/chooce/list", "{}", 1);
     }
 
     void getFeeList(String year) {
-        getList("https://pay.sysu.edu.cn/client/api/client/record/feelist", String.format("{\"year\":%s}", year), 2);
+        http.postRequest("https://pay.sysu.edu.cn/client/api/client/record/feelist", String.format("{\"year\":%s}", year), 2);
     }
 
     void getPaymentList(String from, String to) {
-        getList("https://pay.sysu.edu.cn/client/api/client/record/paymentlist", String.format("{\"startTime\":\"%s\",\"overTime\":\"%s\"}", from, to), 3);
+        http.postRequest("https://pay.sysu.edu.cn/client/api/client/record/paymentlist", String.format("{\"startTime\":\"%s\",\"overTime\":\"%s\"}", from, to), 3);
     }
 
     void getPaymentList() {
@@ -266,40 +249,15 @@ public class PayFragment extends StaggeredFragment {
     }
 
     void getRefundList() {
-        getList("https://pay.sysu.edu.cn/client/api/client/refund/list", "{}", 4);
+        http.postRequest("https://pay.sysu.edu.cn/client/api/client/refund/list", "{}", 4);
     }
 
-    void getList(String url, String body, int what) {
-        http.newCall(new Request.Builder().url(url)
-                .header("token", token)
-                .header("Referer", "https://pay.sysu.edu.cn/")
-                .header("Accept-language", "zh-CN")
-                .post(RequestBody.create(body, MediaType.parse("application/json")))
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
-    }
+    /*Accept-language: zh-CN*/
 
     class DateManager {
         final Calendar c = Calendar.getInstance();
         public Date fromDate;
         public Date toDate;
-
-        public DateManager() {
-        }
 
         public String getFromDateString() {
             return Params.toDate(fromDate);

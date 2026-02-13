@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,9 +25,9 @@ import java.util.List;
 
 public class DormActivity extends AppCompatActivity {
 
-    HttpManager http;
     final AuthorizationManager auth = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt-443.webvpn.sysu.edu.cn/");
     final ArrayList<String> tabs = new ArrayList<>();
+    HttpManager http;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,23 +80,19 @@ public class DormActivity extends AppCompatActivity {
                         tabs.add(getString(R.string.personal_info));
                         pager2Adapter.add(list);
                         list.add(DormActivity.this, getString(R.string.personal_info), List.of(getString(R.string.name), getString(R.string.student_id), getString(R.string.gender), getString(R.string.school), getString(R.string.major), getString(R.string.grade), getString(R.string.training_level), getString(R.string.stay_school_status), getString(R.string.student_status), getString(R.string.contact_number)),
-                                separate(data, new String[]{"name", "studentNumber", "gender", "academy", "major", "grade", "trainingLevel", "staySchoolStatus", "studentStatus", "contactNumber"}));
+                                extractValue(data, new String[]{"name", "studentNumber", "gender", "academy", "major", "grade", "trainingLevel", "staySchoolStatus", "studentStatus", "contactNumber"}));
 
                         StaggeredFragment list1 = new StaggeredFragment();
                         tabs.add(getString(R.string.dorm_info));
                         pager2Adapter.add(list1);
-                        data.getJSONArray("stayRecordList").forEach(e -> {
-                            ArrayList<String> values = separate((JSONObject) e, new String[]{"schoolYear", "campus", "buildingName", "floorName", "roomNumber", "bedNumber", "accommodationFee", "startDate", "endDate"});
-                            list1.add(DormActivity.this, values.get(0), List.of(getString(R.string.year), getString(R.string.campus), getString(R.string.building), getString(R.string.floor), getString(R.string.room_number), getString(R.string.bed_number), getString(R.string.accommodation_fee), getString(R.string.stay_start_date), getString(R.string.stay_end_date)), values);
-                        });
+                        data.getJSONArray("stayRecordList").forEach(e -> list1.add(DormActivity.this, ((JSONObject) e).getString("schoolYear"), List.of(getString(R.string.year), getString(R.string.campus), getString(R.string.building), getString(R.string.floor), getString(R.string.room_number), getString(R.string.bed_number), getString(R.string.accommodation_fee), getString(R.string.stay_start_date), getString(R.string.stay_end_date)),
+                                extractValue((JSONObject) e, new String[]{"schoolYear", "campus", "buildingName", "floorName", "roomNumber", "bedNumber", "accommodationFee", "startDate", "endDate"})));
 
                         StaggeredFragment list2 = new StaggeredFragment();
                         tabs.add(getString(R.string.dorm_fee));
                         pager2Adapter.add(list2);
-                        data.getJSONArray("stayChargeRecordList").forEach(e -> {
-                            ArrayList<String> values = separate((JSONObject) e, new String[]{"schoolYear", "shouldPayStayCharge", "realPayStayCharge", "charge", "arrears"});
-                            list2.add(DormActivity.this, values.get(0), List.of(getString(R.string.year), getString(R.string.accommodation_standard), getString(R.string.should_pay_stay_charge), getString(R.string.real_pay_stay_charge), getString(R.string.arrears)), values);
-                        });
+                        data.getJSONArray("stayChargeRecordList").forEach(e -> list2.add(DormActivity.this, ((JSONObject) e).getString("schoolYear"), List.of(getString(R.string.year), getString(R.string.accommodation_standard), getString(R.string.should_pay_stay_charge), getString(R.string.real_pay_stay_charge), getString(R.string.arrears)),
+                                extractValue((JSONObject) e, new String[]{"schoolYear", "shouldPayStayCharge", "realPayStayCharge", "charge", "arrears"})));
 
                     } else if (data.getJSONObject("meta").getInteger("statusCode") == 302) {
                         params.toast(R.string.login_warning);
@@ -111,11 +109,4 @@ public class DormActivity extends AppCompatActivity {
         http.getRequest(auth.getBaseUrl() + "ssgl/api/sm-ssgl/stu-info", 0);
     }
 
-    ArrayList<String> separate(JSONObject data, String[] keys) {
-        ArrayList<String> values = new ArrayList<>();
-        for (String i : keys) {
-            values.add(data.getString(i));
-        }
-        return values;
-    }
 }

@@ -10,12 +10,10 @@ import android.view.ViewGroup;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.transition.TransitionInflater;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -41,15 +39,6 @@ public class CourseFilterFragment extends Fragment {
     NavController navController;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        setSharedElementEnterTransition(TransitionInflater.from(requireContext())
-                .inflateTransition(android.R.transition.move));
-        setSharedElementReturnTransition(TransitionInflater.from(requireContext())
-                .inflateTransition(android.R.transition.move));
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         if (binding == null) {
@@ -60,7 +49,7 @@ public class CourseFilterFragment extends Fragment {
             binding.container.setColumnCount(new Params(requireActivity()).getColumn());
             params = new Params(requireActivity());
             params.setCallback(this, () -> getData(0));
-            Handler handler = new Handler(Looper.getMainLooper()) {
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
@@ -72,9 +61,7 @@ public class CourseFilterFragment extends Fragment {
                         if (response.getInteger("code").equals(200)) {
                             JSONArray data = response.getJSONArray("data");
                             if (data != null) {
-                                if (msg.what < 4) {
-                                    getData(msg.what + 1);
-                                }
+                                if (msg.what < 4) getData(msg.what + 1);
                                 ArrayList<String> items = new ArrayList<>();
                                 ArrayList<String> itemCodes = new ArrayList<>();
                                 items.add("");
@@ -100,8 +87,7 @@ public class CourseFilterFragment extends Fragment {
                     }
                     super.handleMessage(msg);
                 }
-            };
-            http = new HttpManager(handler);
+            });
             http.setParams(params);
             http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%E9%80%89%E8%AF%BE");
             getData(0);

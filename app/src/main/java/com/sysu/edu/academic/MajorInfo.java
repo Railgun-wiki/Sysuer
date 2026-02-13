@@ -11,45 +11,32 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityPagerBinding;
 import com.sysu.edu.view.Pager2Adapter;
 
-import java.io.IOException;
 import java.util.ArrayList;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class MajorInfo extends AppCompatActivity {
 
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    ActivityPagerBinding binding;
-    String cookie;
-    Handler handler;
-    ArrayList<String> categories;
+    HttpManager http;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityPagerBinding.inflate(getLayoutInflater());
+        ActivityPagerBinding binding = ActivityPagerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        ArrayList<String> categories = new ArrayList<>();
         binding.toolbar.setTitle(R.string.major_info);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         Params params = new Params(this);
-        params.setCallback(() -> {
-            cookie = params.getCookie();
-            getCategory();
-        });
-        cookie = params.getCookie();
+        params.setCallback(this::getCategory);
         Pager2Adapter adp = new Pager2Adapter(this);
         binding.pager.setAdapter(adp);
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(categories.get(position))).attach();
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -58,19 +45,14 @@ public class MajorInfo extends AppCompatActivity {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response != null && response.getInteger("code").equals(200)) {
                         if (response.get("data") != null) {
-                            switch (msg.what) {
-                                case 0:
-                                    categories = new ArrayList<>();
-                                    response.getJSONArray("data").forEach(a -> {
-                                        categories.add(((JSONObject) a).getString("dataName"));
-                                        Bundle args = new Bundle();
-                                        args.putString("code", ((JSONObject) a).getString("dataNumber"));
-                                        adp.add(MajorInfoFragment.newInstance(args));
-                                    });
-                                    break;
-                                case 1:
-
-                                    break;
+                            if (msg.what == 0) {
+                                categories.clear();
+                                response.getJSONArray("data").forEach(a -> {
+                                    categories.add(((JSONObject) a).getString("dataName"));
+                                    Bundle args = new Bundle();
+                                    args.putString("code", ((JSONObject) a).getString("dataNumber"));
+                                    adp.add(MajorInfoFragment.newInstance(args));
+                                });
                             }
                         }
                     } else {
@@ -79,29 +61,13 @@ public class MajorInfo extends AppCompatActivity {
                     }
                 }
             }
-        };
+        });
+        http.setParams(params);
+        http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/");
         getCategory();
     }
 
     void getCategory() {
-        http.newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn/jwxt/base-info/codedata/findcodedataNames?datableNumber=135")
-                .header("Cookie", cookie)
-                .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/")
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 0;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/codedata/findcodedataNames?datableNumber=135", 0);
     }
 }

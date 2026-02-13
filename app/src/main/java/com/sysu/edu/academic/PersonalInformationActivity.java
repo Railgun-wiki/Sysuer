@@ -39,15 +39,14 @@ public class PersonalInformationActivity extends AppCompatActivity {
         params.setCallback(this::getPersonalInfo);
         Pager2Adapter pager2Adapter = new Pager2Adapter(this);
         binding.toolbar.setTitle(R.string.personal_info);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         binding.toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setOnMenuItemClickListener(
-                item -> {
+                _ -> {
                     if (pager2Adapter.getItemCount() > 0) {
                         int currentItem = binding.pager.getCurrentItem();
                         ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, tabs.get(currentItem));
                     }
                     return true;
-
                 }
         );
         binding.pager.setAdapter(pager2Adapter);

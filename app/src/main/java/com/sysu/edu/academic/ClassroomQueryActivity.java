@@ -190,7 +190,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
 
     public void getRoom() {
         ArrayList<String> teachingBuildIDs = new ArrayList<>();
-        classType = new ArrayList<>();
+        classType.clear();
         binding.typeGroup.getCheckedChipIds().forEach(e -> classType.add(((Chip) findViewById(e)).getText().toString().equals("自习室") ? "003" : "002"));
         binding.officeGroup.getCheckedChipIds().forEach(e -> {
             if (findViewById(e).getVisibility() == View.VISIBLE) {
@@ -212,13 +212,12 @@ public class ClassroomQueryActivity extends AppCompatActivity {
         final ArrayList<JSONObject> json = new ArrayList<>();
 
         public RoomAdapter(Context context) {
-            super();
             this.context = context;
         }
 
         public void add(JSONObject jsonobject) {
             json.add(jsonobject);
-            notifyItemInserted(getItemCount());
+            notifyItemInserted(getItemCount() - 1);
         }
 
         public void clear() {

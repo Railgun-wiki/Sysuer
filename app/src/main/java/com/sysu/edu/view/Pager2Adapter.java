@@ -23,7 +23,7 @@ public class Pager2Adapter extends FragmentStateAdapter {
 
     public Pager2Adapter add(@NonNull Fragment e) {
         fragments.add(e);
-        notifyItemInserted(getItemCount());
+        notifyItemInserted(getItemCount() - 1);
         return this;
     }
 

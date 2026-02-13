@@ -19,30 +19,21 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class NetOrderFragment extends StaggeredFragment {
 
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    Handler handler;
+    HttpManager http;
     View view;
 
     @Override
@@ -50,8 +41,7 @@ public class NetOrderFragment extends StaggeredFragment {
         if (view == null) {
             view = super.onCreateView(inflater, container, savedInstanceState);
             params.setCallback(this, this::getInfo);
-
-            handler = new Handler(Looper.getMainLooper()) {
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     super.handleMessage(msg);
@@ -101,7 +91,7 @@ public class NetOrderFragment extends StaggeredFragment {
                                                         boolean isStop = Objects.equals(action.group(1), "stop");
                                                         button.setOnClickListener(v -> {
                                                             if (leftDay != null) {
-                                                                Snackbar.make(v, isStop ? "暂停网络将即时生效，暂停最小时长：7天。是否确定要暂停？" : Integer.parseInt(leftDay) < 7 ? "网络服务已暂停" + leftDay + "天，不足暂停最小时长（7天），提前恢复本次暂停作废，过期日期不顺延！是否仍要提前恢复网络？" : "网络服务已暂停" + leftDay + "天，执行恢复将即时生效，是否确定要恢复？", Snackbar.LENGTH_SHORT).setAction(R.string.confirm, v1 -> {
+                                                                Snackbar.make(v, isStop ? "暂停网络将即时生效，暂停最小时长：7天。是否确定要暂停？" : Integer.parseInt(leftDay) < 7 ? "网络服务已暂停" + leftDay + "天，不足暂停最小时长（7天），提前恢复本次暂停作废，过期日期不顺延！是否仍要提前恢复网络？" : "网络服务已暂停" + leftDay + "天，执行恢复将即时生效，是否确定要恢复？", Snackbar.LENGTH_SHORT).setAction(R.string.confirm, _ -> {
                                                                     if (isStop) {
                                                                         stop(actionMatcher.group(1));
                                                                     } else {
@@ -139,29 +129,24 @@ public class NetOrderFragment extends StaggeredFragment {
                         }
                     } else if (msg.what == 2 || msg.what == 3) {
                         try {
-//                            System.out.println(msg.obj);
-                            /*JSONObject json = JSONObject.parse((String) msg.obj);
-                            if (json.getBoolean("success")) {
-                                params.toast(json.getString("message"));
-                            }*/
                             clear();
                             getInfo();
-                        } catch (JSONException ignored) {
-                        }
+                        } catch (JSONException ignored) {}
                     }
                 }
-            };
+            });
+            http.setParams(params);
             getInfo();
         }
         return view;
     }
 
     void getOrder() {
-        postRequest("https://netpay.sysu.edu.cn/netpay/c/site/orders", "", 0);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/orders", "", 0);
     }
 
     void getNet() {
-        postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stopAndResumeList", "personal=1", 1);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stopAndResumeList", "personal=1", 1);
     }
 
     void getInfo() {
@@ -169,33 +154,10 @@ public class NetOrderFragment extends StaggeredFragment {
     }
 
     void stop(String serviceId) {
-        postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stop", "serviceId=" + serviceId, 2);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stop", "serviceId=" + serviceId, 2);
     }
 
     void resume(String serviceId) {
-        postRequest("https://netpay.sysu.edu.cn/netpay/c/site/resume", "serviceId=" + serviceId, 3);
-    }
-
-    void postRequest(String url, String data, int what) {
-        http.newCall(new Request.Builder()
-                .url(url)
-                .header("Cookie", params.getCookie())
-                .post(RequestBody.create(data, MediaType.parse("application/x-www-form-urlencoded")))
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message msg = new Message();
-                msg.what = -1;
-                handler.sendMessage(msg);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = what;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/resume", "serviceId=" + serviceId, 3);
     }
 }

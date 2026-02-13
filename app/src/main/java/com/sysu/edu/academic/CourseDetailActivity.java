@@ -48,10 +48,8 @@ public class CourseDetailActivity extends AppCompatActivity {
                 JSONObject response = JSONObject.parseObject((String) msg.obj);
                 if (response.getInteger("code").equals(200)) {
                     switch (msg.what) {
-                        case -1:
-                            params.toast(R.string.no_wifi_warning);
-                            break;
-                        case 1:
+                        case -1 -> params.toast(R.string.no_wifi_warning);
+                        case 1 -> {
                             JSONObject data = response.getJSONObject("data");
                             if (data != null) {
                                 Bundle bundle = new Bundle();
@@ -64,16 +62,16 @@ public class CourseDetailActivity extends AppCompatActivity {
                                 id = data.getJSONObject("outlineInfo").getString("courseId");
                                 getCourseOutline2();
                             }
-                            break;
-                        case 2:
-                            JSONObject data2 = response.getJSONObject("data");
-                            if (data2 != null) {
+                        }
+                        case 2 -> {
+                            JSONObject data = response.getJSONObject("data");
+                            if (data != null) {
                                 Bundle bundle = new Bundle();
                                 bundle.putInt("what", 2);
-                                bundle.putString("data", data2.toString());
+                                bundle.putString("data", data.toString());
                                 courseDetailPageAdapter.getItem(0).setArguments(bundle);
                             }
-                            break;
+                        }
                     }
                 } else if (response.getInteger("code").equals(52000000)) {
                     binding.pager.setVisibility(View.GONE);

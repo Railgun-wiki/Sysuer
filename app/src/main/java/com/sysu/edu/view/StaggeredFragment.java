@@ -31,6 +31,7 @@ import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.databinding.TwoColumnBinding;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -63,21 +64,16 @@ public class StaggeredFragment extends Fragment {
             staggeredAdapter = new StaggeredAdapter(requireContext());
         }
         orientation.observe(getViewLifecycleOwner(), o -> {
-            if (o != null) {
-                lm.setOrientation(o);
-            }
+            if (o != null) lm.setOrientation(o);
         });
         scrollBottom.observe(getViewLifecycleOwner(), runnable -> {
-            if (runnable != null) {
+            if (runnable != null)
                 binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
                     public void onScrolled(@NonNull RecyclerView v, int dx, int dy) {
-                        if (!v.canScrollVertically(1) && dy > 0) {
-                            runnable.run();
-                        }
+                        if (!v.canScrollVertically(1) && dy > 0) runnable.run();
                     }
                 });
-            }
         });
         staggeredListener.observe(getViewLifecycleOwner(), v -> staggeredAdapter.setListener(v));
         hideNull.observe(getViewLifecycleOwner(), b -> {
@@ -111,22 +107,36 @@ public class StaggeredFragment extends Fragment {
         staggeredListener.setValue(v);
     }
 
+
     public void add(String title, Integer icon, List<String> keys, List<String> values) {
         staggeredAdapter.add(title, keys, values, icon);
+    }
+
+    public void add(String title, Integer icon, int[] keys, List<String> values) {
+        staggeredAdapter.add(title, Arrays.asList(Arrays.stream(keys).mapToObj(requireContext()::getString).toArray(String[]::new)), values, icon);
     }
 
     public void add(String title, List<String> keys, List<String> values) {
         add(title, null, keys, values);
     }
 
+    public void add(String title, int[] keys, List<String> values) {
+        add(title, null, keys, values);
+    }
+
     public void add(Context context, String title, Integer icon, List<String> keys, List<String> values) {
-        if (staggeredAdapter == null) {
-            staggeredAdapter = new StaggeredAdapter(context);
-        }
+        if (staggeredAdapter == null) staggeredAdapter = new StaggeredAdapter(context);
         add(title, icon, keys, values);
     }
 
+    public void add(Context context, String title, Integer icon, int[] keys, List<String> values) {
+        add(context,title, icon, Arrays.asList(Arrays.stream(keys).mapToObj(context::getString).toArray(String[]::new)), values);
+    }
+
     public void add(Context context, String title, List<String> keys, List<String> values) {
+        add(context, title, null, keys, values);
+    }
+    public void add(Context context, String title, int[] keys, List<String> values) {
         add(context, title, null, keys, values);
     }
 
@@ -151,7 +161,7 @@ public class StaggeredFragment extends Fragment {
         return markdown.toString();
     }
 
-    public void viewTable(MaterialToolbar toolbar) {
+    public void setViewTableMenu(MaterialToolbar toolbar) {
         toolbar.getMenu().add(R.string.export).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
             export(toolbar, toolbar.getTitle().toString());
             return false;
@@ -199,7 +209,7 @@ public class StaggeredFragment extends Fragment {
             newKey.add(key);
             newValue.add(value);
             setKeyValue(newKey, newValue);
-            notifyItemInserted(getItemCount());
+            notifyItemInserted(getItemCount() - 1);
         }
 
         @NonNull
@@ -272,8 +282,9 @@ public class StaggeredFragment extends Fragment {
             this.icons.add(icon);
             this.keys.add(keys);
             this.values.add(values);
-            notifyItemInserted(getItemCount());
+            notifyItemInserted(getItemCount() - 1);
         }
+
 
         public void clear() {
             int tmp = getItemCount();

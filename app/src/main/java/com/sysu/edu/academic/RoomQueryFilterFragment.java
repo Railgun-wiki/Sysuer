@@ -73,8 +73,7 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
         FilterPreference classroomPreference = Objects.requireNonNull(findPreference("classroom"));
         PreferenceCategory weekSelection = Objects.requireNonNull(findPreference("weekSelection"));
         PreferenceCategory dateSelection = Objects.requireNonNull(findPreference("dateSelection"));
-
-        Handler handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -99,11 +98,11 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
                                         "id", "id", "acadYearSemester", "id"
                                 ).get(msg.what)));
                             });
-                            ListPreference preference = Objects.requireNonNull(getPreferenceManager().findPreference(List.of(
+                            ListPreference preference1 = Objects.requireNonNull(getPreferenceManager().findPreference(List.of(
                                     "campus", "teachingBuilding", "yearSemester", "classroom"
                             ).get(msg.what)));
-                            preference.setEntries(option.toArray(new String[]{}));
-                            preference.setEntryValues(number.toArray(new String[]{}));
+                            preference1.setEntries(option.toArray(new String[]{}));
+                            preference1.setEntryValues(number.toArray(new String[]{}));
                             if (msg.what < 3)
                                 getData(msg.what + 1);
                         } else {
@@ -112,11 +111,11 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
                                 option.add(item.getString(List.of("name", "number").get(msg.what - 4)));
                                 number.add(item.getString(List.of("id", "id").get(msg.what - 4)));
                             });
-                            ListPreference preference = Objects.requireNonNull(getPreferenceManager().findPreference(List.of(
+                            ListPreference preference1 = Objects.requireNonNull(getPreferenceManager().findPreference(List.of(
                                     "teachingBuilding", "classroom"
                             ).get(msg.what - 4)));
-                            preference.setEntries(option.toArray(new String[]{}));
-                            preference.setEntryValues(number.toArray(new String[]{}));
+                            preference1.setEntries(option.toArray(new String[]{}));
+                            preference1.setEntryValues(number.toArray(new String[]{}));
                         }
                     } else if (code == 53000007) {
                         params.toast(R.string.login_warning);
@@ -126,8 +125,7 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
                     }
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/schedule-web/");
         getData(0);
@@ -232,5 +230,4 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
             params.put(value, preference.getValue());
         }
     }
-
 }
