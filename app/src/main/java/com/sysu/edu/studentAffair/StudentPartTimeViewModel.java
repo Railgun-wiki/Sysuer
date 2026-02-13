@@ -11,17 +11,17 @@ public class StudentPartTimeViewModel extends ViewModel {
     public PopupMenu campusPop;
     public PopupMenu typePop;
 
-    public MutableLiveData<String> year = new MutableLiveData<>("2026");
-    public MutableLiveData<String> jobType = new MutableLiveData<>("");
-    public MutableLiveData<String> campus = new MutableLiveData<>("");
+    public final MutableLiveData<String> year = new MutableLiveData<>("2026");
+    public final MutableLiveData<String> jobType = new MutableLiveData<>("");
+    public final MutableLiveData<String> campus = new MutableLiveData<>("");
     public EditTextDialog jobNameDialog;
     public EditTextDialog unitDialog;
 
-    public MutableLiveData<String> yearName = new MutableLiveData<>("2026");
-    public MutableLiveData<String> jobTypeName = new MutableLiveData<>("");
-    public MutableLiveData<String> campusName = new MutableLiveData<>("");
-    public MutableLiveData<String> jobName = new MutableLiveData<>("");
-    public MutableLiveData<String> unitName = new MutableLiveData<>("");
+    public final MutableLiveData<String> yearName = new MutableLiveData<>("2026");
+    public final MutableLiveData<String> jobTypeName = new MutableLiveData<>("");
+    public final MutableLiveData<String> campusName = new MutableLiveData<>("");
+    public final MutableLiveData<String> jobName = new MutableLiveData<>("");
+    public final MutableLiveData<String> unitName = new MutableLiveData<>("");
 
 
 }

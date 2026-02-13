@@ -335,6 +335,7 @@ class RankAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 }
 
+@SuppressWarnings("ALL")
 class BlanketAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     final Context context;
     String content;
@@ -398,7 +399,8 @@ class BlanketAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String text = s.toString();
                 if (text.isEmpty()) {
-                    if (!answer.isEmpty()) answer.remove(0);
+                    if (!answer.isEmpty()) //noinspection SequencedCollectionMethodCanBeUsed
+                        answer.remove(0);
                 } else {
                     answer.set(0, text);
                 }

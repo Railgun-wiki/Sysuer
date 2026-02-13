@@ -34,6 +34,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+@SuppressWarnings("ALL")
 public class AboutActivity extends AppCompatActivity {
 
     final ArrayList<Long> click = new ArrayList<>();
@@ -50,6 +51,7 @@ public class AboutActivity extends AppCompatActivity {
         params = new Params(this);
         binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
         binding.icon.setOnClickListener(_ -> {
+            //noinspection SequencedCollectionMethodCanBeUsed
             if (click.isEmpty() || System.currentTimeMillis() - click.get(click.size() - 1) < 500) {
                 if (click.size() == 4) {
                     params.toast("已开启开发者模式");

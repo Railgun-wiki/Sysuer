@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+@SuppressWarnings("ALL")
 public class CourseSelectionFragment extends Fragment {
 
     final MutableLiveData<String> filter = new MutableLiveData<>();
@@ -264,6 +265,7 @@ public class CourseSelectionFragment extends Fragment {
     }
 
     int getType() {
+        //noinspection SequencedCollectionMethodCanBeUsed
         return Objects.requireNonNull(typeCate.getValue()).get(0) == null ? 1 : typeCate.getValue().get(0);
     }
 

@@ -1,6 +1,5 @@
 package com.sysu.edu.extra.ui;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,43 +12,28 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 
-import java.io.IOException;
 import java.util.Objects;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class PrivacyFragment extends PreferenceFragmentCompat {
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    Params params;
-    Handler handler;
-    String token;
+
+    HttpManager http;
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         if (savedInstanceState == null) {
             setPreferencesFromResource(R.xml.privacy, rootKey);
-            params = new Params(requireActivity());
-            ((Preference) Objects.requireNonNull(findPreference("netId"))).setSummary(requireContext().getSharedPreferences("privacy", Context.MODE_PRIVATE).getString("username", ""));
-            ((Preference) Objects.requireNonNull(findPreference("password")))
-                    .setOnPreferenceClickListener(preference -> {
+            Params params = new Params(requireActivity());
+            ((Preference) Objects.requireNonNull(findPreference("netId"))).setSummary(params.getAccount());
+            ((Preference) Objects.requireNonNull(findPreference("password"))).setOnPreferenceClickListener(_ -> {
                         params.toast(params.getPassword());
                         return false;
-                    });
-            params.setCallback(() -> {
-                token = params.getToken();
-                getInfo();
             });
-            token = params.getToken();
-            handler = new Handler(Looper.getMainLooper()) {
+            params.setCallback(this,this::getInfo);
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
@@ -68,7 +52,7 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
                                         p.setIcon(new int[]{R.drawable.name, R.drawable.id, R.drawable.card, R.drawable.account, R.drawable.phone, R.drawable.email}[i]);
                                         p.setOnPreferenceClickListener(preference -> {
                                             params.copy((String) preference.getTitle(), (String) preference.getSummary());
-                                            params.toast("已复制");
+                                            params.toast(R.string.copy_successfully);
                                             return false;
                                         });
                                         getPreferenceScreen().addPreference(p);
@@ -85,29 +69,14 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
                         }
                     }
                 }
-            };
+            });
+            http.setParams(params);
+            http.setTokenRequired(true);
             getInfo();
         }
     }
 
     void getInfo() {
-        http.newCall(new Request.Builder().url("https://pay.sysu.edu.cn/client/api/client/person/get")
-                .header("Referer", "https://pay.sysu.edu.cn/")
-                .post(RequestBody.create("{}", MediaType.parse("application/json")))
-                .header("token", token)
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                handler.sendEmptyMessage(-1);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message msg = new Message();
-                msg.what = 0;
-                msg.obj = response.body().string();
-                handler.sendMessage(msg);
-            }
-        });
+        http.postRequest("https://pay.sysu.edu.cn/client/api/client/person/get", "{}", 0);
     }
 }

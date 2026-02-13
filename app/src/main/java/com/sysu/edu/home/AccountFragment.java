@@ -22,11 +22,9 @@ public class AccountFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.account, rootKey);
         ActivityResultLauncher<Intent> launch = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
-            if (o.getResultCode() == Activity.RESULT_OK) {
-                requireActivity().recreate();
-            }
+            if (o.getResultCode() == Activity.RESULT_OK) requireActivity().recreate();
         });
-        ((Preference) Objects.requireNonNull(findPreference("setting"))).setOnPreferenceClickListener(preference -> {
+        ((Preference) Objects.requireNonNull(findPreference("setting"))).setOnPreferenceClickListener(_ -> {
                     launch.launch(new Intent(requireActivity(), SettingActivity.class), null);
                     return false;
                 }

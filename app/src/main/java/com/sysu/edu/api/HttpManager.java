@@ -30,7 +30,7 @@ public class HttpManager {
     String target;
     boolean isAuthorizationRequired;
     boolean isTokenRequired;
-    CookieManager cookieManager = CookieManager.getInstance();
+    final CookieManager cookieManager = CookieManager.getInstance();
 
     public HttpManager(Handler handler) {
         http = new OkHttpClient();

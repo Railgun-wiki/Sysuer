@@ -15,6 +15,7 @@ import com.sysu.edu.databinding.PreferenceRangeSliderBinding;
 
 import java.util.Locale;
 
+@SuppressWarnings("ALL")
 public class RangeSliderPreference extends SeekBarPreference {
 
 
@@ -59,6 +60,7 @@ public class RangeSliderPreference extends SeekBarPreference {
         binding.icon.setImageDrawable(getIcon());
         binding.seekbarValue.setVisibility(getShowSeekBarValue() ? View.VISIBLE : View.GONE);
         binding.seekbarValue.setText(String.format(Locale.getDefault(), "%.0f~%.0f", values[0], values[1]));
+        //noinspection SequencedCollectionMethodCanBeUsed
         binding.seekbar.addOnChangeListener((slider, v, b) -> setValues(new float[]{slider.getValues().get(0), slider.getValues().get(1)}));
         binding.getRoot().setOnClickListener(v -> onClick());
     }

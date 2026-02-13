@@ -50,7 +50,7 @@ public class SchoolWorkWarning extends AppCompatActivity {
         });
         fragment.setViewTableMenu(binding.toolbar);
         binding.toolbar.setTitle(R.string.school_work_warning);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {

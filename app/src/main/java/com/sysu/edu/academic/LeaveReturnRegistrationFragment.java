@@ -56,7 +56,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
     ArrayList<String> leave;
     ArrayList<String> stay;
     String id;
-    AuthorizationManager authorizationManager = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt.sysu.edu.cn/");
+    final AuthorizationManager authorizationManager = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt.sysu.edu.cn/");
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

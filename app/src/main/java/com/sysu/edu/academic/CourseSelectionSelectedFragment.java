@@ -39,6 +39,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@SuppressWarnings("ALL")
 public class CourseSelectionSelectedFragment extends Fragment {
 
 
@@ -106,7 +107,7 @@ public class CourseSelectionSelectedFragment extends Fragment {
             regetSelectedCourses();
         });
         binding.category.setOnCheckedStateChangeListener((_, checkedId) -> {
-            Integer i = checkedId.get(0);
+            @SuppressWarnings("SequencedCollectionMethodCanBeUsed") Integer i = checkedId.get(0);
             if (i == R.id.all)
                 category = "";
             else if (i == R.id.public_compulsory)

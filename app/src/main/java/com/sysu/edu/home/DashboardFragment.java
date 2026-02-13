@@ -76,6 +76,7 @@ import io.noties.markwon.MarkwonVisitor;
 import io.noties.markwon.core.CoreProps;
 
 
+@SuppressWarnings("ALL")
 public class DashboardFragment extends Fragment {
 
     final ArrayList<JSONObject> todayCourse = new ArrayList<>();
@@ -180,6 +181,7 @@ public class DashboardFragment extends Fragment {
                                 binding.progress.setMax(todayCourse.size());
                                 binding.progress.setProgress(beforeArray.size());
                                 binding.courseList.scrollToPosition(beforeArray.size());
+                                //noinspection SequencedCollectionMethodCanBeUsed
                                 Markwon.builder(requireContext()).usePlugin(new AbstractMarkwonPlugin() {
                                     @Override
                                     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {

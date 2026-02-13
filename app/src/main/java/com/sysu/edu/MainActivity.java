@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
     final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {
+            _ -> {
             }
     );
     Handler handler;
@@ -145,11 +145,11 @@ public class MainActivity extends AppCompatActivity {
         spm.initLiveData();
         AlertDialog dialog = new MaterialAlertDialogBuilder(this).setTitle(R.string.user_agreement_and_privacy_policy)
                 .setMessage("")
-                .setPositiveButton(R.string.agree, (dialogInterface, i) -> {
+                .setPositiveButton(R.string.agree, (_, _) -> {
                     spm.setIsAgree(true);
                     spm.setIsAgreeLiveData(false);
                 })
-                .setNegativeButton(R.string.disagree, (dialogInterface, i) -> {
+                .setNegativeButton(R.string.disagree, (_, _) -> {
                     spm.setIsAgree(false);
                     supportFinishAfterTransition();
                 })
@@ -176,10 +176,10 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         int version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
                         if (version < response.getInteger("version")) {
-                            AlertDialog updateDialog = new MaterialAlertDialogBuilder(MainActivity.this).setMessage("").setTitle("发现新版本").setPositiveButton("更新", (dialogInterface, i) -> {
+                            AlertDialog updateDialog = new MaterialAlertDialogBuilder(MainActivity.this).setMessage("").setTitle("发现新版本").setPositiveButton("更新", (_, _) -> {
                                 file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "sysuer.apk");
                                 downloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(new DownloadManager.Request(Uri.parse(response.getString("link"))).setDestinationUri(Uri.fromFile(file)).setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED));
-                            }).setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
+                            }).setNegativeButton(R.string.cancel, (_, _) -> {
                             }).setCancelable(response.getBoolean("enforce")).create();
                             updateDialog.show();
                             Markwon.builder(MainActivity.this).build().setMarkdown(Objects.requireNonNull(updateDialog.findViewById(android.R.id.message)), response.getString("description"));
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_NOT_EXPORTED);
-        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
+        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
         });
         //PackageManager pm = getPackageManager();
         //pm.setComponentEnabledSetting(new ComponentName(this, SettingActivity.class), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 资讯门户 (id: 3xx)
         actionMap.put(301, newActivity(NewsActivity.class));                 // 资讯门户
-        actionMap.put(302, v -> {
+        actionMap.put(302, _ -> {
             try {
                 startActivity(Objects.requireNonNull(getPackageManager().getLaunchIntentForPackage("com.comingx.zanao")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (ActivityNotFoundException e) {
@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(509, browse("https://mail.sysu.edu.cn/"));             // 公务电子邮件系统
 
         // 官方服务 (id: 6xx)
-        actionMap.put(601, v -> {    // 二维码
+        actionMap.put(601, _ -> {    // 二维码
             String linking = PreferenceManager.getDefaultSharedPreferences(this).getString("qrcode", "");
             if (!linking.isEmpty()) {
                 try {
@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
                 //new LaunchMiniProgram(this).launchMiniProgram("gh_85575b9f544e");
             }*/
         });
-        actionMap.put(602, v -> {
+        actionMap.put(602, _ -> {
             try {
                 startActivity(Objects.requireNonNull(this.getPackageManager().getLaunchIntentForPackage("com.tencent.wework")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (Exception e) {

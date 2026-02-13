@@ -38,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+@SuppressWarnings("ALL")
 public class AgendaActivity extends AppCompatActivity {
 
     final ArrayList<String> terms = new ArrayList<>();
@@ -157,7 +158,7 @@ public class AgendaActivity extends AppCompatActivity {
                                     String startClassTimes = jsonObject.getString("startClassTimes");
                                     String endClassTimes = jsonObject.getString("endClassTimes");
                                     JSONArray info = jsonObject.getJSONArray("teachingInfoList");
-                                    JSONObject detail = (JSONObject) info.get(0);
+                                    @SuppressWarnings("SequencedCollectionMethodCanBeUsed") JSONObject detail = (JSONObject) info.get(0);
                                     String course = detail.getString("courseName");
                                     String teacher = detail.getString("teacherName");
                                     String campus = detail.getString("teachingCampusName");

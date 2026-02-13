@@ -19,6 +19,7 @@ import com.sysu.edu.databinding.ActivityLeaveReturnRegistrationBinding;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("ALL")
 public class LeaveReturnRegistrationActivity extends AppCompatActivity {
 
     HttpManager http;
@@ -51,6 +52,7 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                                 data.forEach(o -> years.add(((JSONObject) o).getString("label") == null ? "" : ((JSONObject) o).getString("label")));
                                 binding.years.setSimpleItems(years.toArray(new String[0]));
                                 binding.years.setOnItemClickListener((_, _, position, _) -> viewModel.year.setValue(data.getJSONObject(position).getString("value")));
+                                //noinspection SequencedCollectionMethodCanBeUsed
                                 binding.years.setText(years.isEmpty() ? "" : years.get(0), false);
                                 viewModel.year.setValue(data.getJSONObject(0).getString("value"));
                             } /*else {

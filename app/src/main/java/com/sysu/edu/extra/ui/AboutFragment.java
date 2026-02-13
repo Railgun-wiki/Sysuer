@@ -21,14 +21,12 @@ public class AboutFragment extends PreferenceFragmentCompat {
             PackageInfo version = requireContext().getPackageManager().getPackageInfo(requireContext().getPackageName(), 0);
             Preference versionPreference = Objects.requireNonNull(findPreference("version"));
             versionPreference.setSummary(String.format("%s(%s)", version.versionName, version.versionCode));
-            versionPreference.setOnPreferenceClickListener(preference -> {
+            versionPreference.setOnPreferenceClickListener(_ -> {
                 ((AboutActivity) requireActivity()).checkUpdate();
                 return false;
             });
-
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
-
 }

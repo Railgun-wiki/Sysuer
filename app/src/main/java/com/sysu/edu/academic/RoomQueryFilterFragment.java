@@ -60,7 +60,7 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
 //        if (binding == null) {
         binding = FragmentCourseQueryFilterBinding.inflate(inflater, container, false);
         binding.getRoot().addView(list);
-        binding.fab.setOnClickListener(v -> {
+        binding.fab.setOnClickListener(_ -> {
             Bundle bundle = new Bundle();
             bundle.putString("params", getParams().toString());
             Navigation.findNavController(binding.getRoot()).navigate(R.id.query_to_result, bundle, new NavOptions.Builder().build());
@@ -129,26 +129,26 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/schedule-web/");
         getData(0);
-        isWeekPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+        isWeekPreference.setOnPreferenceChangeListener((_, newValue) -> {
             boolean isWeek = (boolean) newValue;
             weekSelection.setVisible(isWeek);
             dateSelection.setVisible(!isWeek);
             return true;
         });
-        campusPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+        campusPreference.setOnPreferenceChangeListener((_, newValue) -> {
             getTeachingBuilding((String) newValue);
             getClassRoom((String) newValue, buildingPreference.getValue(), classroomPreference.getValueLiveData().getValue());
             return true;
         });
-        buildingPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+        buildingPreference.setOnPreferenceChangeListener((_, newValue) -> {
             getClassRoom(campusPreference.getValue(), (String) newValue, classroomPreference.getValueLiveData().getValue());
             return true;
         });
         Preference datePreference = Objects.requireNonNull(findPreference("date"));
         datePicker = MaterialDatePicker.Builder.dateRangePicker().build();
-        datePicker.addOnPositiveButtonClickListener(selection -> datePreference.setSummary(datePicker.getHeaderText()));
+        datePicker.addOnPositiveButtonClickListener(_ -> datePreference.setSummary(datePicker.getHeaderText()));
         classroomPreference.getValueLiveData().observe(requireActivity(), value -> getClassRoom(campusPreference.getValue(), buildingPreference.getValue(), value));
-        datePreference.setOnPreferenceClickListener(preference -> {
+        datePreference.setOnPreferenceClickListener(_ -> {
             datePicker.show(getChildFragmentManager(), "date_picker");
             return true;
         });

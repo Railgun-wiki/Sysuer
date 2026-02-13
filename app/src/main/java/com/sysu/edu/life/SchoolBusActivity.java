@@ -31,8 +31,8 @@ import java.util.stream.IntStream;
 public class SchoolBusActivity extends AppCompatActivity {
     HttpManager http;
     JSONObject data;
-    MutableLiveData<Boolean> day = new MutableLiveData<>(true);
-    ArrayList<String> routes = new ArrayList<>();
+    final MutableLiveData<Boolean> day = new MutableLiveData<>(true);
+    final ArrayList<String> routes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

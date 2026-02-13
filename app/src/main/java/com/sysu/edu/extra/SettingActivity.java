@@ -12,12 +12,10 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            setResult(RESULT_OK);
-        }
+        if (savedInstanceState != null) setResult(RESULT_OK);
         ActivitySettingBinding binding = ActivitySettingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         Language.setLanguage(this);
-        binding.toolbar.setNavigationOnClickListener(v -> finishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
     }
 }

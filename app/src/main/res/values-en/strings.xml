@@ -555,4 +555,16 @@
     <string name="cross_major">Cross Major</string>
     <string name="public_selective">Public Selective</string>
     <string name="study_hour">Study Hour</string>
+    <string name="course_outline">Course Outline</string>
+    <string name="refresh">Refresh</string>
+    <string name="open_in_browser">Open in Browser</string>
+    <string name="clear_cookie">Remove Cookies</string>
+    <string name="exit">Exit</string>
+    <string name="route_detail">Route Detail</string>
+    <string name="weekend">Weekend</string>
+    <string name="workday">Weekday</string>
+    <string name="notice">Notice</string>
+    <string name="holiday">Holiday</string>
+    <string name="set_pnp">Set PNP</string>
+    <string name="cancel_pnp">Cancel PNP</string>
 </resources>

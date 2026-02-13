@@ -277,7 +277,7 @@ public class GymReservationListFragment extends Fragment {
 
         final ArrayList<JSONObject> data = new ArrayList<>();
         Consumer<String> action;
-        GymReservationViewModel viewModel;
+        final GymReservationViewModel viewModel;
 
         public FieldAdapter(Context context, GymReservationViewModel viewModel) {
             super();

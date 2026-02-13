@@ -24,8 +24,6 @@ import com.google.firebase.installations.BuildConfig;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ActivityCrashBinding;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -47,12 +45,12 @@ public class CrashActivity extends AppCompatActivity {
         binding = ActivityCrashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         params = new Params(this);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
-        binding.copy.setOnClickListener(v -> {
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+        binding.copy.setOnClickListener(_ -> {
             params.copy("crash", crash.getValue());
             params.toast(R.string.copy_successfully);
         });
-        binding.submit.setOnClickListener(v -> {
+        binding.submit.setOnClickListener(_ -> {
             openIssueInBrowser();
 //            params.submit("crash.txt");
         });
@@ -64,7 +62,7 @@ public class CrashActivity extends AppCompatActivity {
                     new RuntimeException(crashInfo)
             ));
         }
-        binding.restart.setOnClickListener(v -> {
+        binding.restart.setOnClickListener(_ -> {
             Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
             if (intent != null) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -108,7 +106,7 @@ public class CrashActivity extends AppCompatActivity {
 
     String generateGitHubWebIssueUrl(String title) {
         return String.format("https://github.com/%s/%s/issues/new?title=%s&labels=bug,crash-report",
-                "SYSU-Tang", "Sysuer", URLEncoder.encode(title, StandardCharsets.UTF_8));
+                "SYSU-Tang", "Sysuer", title);
     }
 
     String getAvailableMemory() {
@@ -207,18 +205,6 @@ public class CrashActivity extends AppCompatActivity {
         markdown.append("## ❌ 实际行为\n");
         markdown.append("[描述实际发生的行为]\n\n");
 
-        // 堆栈跟踪（可折叠）
-        /*markdown.append("<details>\n");
-        markdown.append("<summary>点击查看完整堆栈跟踪</summary>\n\n");
-        markdown.append("```txt\n");
-
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        throwable.printStackTrace(pw);
-        markdown.append(sw);
-        markdown.append("\n```\n\n");
-        markdown.append("</details>\n\n");*/
-
 
         // 设备状态信息
         markdown.append("## 📊 设备状态\n");
@@ -231,17 +217,6 @@ public class CrashActivity extends AppCompatActivity {
         markdown.append("## ⏰ 崩溃时间\n");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z", Locale.getDefault());
         markdown.append(sdf.format(new Date())).append("\n\n");
-
-        // 日志片段（如果有）
-        /*String logSnippet = getRecentLogSnippet();
-        if (!logSnippet.isEmpty()) {
-            markdown.append("<details>\n");
-            markdown.append("<summary>点击查看相关日志</summary>\n\n");
-            markdown.append("```\n");
-            markdown.append(logSnippet);
-            markdown.append("\n```\n\n");
-            markdown.append("</details>\n\n");
-        }*/
 
         return markdown.toString();
     }

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+@SuppressWarnings("ALL")
 public class CourseCompletionFragment extends StaggeredFragment {
     HttpManager http;
     //    int total = -1;
@@ -60,6 +61,7 @@ public class CourseCompletionFragment extends StaggeredFragment {
                                 data.getJSONArray("rows").forEach(a -> {
                                     ArrayList<String> values = extractValue((JSONObject) a, new String[]{"acadYearSemester", "courseNumber", "courseName", "courseCategoryName", "credit",/**/"acadYearSemester", "achievementCourseNumber", "achievementCourseName", "achievementCourseCategoryName", "achievementCredit", "ispassed", "achievementPoint"});
                                     if (values.get(0) != null) {
+                                        //noinspection SequencedCollectionMethodCanBeUsed
                                         values.set(0, values.get(0).replace(",", "|"));
                                     }
                                     if (values.get(5) != null) {
