@@ -1,8 +1,11 @@
 package com.sysu.edu.api;
 
+import android.content.Context;
+
 import com.alibaba.fastjson2.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommonUtil {
@@ -51,4 +54,10 @@ public class CommonUtil {
         return str == null ? "" : str.trim();
     }
 
+    public static String[] getString(Context context, int[] resource){
+        return Arrays.stream(resource).mapToObj(context::getString).toArray(String[]::new);
+    }
+    public static String[] getString(Context context, List<Integer> resource){
+        return resource.stream().mapToInt(Integer::intValue).mapToObj(context::getString).toArray(String[]::new);
+    }
 }

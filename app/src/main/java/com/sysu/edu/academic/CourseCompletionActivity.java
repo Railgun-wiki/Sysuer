@@ -75,7 +75,7 @@ public class CourseCompletionActivity extends AppCompatActivity {
                                             ((ItemCardBinding) binding).getRoot().addView(progress);
                                         }
                                     });
-                                    page1.add(CourseCompletionActivity.this, item.getString("courseCategoryName"), List.of("课程类别", "培养方案学分要求", "免修课程学分", "实际毕业学分要求", "实得"),
+                                    page1.add(item.getString("courseCategoryName"), List.of("课程类别", "培养方案学分要求", "免修课程学分", "实际毕业学分要求", "实得"),
                                             extractValue(item, new String[]{"courseCategoryName", "trainingCredit", "exemptCredit", "actualCredit", "earnedCredit"}));
                                 });
                             }

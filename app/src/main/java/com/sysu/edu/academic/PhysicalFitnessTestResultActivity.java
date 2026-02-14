@@ -74,14 +74,14 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                 while (matcher.find()) {
                                     Matcher matcher1 = Pattern.compile("<div class=\"weui-cell__bd\".*?<p.*?>(.+?)</p>.*?<div class=\"weui-cell__ft.*?\">.+?<span.+?>(.+?)(&nbsp;)?</span>", Pattern.DOTALL).matcher(matcher.group());
                                     if (matcher1.find())
-                                        page.add(PhysicalFitnessTestResultActivity.this, matcher1.group(1), R.drawable.calendar, List.of(new String[]{"总成绩", "总积分", "是否达标"}[msg.what]), List.of(Objects.requireNonNull(matcher1.group(2)).trim()));
+                                        page.add(matcher1.group(1), R.drawable.calendar, List.of(new String[]{"总成绩", "总积分", "是否达标"}[msg.what]), List.of(Objects.requireNonNull(matcher1.group(2)).trim()));
                                     Matcher matcher2 = Pattern.compile("<a class=\"weui-cell weui-cell_access\" href=\"(.+?)\">", Pattern.DOTALL).matcher(matcher.group());
                                     if (matcher2.find()) urls.add(matcher2.group(1));
                                 }
                                 page.setListener(new AdapterListener() {
                                     @Override
                                     public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-                                        page.staggeredAdapter.getTwoColumnsAdapter(position).setListener(new AdapterListener() {
+                                        page.getStaggeredAdapter().getTwoColumnsAdapter(position).setListener(new AdapterListener() {
                                             @Override
                                             public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int p) {
                                                 holder.itemView.setOnClickListener(_ -> {
@@ -113,7 +113,7 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                             case 3: {
                                 Matcher matcher = Pattern.compile("<a class=\"weui-cell\">.*?<div class=\"weui-cell__bd\">(.+?)</div>.*?<div class=\"weui-cell__ft\">(.+?)</div>.*?</a>", Pattern.DOTALL).matcher((String) msg.obj);
                                 while (matcher.find())
-                                    page1.staggeredAdapter.addRow(position, Objects.requireNonNull(matcher.group(1)).replaceAll("</span>", "~").replaceAll("<.+?>", "").replaceAll("\\s", "").trim(), Objects.requireNonNull(matcher.group(2)).replaceAll("</span>", "~").replaceAll("<.+?>", "").replaceAll("%s", "").trim());
+                                    page1.getStaggeredAdapter().addRow(position, Objects.requireNonNull(matcher.group(1)).replaceAll("</span>", "~").replaceAll("<.+?>", "").replaceAll("\\s", "").trim(), Objects.requireNonNull(matcher.group(2)).replaceAll("</span>", "~").replaceAll("<.+?>", "").replaceAll("%s", "").trim());
                                 break;
                             }
                             case 4: {
@@ -122,9 +122,9 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                     Matcher matcher1 = Pattern.compile("class=\"left_side\">(.+?)</div>.+?<p>(.+?)</p></div>", Pattern.DOTALL).matcher(matcher.group());
                                     Matcher creditMatcher = Pattern.compile("class=\"ticeImg\">(.+?)<", Pattern.DOTALL).matcher(matcher.group());
                                     if (creditMatcher.find())
-                                        page2.staggeredAdapter.addRow(position, "积分", Objects.requireNonNull(creditMatcher.group(1)).trim());
+                                        page2.getStaggeredAdapter().addRow(position, "积分", Objects.requireNonNull(creditMatcher.group(1)).trim());
                                     while (matcher1.find())
-                                        page2.staggeredAdapter.addRow(position, matcher1.group(1), matcher1.group(2));
+                                        page2.getStaggeredAdapter().addRow(position, matcher1.group(1), matcher1.group(2));
                                 }
                                 break;
                             }

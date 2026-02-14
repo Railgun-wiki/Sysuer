@@ -68,7 +68,7 @@ public class ExamActivity extends AppCompatActivity {
                             values.add(((JSONObject) o).getString(i));
                         }
                     });
-                    ((StaggeredFragment) binding.examFragment.getFragment()).add(this, time, List.of("科目", "考场", "时长", "日期", "学年"), values);
+                    ((StaggeredFragment) binding.examFragment.getFragment()).add(time, List.of("科目", "考场", "时长", "日期", "学年"), values);
                 }
             }));
         });

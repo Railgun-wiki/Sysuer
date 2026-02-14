@@ -120,7 +120,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
                                             values.add(v == null ? "" : v.toString());
                                         }
                                     });
-                                    list.add(PersonalInformationActivity.this, String.valueOf(count.getAndIncrement()), keys, values);
+                                    list.add(String.valueOf(count.getAndIncrement()), keys, values);
                                 });
                             } else {
                                 ArrayList<String> keys = new ArrayList<>();
@@ -129,7 +129,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
                                     keys.add(dict.getOrDefault(k, k));
                                     values.add(v == null ? "" : v.toString());
                                 });
-                                list.add(PersonalInformationActivity.this, item.getString("zdflmc"), keys, values);
+                                list.add(item.getString("zdflmc"), keys, values);
                             }
                         });
                     } else if (data.getJSONObject("meta").getInteger("statusCode") == 302) {

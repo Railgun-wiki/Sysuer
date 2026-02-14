@@ -70,7 +70,7 @@ public class SchoolWorkWarning extends AppCompatActivity {
                                 for (int i = 0; i < keyName.length; i++) {
                                     values.add(((JSONObject) a).getString(new String[]{"alarmResultName", "alarmOperationTerm", "alarmTerm", "createTime", "archivceID", "alarmResult"}[i]));
                                 }
-                                fragment.add(SchoolWorkWarning.this, String.valueOf(order), List.of(keyName), values);
+                                fragment.add(String.valueOf(order), R.drawable.warning, List.of(keyName), values);
                             });
                         }
                     } else {

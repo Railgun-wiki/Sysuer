@@ -103,9 +103,9 @@ public class SchoolBusActivity extends AppCompatActivity {
                     }
                     i.getAndIncrement();
                     notice.setMessage(item.getString("note"));
-                    fragment.add(SchoolBusActivity.this, getString(R.string.route_detail), List.of("路线", "起点", "终点"),
+                    fragment.add(getString(R.string.route_detail), R.drawable.bus, List.of("路线", "起点", "终点"),
                             extractValue(item, new String[]{"drivingDirectionName", "startStation", "endStation"}));
-                    item.getJSONArray("schoolBusShuttleMomentList").forEach(b -> fragment.add(SchoolBusActivity.this, ((JSONObject) b).getString("time"), List.of("乘客", "车辆", "时间", "路线"),
+                    item.getJSONArray("schoolBusShuttleMomentList").forEach(b -> fragment.add(((JSONObject) b).getString("time"), R.drawable.bus, List.of("乘客", "车辆", "时间", "路线"),
                             extractValue(((JSONObject) b), new String[]{"passenger", "vehiclesType", "time", "drivingRoute"})));
                 });
                 header.option.setSimpleItems(routes.toArray(new String[0]));

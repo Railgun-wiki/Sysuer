@@ -56,7 +56,7 @@ public class TrainingResultFragment extends Fragment {
                         if (response.getIntValue("code") == 200) {
                             JSONObject data = response.getJSONObject("data");
                             total = data.getInteger("total");
-                            data.getJSONArray("rows").forEach(o -> staggeredFragment.add(requireContext(), ((JSONObject) o).getString("name"), List.of("专业", "年级", "学院", "培养类别", "修业年限", "学科门类", "学位", "专业代码", "专业ID"),
+                            data.getJSONArray("rows").forEach(o -> staggeredFragment.add(((JSONObject) o).getString("name"), R.drawable.book, List.of("专业", "年级", "学院", "培养类别", "修业年限", "学科门类", "学位", "专业代码", "专业ID"),
                                     extractValue((JSONObject) o, new String[]{"professionName", "grade", "manageUnitName", "trainTypeName", "educationalSystem", "disciplineCateName", "degreeGrantName", "professionCode", "professionId"})));
                         } else {
                             params.toast(response.getString("msg"));

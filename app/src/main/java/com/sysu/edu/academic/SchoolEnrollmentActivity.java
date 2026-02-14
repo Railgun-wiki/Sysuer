@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
+import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -36,7 +37,11 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ActivityPagerBinding binding = ActivityPagerBinding.inflate(getLayoutInflater());
         Params params = new Params(this);
-        params.setCallback(() -> addNextPage(0));
+        params.setCallback(() -> {
+            page = 0;
+            order = 0;
+            addNextPage(0);
+        });
         setContentView(binding.getRoot());
         Map<Integer, List<Integer>> dataMap = Map.of(R.string.school_enrollment_personal_info, List.of(R.string.school_enrollment_student_number, R.string.school_enrollment_name, R.string.school_enrollment_english_name, R.string.school_enrollment_name_pinyin, R.string.school_enrollment_chinese_name, R.string.school_enrollment_former_name, R.string.school_enrollment_country, R.string.school_enrollment_id_type, R.string.school_enrollment_id_number, R.string.school_enrollment_former_id_type, R.string.school_enrollment_former_id_number, R.string.school_enrollment_gender, R.string.school_enrollment_birthday, R.string.school_enrollment_marital_status, R.string.school_enrollment_health_status, R.string.school_enrollment_religion, R.string.school_enrollment_blood_type, R.string.school_enrollment_id_validity, R.string.school_enrollment_birthplace, R.string.school_enrollment_ethnicity, R.string.school_enrollment_political_status, R.string.school_enrollment_hometown, R.string.school_enrollment_hk_macao_taiwan, R.string.school_enrollment_hobby, R.string.school_enrollment_hk_passport, R.string.school_enrollment_exam_number),
                 R.string.school_enrollment_roll_info, List.of(R.string.school_enrollment_college, R.string.school_enrollment_department, R.string.school_enrollment_grade, R.string.school_enrollment_grade_direction, R.string.school_enrollment_campus, R.string.school_enrollment_grade_category, R.string.school_enrollment_major_category, R.string.school_enrollment_major_direction, R.string.school_enrollment_standard_major, R.string.school_enrollment_cross_college, R.string.school_enrollment_education_system, R.string.school_enrollment_student_type, R.string.school_enrollment_discipline, R.string.school_enrollment_degree_type, R.string.school_enrollment_credit_system, R.string.school_enrollment_need_confirm, R.string.school_enrollment_min_study_years, R.string.school_enrollment_max_study_years, R.string.school_enrollment_class, R.string.school_enrollment_status, R.string.school_enrollment_in_school, R.string.school_enrollment_study_form, R.string.school_enrollment_education_level, R.string.school_enrollment_training_method, R.string.school_enrollment_admission_method, R.string.school_enrollment_admission_date, R.string.school_enrollment_expected_graduation, R.string.school_enrollment_charge_grade, R.string.school_enrollment_graduation_date, R.string.school_enrollment_degree_category, R.string.school_enrollment_certificate_date, R.string.school_enrollment_certificate_number, R.string.school_enrollment_principal, R.string.school_enrollment_degree_date, R.string.school_enrollment_degree_number, R.string.school_enrollment_international_type, R.string.school_enrollment_funding_source, R.string.school_enrollment_csc_number, R.string.school_enrollment_teaching_language, R.string.school_enrollment_origin, R.string.school_enrollment_exam_type, R.string.school_enrollment_graduation_type, R.string.school_enrollment_high_school, R.string.school_enrollment_gaokao_score, R.string.school_enrollment_admission_score, R.string.school_enrollment_province_enroll, R.string.school_enrollment_province_rank, R.string.school_enrollment_province_rank_percent, R.string.school_enrollment_top_rank, R.string.school_enrollment_chinese, R.string.school_enrollment_math, R.string.school_enrollment_english, R.string.school_enrollment_comprehensive, R.string.school_enrollment_physics, R.string.school_enrollment_chemistry, R.string.school_enrollment_biology, R.string.school_enrollment_politics, R.string.school_enrollment_history, R.string.school_enrollment_geography, R.string.school_enrollment_graduation_evaluation, R.string.school_enrollment_exam_characteristics),
@@ -65,7 +70,7 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
                         JSONObject data = response.getJSONObject("data");
                         if (data != null) {
                             if (msg.what == 0) {
-                                dataMap.forEach((title, keyName) -> ((StaggeredFragment) pager2Adapter.getItem(0)).add(SchoolEnrollmentActivity.this, getString(title), keyName.stream().mapToInt(Integer::intValue).toArray(),
+                                dataMap.forEach((title, keyName) -> ((StaggeredFragment) pager2Adapter.getItem(0)).add(getString(title), R.drawable.calendar, List.of(CommonUtil.getString(SchoolEnrollmentActivity.this, keyName)),
                                         extractValue(data, keys.get(List.of(R.string.school_enrollment_personal_info, R.string.school_enrollment_roll_info, R.string.school_enrollment_contact_info).indexOf(title)))));
                                 addNextPage(msg.what + 1);
                             } else {
@@ -82,7 +87,7 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
                                                     {R.string.school_enrollment_academic_year, R.string.school_enrollment_checkin_status, R.string.school_enrollment_register_status, R.string.school_enrollment_payment_status},
                                                     {R.string.school_enrollment_punish_date, R.string.school_enrollment_punish_brief, R.string.school_enrollment_punish_type, R.string.school_enrollment_punish_source, R.string.school_enrollment_punish_name, R.string.school_enrollment_punish_reason, R.string.school_enrollment_punish_time, R.string.school_enrollment_punish_proof, R.string.school_enrollment_punish_repeal_time, R.string.school_enrollment_punish_repeal_proof, R.string.school_enrollment_punish_graduate, R.string.school_enrollment_punish_degree, R.string.school_enrollment_punish_sponsor, R.string.school_enrollment_punish_department, R.string.school_enrollment_punish_clause, R.string.school_enrollment_punish_money, R.string.school_enrollment_punish_status, R.string.school_enrollment_punish_in_school}
                                             }[msg.what - 1];
-                                    ((StaggeredFragment) pager2Adapter.getItem(msg.what)).add(SchoolEnrollmentActivity.this, String.valueOf(order), keyName,
+                                    ((StaggeredFragment) pager2Adapter.getItem(msg.what)).add(String.valueOf(order), R.drawable.calendar, List.of(CommonUtil.getString(SchoolEnrollmentActivity.this, keyName)),
                                             extractValue((JSONObject) a, new String[][]{
                                                     {"familyRelationName", "familyMemberName", "familyWorkUnit", "jobName", "familyPhone", "familyBirthday"},
                                                     {"experBeginTime", "experEndTime", "experStudyUnit", "experSite"},
@@ -164,6 +169,6 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
     }
 
     void getWithUrl(String url, int code, int pageNum) {
-        http.postRequest(url, String.format("{\"pageNo\":%s,\"pageSize\":10,\"total\":true,\"param\":{}}", pageNum), "application/json", code);
+        http.postRequest(url, String.format("{\"pageNo\":%s,\"pageSize\":10,\"total\":true,\"param\":{}}", pageNum), code);
     }
 }

@@ -565,5 +565,13 @@
     <string name="holiday">节假日</string>
     <string name="set_pnp">设置PNP</string>
     <string name="cancel_pnp">取消PNP</string>
+    <string name="forward">前进</string>
+    <string name="back">后退</string>
+    <string name="page_up">滑到顶部</string>
+    <string name="page_down">滑到底部</string>
+    <string name="stop">停止</string>
+    <string name="zoom_in">放大</string>
+    <string name="zoom_out">缩小</string>
+    <string name="manage">管理</string>
 
 </resources>

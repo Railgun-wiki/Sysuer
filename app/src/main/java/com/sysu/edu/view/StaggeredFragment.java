@@ -31,22 +31,21 @@ import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.databinding.TwoColumnBinding;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public class StaggeredFragment extends Fragment {
 
-    public static RecyclerViewScrollBinding binding;
+    protected RecyclerViewScrollBinding binding;
     final MutableLiveData<Integer> orientation = new MutableLiveData<>(StaggeredGridLayoutManager.VERTICAL);
     final MutableLiveData<Runnable> scrollBottom = new MutableLiveData<>();
     final MutableLiveData<Boolean> nestedScrollingEnabled = new MutableLiveData<>(true);
     final MutableLiveData<Boolean> hideNull = new MutableLiveData<>(false);
     final MutableLiveData<AdapterListener> staggeredListener = new MutableLiveData<>();
     public int position;
-    public StaggeredAdapter staggeredAdapter;
+    protected StaggeredAdapter staggeredAdapter = new StaggeredAdapter();
     protected Params params;
-    StaggeredGridLayoutManager lm;
+    StaggeredGridLayoutManager staggeredGridLayoutManager;
 
     public static StaggeredFragment newInstance(int position) {
         StaggeredFragment s = new StaggeredFragment();
@@ -58,13 +57,10 @@ public class StaggeredFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         params = new Params(requireActivity());
         binding = RecyclerViewScrollBinding.inflate(inflater);
-        lm = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
-        binding.recyclerView.setLayoutManager(lm);
-        if (staggeredAdapter == null) {
-            staggeredAdapter = new StaggeredAdapter(requireContext());
-        }
+        staggeredGridLayoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
+        binding.recyclerView.setLayoutManager(staggeredGridLayoutManager);
         orientation.observe(getViewLifecycleOwner(), o -> {
-            if (o != null) lm.setOrientation(o);
+            if (o != null) staggeredGridLayoutManager.setOrientation(o);
         });
         scrollBottom.observe(getViewLifecycleOwner(), runnable -> {
             if (runnable != null)
@@ -77,9 +73,7 @@ public class StaggeredFragment extends Fragment {
         });
         staggeredListener.observe(getViewLifecycleOwner(), v -> staggeredAdapter.setListener(v));
         hideNull.observe(getViewLifecycleOwner(), b -> {
-            if (b != null) {
-                staggeredAdapter.setHideNull(b);
-            }
+            if (b != null) staggeredAdapter.setHideNull(b);
         });
         binding.recyclerView.setAdapter(staggeredAdapter);
         nestedScrollingEnabled.observe(getViewLifecycleOwner(), binding.recyclerView::setNestedScrollingEnabled);
@@ -107,43 +101,32 @@ public class StaggeredFragment extends Fragment {
         staggeredListener.setValue(v);
     }
 
+    public StaggeredAdapter getStaggeredAdapter() {
+        return staggeredAdapter;
+    }
+
 
     public void add(String title, Integer icon, List<String> keys, List<String> values) {
         staggeredAdapter.add(title, keys, values, icon);
     }
 
-    public void add(String title, Integer icon, int[] keys, List<String> values) {
+
+    /*public void add(String title, Integer icon, int[] keys, List<String> values) {
         staggeredAdapter.add(title, Arrays.asList(Arrays.stream(keys).mapToObj(requireContext()::getString).toArray(String[]::new)), values, icon);
-    }
+    }*/
 
     public void add(String title, List<String> keys, List<String> values) {
         add(title, null, keys, values);
     }
 
-    public void add(String title, int[] keys, List<String> values) {
+   /* public void add(String title, int[] keys, List<String> values) {
         add(title, null, keys, values);
-    }
-
-    public void add(Context context, String title, Integer icon, List<String> keys, List<String> values) {
-        if (staggeredAdapter == null) staggeredAdapter = new StaggeredAdapter(context);
-        add(title, icon, keys, values);
-    }
-
-    public void add(Context context, String title, Integer icon, int[] keys, List<String> values) {
-        add(context,title, icon, Arrays.asList(Arrays.stream(keys).mapToObj(context::getString).toArray(String[]::new)), values);
-    }
-
-    public void add(Context context, String title, List<String> keys, List<String> values) {
-        add(context, title, null, keys, values);
-    }
-    public void add(Context context, String title, int[] keys, List<String> values) {
-        add(context, title, null, keys, values);
-    }
+    }*/
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        lm.setSpanCount(params.getColumn());
+        staggeredGridLayoutManager.setSpanCount(params.getColumn());
     }
 
     public void clear() {
@@ -253,21 +236,14 @@ public class StaggeredFragment extends Fragment {
     }
 
     public static class StaggeredAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        public final ArrayList<String> titles = new ArrayList<>();
-        final Context context;
+        final ArrayList<String> titles = new ArrayList<>();
         final ArrayList<List<String>> keys = new ArrayList<>();
         final ArrayList<Integer> icons = new ArrayList<>();
         final ArrayList<List<String>> values = new ArrayList<>();
         final ArrayList<TwoColumnsAdapter> twoColumnsAdapters = new ArrayList<>();
 
         AdapterListener adapterListener;
-        boolean hideNull;
-
-        public StaggeredAdapter(Context c) {
-            super();
-            this.context = c;
-            this.hideNull = false;
-        }
+        boolean hideNull = false;
 
         public void setHideNull(boolean hideNull) {
             this.hideNull = hideNull;
@@ -298,14 +274,13 @@ public class StaggeredFragment extends Fragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            Context context = parent.getContext();
             ItemCardBinding item = ItemCardBinding.inflate(LayoutInflater.from(context), parent, false);
             RecyclerView list = RecyclerViewBinding.inflate(LayoutInflater.from(context), item.getRoot(), false).getRoot();
             list.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
             list.setNestedScrollingEnabled(false);
             item.card.addView(list);
-            if (adapterListener != null) {
-                adapterListener.onCreate(this, item);
-            }
+            if (adapterListener != null) adapterListener.onCreate(this, item);
             return new RecyclerView.ViewHolder(item.getRoot()) {
             };
         }
@@ -338,6 +313,7 @@ public class StaggeredFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemCardBinding item = ItemCardBinding.bind(holder.itemView);
+            Context context = holder.itemView.getContext();
             if (icons.get(position) != null) {
                 item.title.setCompoundDrawablePadding(24);
                 Drawable icon = AppCompatResources.getDrawable(context, icons.get(position));

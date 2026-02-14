@@ -19,45 +19,61 @@
             app:title="@string/app_name" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.sysu.edu.view.NestedScrollWebView
-        android:id="@+id/web"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
+        android:orientation="vertical"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-    <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_margin="@dimen/fab_margin">
+        <com.sysu.edu.view.NestedScrollWebView
+            android:id="@+id/web"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        <com.google.android.material.overflow.OverflowLinearLayout
+        <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center">
+            android:layout_gravity="bottom"
+            android:layout_marginStart="@dimen/fab_margin"
+            android:layout_marginEnd="@dimen/fab_margin">
 
-            <Button
-                android:id="@+id/back"
-                style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
-                android:layout_width="wrap_content"
+            <com.google.android.material.overflow.OverflowLinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:icon="@drawable/abc_ic_ab_back_material" />
+                android:gravity="center">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/js"
-                style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/js"
-                app:icon="@drawable/js" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/back"
+                    style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/abc_ic_ab_back_material" />
 
-            <Button
-                android:id="@+id/forward"
-                style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:rotation="180"
-                app:icon="@drawable/abc_ic_ab_back_material" />
-        </com.google.android.material.overflow.OverflowLinearLayout>
-    </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/js"
+                    style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/js"
+                    app:icon="@drawable/js" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/menu"
+                    style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/menu"
+                    app:icon="@drawable/menu" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/forward"
+                    style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:rotation="180"
+                    app:icon="@drawable/abc_ic_ab_back_material" />
+            </com.google.android.material.overflow.OverflowLinearLayout>
+        </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

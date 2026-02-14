@@ -201,7 +201,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
 
     public void postEvaluation(String mode, int what) {
         answers.put("pjzt", mode);
-        http.postRequest("https://pjxt.sysu.edu.cn/evaluationPattern/submitSaveEvaluation", answers.toString(), "application/json", what);
+        http.postRequest("https://pjxt.sysu.edu.cn/evaluationPattern/submitSaveEvaluation", answers.toString(), what);
     }
 }
 

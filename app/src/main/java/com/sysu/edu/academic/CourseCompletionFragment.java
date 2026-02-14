@@ -67,7 +67,7 @@ public class CourseCompletionFragment extends StaggeredFragment {
                                     if (values.get(5) != null) {
                                         values.set(5, values.get(5).replace(",", "|"));
                                     }
-                                    add(requireContext(), values.get(2), List.of("学年学期", "课程号", "课程名称", "课程类别", "学分", "成绩获取学年学期", "课程号", "课程名称", "课程类别", "学分", "是否及格", "成绩"), values);
+                                    add(values.get(2), List.of("学年学期", "课程号", "课程名称", "课程类别", "学分", "成绩获取学年学期", "课程号", "课程名称", "课程类别", "学分", "是否及格", "成绩"), values);
                                 });
                             }
                         }
