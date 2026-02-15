@@ -227,11 +227,11 @@ public class Params {
         }
         switch (getLoginMode()) {
             case "0":
-                Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, v -> launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
+                Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
                 break;
             case "1":
                 if (activity instanceof MainActivity) {
-                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, v -> launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
+                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
                 } else {
                     launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
                 }

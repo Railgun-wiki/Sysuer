@@ -58,12 +58,12 @@ public class InitTodo {
         this.activity = activity;
         todoDB = new TodoList(activity, 7);
         dialogBinding = DialogTodoBinding.inflate(activity.getLayoutInflater());
-        dialogBinding.prioritySlider.addOnChangeListener((slider, value, fromUser) -> todoInfo.setPriority((int) value));
+        dialogBinding.prioritySlider.addOnChangeListener((_, value, _) -> todoInfo.setPriority((int) value));
         DialogEditTextBinding itemEditTextBinding = DialogEditTextBinding.inflate(activity.getLayoutInflater());
 
         todoDetailDialog = new MaterialAlertDialogBuilder(activity)
                 .setView(dialogBinding.getRoot())
-                .setPositiveButton(R.string.confirm, (dialog1, which) -> {
+                .setPositiveButton(R.string.confirm, (_, _) -> {
                     todoInfo.setTitle(Objects.requireNonNull(dialogBinding.title.getText()).toString());
                     todoInfo.setDescription(Objects.requireNonNull(dialogBinding.description.getText()).toString());
                     if (todoInfo.getFunction() == TodoInfo.ADD) {
@@ -74,7 +74,7 @@ public class InitTodo {
                     refresh(todoFragment);
                 })
                 .setNegativeButton(R.string.cancel, null)
-                .setNeutralButton(R.string.delete, (dialog13, which) -> {
+                .setNeutralButton(R.string.delete, (_, _) -> {
                     if (todoInfo.getFunction() == TodoInfo.VIEW) {
                         todoDB.deleteTodo(todoInfo);
                         refresh(todoFragment);
@@ -115,7 +115,7 @@ public class InitTodo {
         AlertDialog remindDialog = new MaterialAlertDialogBuilder(activity)
                 .setTitle(R.string.custom_remind_title)
                 .setView(numberPicker)
-                .setPositiveButton(R.string.confirm, (dialog, which) -> todoInfo.setRemindTime(String.format(Locale.getDefault(), "%02d%s", numberPicker.getValue(), activity.getString(R.string.minute))))
+                .setPositiveButton(R.string.confirm, (_, _) -> todoInfo.setRemindTime(String.format(Locale.getDefault(), "%02d%s", numberPicker.getValue(), activity.getString(R.string.minute))))
                 .setNegativeButton(R.string.cancel, null)
                 .create();
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker().setTitleText(R.string.date).build();
@@ -129,7 +129,7 @@ public class InitTodo {
 
         for (int i = 0; i < 3; i++) {
             int finalI = i;
-            List.of(dialogBinding.todoTypeAdd, dialogBinding.todoSubjectAdd, dialogBinding.todoTagAdd).get(i).setOnClickListener(view -> {
+            List.of(dialogBinding.todoTypeAdd, dialogBinding.todoSubjectAdd, dialogBinding.todoTagAdd).get(i).setOnClickListener(_ -> {
                 toAddCode = finalI;
                 itemEditTextBinding.getRoot().setHint(new int[]{R.string.type, R.string.subject, R.string.tag}[finalI]);
                 todoAddDialog.show();
@@ -157,18 +157,18 @@ public class InitTodo {
                     for (int j = 0; j < 3; j++) {
                         int finalJ = j;
                         menu.add(0, Menu.NONE, Menu.NONE, new int[]{R.string.today, R.string.tomorrow, R.string.next_week}[j])
-                                .setOnMenuItemClickListener(item -> {
+                                .setOnMenuItemClickListener(_ -> {
                                     calendar.setTime(new Date());
                                     calendar.add(Calendar.DAY_OF_MONTH, new int[]{0, 1, 7}[finalJ]);
                                     todoInfo.setDueDate(dateString.format(calendar.getTime()));
                                     return true;
                                 });
                     }
-                    menu.add(1, Menu.NONE, Menu.NONE, R.string.select).setOnMenuItemClickListener(item -> {
+                    menu.add(1, Menu.NONE, Menu.NONE, R.string.select).setOnMenuItemClickListener(_ -> {
                         datePicker.show(activity.getSupportFragmentManager(), "date_picker");
                         return true;
                     });
-                    none.setOnMenuItemClickListener(item -> {
+                    none.setOnMenuItemClickListener(_ -> {
                         todoInfo.getDueDate().setValue(null);
                         return true;
                     });
@@ -177,29 +177,29 @@ public class InitTodo {
                     for (int j = 0; j < 3; j++) {
                         int finalJ = j;
                         menu.add(0, Menu.NONE, Menu.NONE, new int[]{R.string.today, R.string.tomorrow, R.string.next_week}[j])
-                                .setOnMenuItemClickListener(item -> {
+                                .setOnMenuItemClickListener(_ -> {
                                     calendar.setTime(new Date());
                                     calendar.add(Calendar.DAY_OF_MONTH, new int[]{0, 1, 7}[finalJ]);
                                     todoInfo.setDdlDate(dateString.format(calendar.getTime()));
                                     return true;
                                 });
                     }
-                    menu.add(1, Menu.NONE, Menu.NONE, R.string.select).setOnMenuItemClickListener(item -> {
+                    menu.add(1, Menu.NONE, Menu.NONE, R.string.select).setOnMenuItemClickListener(_ -> {
                         ddlPicker.show(activity.getSupportFragmentManager(), "ddl_picker");
                         return true;
                     });
                     ddlPicker.addOnPositiveButtonClickListener(selection -> todoInfo.getDdlDate().setValue(dateString.format(selection)));
-                    none.setOnMenuItemClickListener(item -> {
+                    none.setOnMenuItemClickListener(_ -> {
                         todoInfo.getDdlDate().setValue(null);
                         return true;
                     });
                     break;
                 case 1: // time
-                    menu.add(1, Menu.NONE, Menu.NONE, R.string.select).setOnMenuItemClickListener(item -> {
+                    menu.add(1, Menu.NONE, Menu.NONE, R.string.select).setOnMenuItemClickListener(_ -> {
                         timePicker.show(activity.getSupportFragmentManager(), "time_picker");
                         return true;
                     });
-                    timePicker.addOnPositiveButtonClickListener(selection -> todoInfo.setDueTime(String.format(Locale.getDefault(), "%02d:%02d", timePicker.getHour(), timePicker.getMinute())));
+                    timePicker.addOnPositiveButtonClickListener(_ -> todoInfo.setDueTime(String.format(Locale.getDefault(), "%02d:%02d", timePicker.getHour(), timePicker.getMinute())));
                     break;
                 case 2: // remind
                     for (int j = 0; j < 6; j++) {
@@ -209,7 +209,7 @@ public class InitTodo {
                                     return true;
                                 });
                     }
-                    menu.add(1, Menu.NONE, Menu.NONE, R.string.custom).setOnMenuItemClickListener(item -> {
+                    menu.add(1, Menu.NONE, Menu.NONE, R.string.custom).setOnMenuItemClickListener(_ -> {
                         remindDialog.show();
                         return true;
                     });
@@ -221,11 +221,11 @@ public class InitTodo {
             }
             popupMenuArrayList.add(popupMenu);
             int finalI1 = i;
-            itemPreferenceBinding.getRoot().setOnClickListener(v -> popupMenuArrayList.get(finalI1).show());
+            itemPreferenceBinding.getRoot().setOnClickListener(_ -> popupMenuArrayList.get(finalI1).show());
             dialogBinding.times.addView(itemPreferenceBinding.getRoot());
         }
 
-        dialogBinding.check.setOnCheckedChangeListener((buttonView, isChecked) -> todoInfo.setStatus(isChecked ? TodoInfo.DONE : TodoInfo.TODO));
+        dialogBinding.check.setOnCheckedChangeListener((_, isChecked) -> todoInfo.setStatus(isChecked ? TodoInfo.DONE : TodoInfo.TODO));
 
         loadListFromTable("types", types = new ArrayList<>());
         loadListFromTable("subjects", subjects = new ArrayList<>());
@@ -306,7 +306,7 @@ public class InitTodo {
         Chip chip = ItemFilterChipBinding.inflate(activity.getLayoutInflater(), view, false).getRoot();
         chip.setText(s);
 
-        chip.setOnLongClickListener(v -> {
+        chip.setOnLongClickListener(_ -> {
             if (chip.isChecked()) {
                 switch (toAddCode) {
                     case 0:
@@ -327,7 +327,7 @@ public class InitTodo {
             return true;
         });
 
-        chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        chip.setOnCheckedChangeListener((_, isChecked) -> {
             if (!isChecked) return;
             switch (toAddCode) {
                 case 0:
@@ -427,12 +427,6 @@ public class InitTodo {
 
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        /*int flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;*/
-//        decorView.setSystemUiVisibility(flags);
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
