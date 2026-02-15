@@ -20,7 +20,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HttpManager {
-    final OkHttpClient http;
+    final OkHttpClient http = new OkHttpClient();
     Handler handler;
     String referrer;
     String cookie;
@@ -33,7 +33,6 @@ public class HttpManager {
     final CookieManager cookieManager = CookieManager.getInstance();
 
     public HttpManager(Handler handler) {
-        http = new OkHttpClient();
         setHandler(handler);
     }
 

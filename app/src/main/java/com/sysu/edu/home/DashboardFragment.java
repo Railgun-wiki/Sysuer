@@ -90,7 +90,7 @@ public class DashboardFragment extends Fragment {
     boolean isRefreshRequired = true;
     HomeViewModel viewModel;
     BottomSheetDialog orderDialog;
-    CollectionAdapter collectionAdapter;
+    ServiceFragment.CollectionAdapter collectionAdapter;
     BottomSheetDialog actionDialog;
     DialogServiceActionBinding actionBinding;
 
@@ -110,7 +110,7 @@ public class DashboardFragment extends Fragment {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setAction("android.intent.initActionDialog.VIEW");
                     startActivity(intent);
-                } catch (ActivityNotFoundException ignored) {
+                } catch (ActivityNotFoundException _) {
                 }
             });
             binding.qrcode.setOnClickListener(_ -> {
@@ -336,7 +336,7 @@ public class DashboardFragment extends Fragment {
             Date fromDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(from);
             Date toDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(to);
             return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException ignored) {}
+        } catch (ParseException _) {}
         return "before";
     }
 
@@ -366,7 +366,7 @@ public class DashboardFragment extends Fragment {
         orderDialog = new BottomSheetDialog(context);
         DialogServiceOrderBinding orderBinding = DialogServiceOrderBinding.inflate(inflater);
         orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        collectionAdapter = new CollectionAdapter();
+        collectionAdapter = new ServiceFragment.CollectionAdapter();
         orderBinding.recyclerView.setAdapter(collectionAdapter);
         orderBinding.confirm.setOnClickListener(_ -> {
             updateShortcut();

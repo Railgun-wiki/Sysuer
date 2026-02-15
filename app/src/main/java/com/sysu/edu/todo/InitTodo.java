@@ -298,7 +298,7 @@ public class InitTodo {
             while (cursor.moveToNext()) {
                 target.add(cursor.getString(cursor.getColumnIndexOrThrow("name")));
             }
-        } catch (Exception ignored) {
+        } catch (Exception _) {
         }
     }
 

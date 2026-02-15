@@ -1,5 +1,8 @@
 package com.sysu.edu;
 
+import static com.sysu.edu.api.DownloadManager.downloadFile;
+import static com.sysu.edu.api.DownloadManager.openFile;
+
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -21,7 +24,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavGraph;
@@ -84,13 +86,12 @@ public class MainActivity extends AppCompatActivity {
             _ -> {
             }
     );
-    Handler handler;
     long downloadId;
-    File file;
-    ActivityResultLauncher<Intent> detailLauncher;
+    //    ActivityResultLauncher<Intent> detailLauncher;
     BroadcastReceiver receiver;
     Params params;
     HttpManager http;
+    String path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         });
         spm.setIsFirstLaunch(false);
         params = new Params(this);
-        handler = new Handler(getMainLooper()) {
+        http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -173,40 +174,23 @@ public class MainActivity extends AppCompatActivity {
                     params.toast(R.string.no_wifi_warning);
                 } else {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
-                    try {
-                        int version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
-                        if (version < response.getInteger("version")) {
-                            AlertDialog updateDialog = new MaterialAlertDialogBuilder(MainActivity.this).setMessage("").setTitle("发现新版本").setPositiveButton("更新", (_, _) -> {
-                                file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "sysuer.apk");
-                                downloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE)).enqueue(new DownloadManager.Request(Uri.parse(response.getString("link"))).setDestinationUri(Uri.fromFile(file)).setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED));
-                            }).setNegativeButton(R.string.cancel, (_, _) -> {
-                            }).setCancelable(response.getBoolean("enforce")).create();
-                            updateDialog.show();
-                            Markwon.builder(MainActivity.this).build().setMarkdown(Objects.requireNonNull(updateDialog.findViewById(android.R.id.message)), response.getString("description"));
-                        } else if (version < response.getInteger("version")) {
-                            params.toast("本APP已被篡改");
-                        }
-                    } catch (PackageManager.NameNotFoundException ignored) {
-                    }
+                    showUpdateDialog(response);
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) {
-                    if (intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1) == downloadId) {
-                        params.toast(getString(R.string.download_complete));
-                        startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(FileProvider.getUriForFile(context, getPackageName() + ".fileProvider", file), "application/*"));
-                    }
+                if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction()) && intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1) == downloadId) {
+                    params.toast(getString(R.string.download_complete));
+                    openFile(MainActivity.this, path);
                 }
             }
         };
-        ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_NOT_EXPORTED);
-        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
-        });
+        ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
+//        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
+//        });
         //PackageManager pm = getPackageManager();
         //pm.setComponentEnabledSetting(new ComponentName(this, SettingActivity.class), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         //WorkManager.getInstance(this).enqueue(new OneTimeWorkRequest.Builder(ClassIsland.class).build());
@@ -236,6 +220,33 @@ public class MainActivity extends AppCompatActivity {
         },  SystemClock.uptimeMillis() + 4 * 1000);*/
 //        Intent service = new Intent(this, CourseService.class);
 //        ContextCompat.startForegroundService(this, service);
+    }
+
+    void showUpdateDialog(JSONObject response) {
+        try {
+            int version = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            Integer responseVersion = response.getInteger("version");
+            if (version < responseVersion) {
+                path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + getString(R.string.app_name) + response.getString("versionName") + ".apk";
+                AlertDialog updateDialog = new MaterialAlertDialogBuilder(MainActivity.this)
+                        .setMessage("")
+                        .setTitle(R.string.higher_version_detected)
+                        .setPositiveButton(R.string.download_in_system, (_, _) -> downloadId = ((DownloadManager) getSystemService(DOWNLOAD_SERVICE))
+                                .enqueue(new DownloadManager.Request(Uri.parse(response.getString("link")))
+                                        .setDestinationUri(Uri.fromFile(new File(path)))
+                                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)))
+                        .setNegativeButton(R.string.download_in_browser, (_, _) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(response.getString("link")))))
+                        .setCancelable(response.getBoolean("enforce"))
+                        .setNeutralButton(R.string.download_in_app, (_, _) -> downloadFile(MainActivity.this, response.getString("link"), path))
+                        .create();
+                updateDialog.show();
+                Markwon.builder(MainActivity.this).build().setMarkdown(Objects.requireNonNull(updateDialog.findViewById(android.R.id.message)), response.getString("description"));
+            } else if (version > responseVersion) {
+                params.toast(getString(R.string.app_modfied_detected));
+            }else {
+                params.toast(getString(R.string.app_latest_installed));
+            }
+        } catch (PackageManager.NameNotFoundException _) {}
     }
 
     @Override

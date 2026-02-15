@@ -56,9 +56,9 @@ public class ServiceFragment extends Fragment {
         if (binding == null) {
             binding = FragmentServiceBinding.inflate(inflater);
             params = new Params(requireActivity());
-            // 初始化actions HashMap
+            // 初始化 actions HashMap
             viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
-            // 初始化dialog
+            // 初始化 dialog
             initAction(inflater);
             initOrder(inflater);
             JSONReader reader = JSONReader.of(getResources().openRawResource(R.raw.service), StandardCharsets.UTF_8);
@@ -77,7 +77,7 @@ public class ServiceFragment extends Fragment {
     void initAction(@NonNull LayoutInflater inflater) {
         actionDialog = new BottomSheetDialog(requireContext());
         actionBinding = DialogServiceActionBinding.inflate(inflater);
-        actionBinding.order.setOnClickListener(v -> orderDialog.show());
+        actionBinding.order.setOnClickListener(_ -> orderDialog.show());
         actionDialog.setContentView(actionBinding.getRoot());
     }
 
@@ -88,7 +88,7 @@ public class ServiceFragment extends Fragment {
         orderBinding.recyclerView.setLayoutManager(new LinearLayoutManager(context));
         collectionAdapter = new CollectionAdapter();
         orderBinding.recyclerView.setAdapter(collectionAdapter);
-        orderBinding.confirm.setOnClickListener(v -> {
+        orderBinding.confirm.setOnClickListener(_ -> {
             updateService();
             updateServiceCollection();
             orderDialog.dismiss();
@@ -118,7 +118,7 @@ public class ServiceFragment extends Fragment {
         ViewGroup container = initBoxWithHashMap(inflater, getString(R.string.collect), collection);
         collectionBinding = ItemServiceBoxBinding.bind(container);
         if (collection.isEmpty()) container.setVisibility(View.GONE);
-        container.getChildAt(0).setOnClickListener(v -> orderDialog.show());
+        container.getChildAt(0).setOnClickListener(_ -> orderDialog.show());
         binding.serviceContainer.addView(container, 0);
     }
 
@@ -161,22 +161,20 @@ public class ServiceFragment extends Fragment {
             int itemId = item.getIntValue("id");
             ItemActionChipBinding chip = ItemActionChipBinding.inflate(inflater, binding.serviceBoxItems, false);
             View.OnClickListener action = viewModel.actionMap.get(itemId);
-            chip.getRoot().setOnClickListener(
-                    action != null ? action : v -> params.toast(R.string.undeveloped)
-            );
-            chip.getRoot().setOnLongClickListener(v -> action(item));
+            chip.getRoot().setOnClickListener(action != null ? action : _ -> params.toast(R.string.undeveloped));
+            chip.getRoot().setOnLongClickListener(_ -> showActionDialog(item));
             chip.getRoot().setText(item.getString("name"));
             binding.serviceBoxItems.addView(chip.getRoot());
         });
     }
 
-    private boolean action(JSONObject item) {
+    boolean showActionDialog(JSONObject item) {
         int itemId = item.getIntValue("id");
         MutableLiveData<Boolean> isServiceCollected = new MutableLiveData<>(db.isServiceCollected(itemId));
         MutableLiveData<Boolean> isShortcutCollected = new MutableLiveData<>(db.isDashboardShortcutCollected(itemId));
         actionBinding.collect.setText(Boolean.TRUE.equals(isServiceCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
         actionBinding.addShortcut.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_shortcut);
-        actionBinding.collect.setOnClickListener(w -> {
+        actionBinding.collect.setOnClickListener(_ -> {
             boolean isServiceCollect = Boolean.TRUE.equals(isServiceCollected.getValue());
             if (isServiceCollect) {
                 db.deleteService(itemId);
@@ -189,7 +187,7 @@ public class ServiceFragment extends Fragment {
             actionBinding.collect.setText(isServiceCollect ? R.string.collect : R.string.cancel_collect);
             isServiceCollected.setValue(!isServiceCollect);
         });
-        actionBinding.addShortcut.setOnClickListener(w -> {
+        actionBinding.addShortcut.setOnClickListener(_ -> {
             boolean isShortcutCollect = Boolean.TRUE.equals(isShortcutCollected.getValue());
             if (isShortcutCollect) {
                 db.deleteDashboardShortcut(itemId);
@@ -202,7 +200,7 @@ public class ServiceFragment extends Fragment {
             actionBinding.addShortcut.setText(isShortcutCollect ? R.string.add_shortcut : R.string.cancel_add_shortcut);
             isShortcutCollected.setValue(!isShortcutCollect);
         });
-        actionBinding.feedback.setOnClickListener(w -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+        actionBinding.feedback.setOnClickListener(_ -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
         Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
         actionDialog.show();
         return true;
@@ -214,46 +212,46 @@ public class ServiceFragment extends Fragment {
             db.updateServicePosition(collectionAdapter.getItem(i).getInteger("id"), i);
         });
     }
-}
 
-class CollectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    final ArrayList<JSONObject> serviceNames = new ArrayList<>();
+    static class CollectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        final ArrayList<JSONObject> serviceNames = new ArrayList<>();
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {
-        };
-    }
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {
+            };
+        }
 
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ((TextView) holder.itemView).setText(serviceNames.get(position).getString("name"));
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            ((TextView) holder.itemView).setText(serviceNames.get(position).getString("name"));
 
-    }
+        }
 
-    @Override
-    public int getItemCount() {
-        return serviceNames.size();
-    }
+        @Override
+        public int getItemCount() {
+            return serviceNames.size();
+        }
 
-    public void add(JSONObject service) {
-        serviceNames.add(service);
-        notifyItemInserted(serviceNames.size() - 1);
-    }
+        public void add(JSONObject service) {
+            serviceNames.add(service);
+            notifyItemInserted(serviceNames.size() - 1);
+        }
 
-    public void swap(int position1, int position2) {
-        Collections.swap(serviceNames, position1, position2);
-        notifyItemMoved(position1, position2);
-    }
+        public void swap(int position1, int position2) {
+            Collections.swap(serviceNames, position1, position2);
+            notifyItemMoved(position1, position2);
+        }
 
-    public void clear() {
-        int tmp = getItemCount();
-        serviceNames.clear();
-        notifyItemRangeRemoved(0, tmp);
-    }
+        public void clear() {
+            int tmp = getItemCount();
+            serviceNames.clear();
+            notifyItemRangeRemoved(0, tmp);
+        }
 
-    public JSONObject getItem(int position) {
-        return serviceNames.get(position);
+        public JSONObject getItem(int position) {
+            return serviceNames.get(position);
+        }
     }
 }

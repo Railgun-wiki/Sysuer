@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.0"
+agp = "9.0.1"
 api = "13.1.5"
 appcompatVersion = "1.6.1"
 casclientAndroid = "3.4.1"

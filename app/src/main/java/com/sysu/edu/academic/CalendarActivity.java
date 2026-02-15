@@ -1,7 +1,8 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.DownloadManager.openFile;
+
 import android.content.ContentValues;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -19,7 +20,6 @@ import android.widget.PopupMenu;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.core.widget.NestedScrollView;
 
 import com.bumptech.glide.Glide;
@@ -47,43 +47,13 @@ import okhttp3.Response;
 
 public class CalendarActivity extends AppCompatActivity {
 
-    Handler handler;
     int top = 0;
-    Params params;
 
-    /* public static boolean save(ImageView view) {
-         try {
-
-             ContentValues values = new ContentValues();
-             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
-             Uri fileUri = view.getContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-             if (fileUri == null) {
-                 return false;
-             }
-
-             OutputStream outStream = view.getContext().getContentResolver().openOutputStream(fileUri);
-
-             Bitmap bitmap = ((BitmapDrawable) view.getDrawable()).getBitmap();
-             if (outStream != null) {
-                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-                 outStream.flush();
-                 outStream.close();
-             }
-             view.getContext().sendBroadcast(new Intent("com.android.camera.NEW_PICTURE", fileUri));
-
-             return true;
-
-         } catch (IOException ignored) {
-         }
-         return false;
-     }*/
-    public boolean save(String url, String fileName) {
-        return save(url, Environment.DIRECTORY_PICTURES + "/SYSUER", fileName, true);
+    public boolean saveImage(String url, String fileName) {
+        return saveImage(url, Environment.DIRECTORY_PICTURES + "/SYSUER", fileName, true);
     }
 
-    public boolean save(String url, String parentDir, String fileName, boolean defaultDir) {
+    public boolean saveImage(String url, String parentDir, String fileName, boolean defaultDir) {
         try {
 
             Uri fileUri;
@@ -124,7 +94,7 @@ public class CalendarActivity extends AppCompatActivity {
                                     outStream.flush();
                                     outStream.close();
                                     fileInputStream.close();
-                                } catch (IOException ignored) {
+                                } catch (IOException _) {
                                 }
                             }
                         }
@@ -138,7 +108,7 @@ public class CalendarActivity extends AppCompatActivity {
 
             return true;
 
-        } catch (IOException ignored) {
+        } catch (IOException _) {
         }
         return false;
     }
@@ -148,7 +118,7 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ActivityCalendarBinding binding = ActivityCalendarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        params = new Params(this);
+        Params params = new Params(this);
         binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
         binding.scroll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (_, _, scrollY, _, oldScrollY) -> {
             if (top > scrollY && binding.tabs.getSelectedTabPosition() == 1 && scrollY < oldScrollY) {
@@ -186,7 +156,7 @@ public class CalendarActivity extends AppCompatActivity {
 
             }
         });
-        handler = new Handler(getMainLooper()) {
+        Handler handler = new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
@@ -209,13 +179,14 @@ public class CalendarActivity extends AppCompatActivity {
                                     PopupMenu pop = new PopupMenu(CalendarActivity.this, image, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
                                     Menu menu = pop.getMenu();
                                     menu.add(R.string.save).setOnMenuItemClickListener(_ -> {
-                                        params.toast(save(url, System.currentTimeMillis() + ".jpg") ? R.string.save_successfully : R.string.save_fail);
+                                        params.toast(saveImage(url, System.currentTimeMillis() + ".jpg") ? R.string.save_successfully : R.string.save_fail);
                                         return true;
                                     });
                                     menu.add(R.string.share).setOnMenuItemClickListener(_ -> {
                                         String fileName = System.currentTimeMillis() + ".jpg";
-                                        save(url, Objects.requireNonNull(getExternalCacheDir()).getPath(), fileName, false);
-                                        startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("image/jpeg").putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(CalendarActivity.this, "com.sysu.edu.fileProvider", new File(Objects.requireNonNull(getExternalCacheDir()).getPath() + "/" + fileName))), getString(R.string.share)));
+                                        saveImage(url, Objects.requireNonNull(getExternalCacheDir()).getPath(), fileName, false);
+                                        openFile(CalendarActivity.this, getExternalCacheDir().getPath() + "/" + fileName);
+//                                        startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("image/jpeg").putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(CalendarActivity.this, "com.sysu.edu.fileProvider", new File(Objects.requireNonNull(getExternalCacheDir()).getPath() + "/" + fileName))), getString(R.string.share)));
                                         return true;
                                     });
                                     pop.show();
@@ -229,7 +200,8 @@ public class CalendarActivity extends AppCompatActivity {
                 }
             }
         };
-        new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://jwb.sysu.edu.cn/school-calendar").build()).enqueue(new Callback() {
+        OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+        okHttpClient.newCall(new Request.Builder().url("https://jwb.sysu.edu.cn/school-calendar").build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 handler.sendEmptyMessage(-1);

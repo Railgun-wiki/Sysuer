@@ -1,6 +1,9 @@
 package com.sysu.edu.api;
 
 
+import static com.sysu.edu.login.LoginManager.initLoginModel;
+import static com.sysu.edu.login.LoginManager.initLoginWebView;
+
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -28,7 +31,6 @@ import com.sysu.edu.R;
 import com.sysu.edu.academic.BrowserActivity;
 import com.sysu.edu.login.LoginActivity;
 import com.sysu.edu.login.LoginViewModel;
-import com.sysu.edu.login.LoginWebFragment;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -161,16 +163,28 @@ public class Params {
         return sharedPreferences.getString("username", "");
     }
 
+    public void setAccount(String account) {
+        sharedPreferences.edit().putString("username", account).apply();
+    }
+
     public String getPassword() {
         return sharedPreferences.getString("password", "");
     }
 
+    public void setPassword(String password) {
+        sharedPreferences.edit().putString("password", password).apply();
+    }
+/*
     public boolean isFirstLaunch() {
         return sharedPreferences.getBoolean("isFirstLaunch", true);
     }
 
     public void setIsFirstLaunch(boolean i) {
         sharedPreferences.edit().putBoolean("isFirstLaunch", i).apply();
+    }*/
+
+    public SharedPreferences getSharedPreferences(){
+        return sharedPreferences;
     }
 
     public String getToken() {
@@ -181,6 +195,9 @@ public class Params {
         return sharedPreferences.getBoolean("developer", false);
     }
 
+    public void setDeveloper(boolean developer) {
+        sharedPreferences.edit().putBoolean("developer", developer).apply();
+    }
 
     public View.OnClickListener browse(String url) {
         return (View v) -> v.getContext().startActivity(new Intent(activity, BrowserActivity.class).setData(Uri.parse(url)));
@@ -229,14 +246,14 @@ public class Params {
                 }
                 toast(R.string.logging_in);
                 LoginViewModel model = new ViewModelProvider(activity).get(LoginViewModel.class);
-                WebView web = LoginWebFragment.getWebView(activity, model, () -> model.setUrl(String.format("""
+                WebView web = initLoginWebView(activity, model, () -> model.setUrl(String.format("""
                         javascript:(function(){\
                         function waitElement(selector, callback) {\
                         const element = document.querySelector(selector);\
                         if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}\
                         waitElement('.para-widget-account-psw', () => {\
                         var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()""", account, password)));
-                LoginActivity.initModel(activity, model, url, () -> {
+                initLoginModel(activity, model, url, () -> {
                     afterLogin.run();
                     web.destroy();
                     toast(R.string.login_successfully);

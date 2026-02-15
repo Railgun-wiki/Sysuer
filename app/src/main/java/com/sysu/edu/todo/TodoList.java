@@ -72,7 +72,7 @@ public class TodoList extends SQLiteOpenHelper {
             value.put("name", type);
             try {
                 db.insertWithOnConflict("types", null, value, SQLiteDatabase.CONFLICT_ABORT);
-            } catch (Exception ignored) {
+            } catch (Exception _) {
             }
             value.clear();
         }

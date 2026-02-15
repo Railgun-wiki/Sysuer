@@ -1,15 +1,16 @@
 package com.sysu.edu.academic;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.text.Html;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
@@ -24,41 +25,29 @@ import com.sysu.edu.databinding.ActivityPagerBinding;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.Pager2Adapter;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
-
-import io.noties.markwon.Markwon;
-import io.noties.markwon.MarkwonVisitor;
-import io.noties.markwon.html.HtmlPlugin;
-import io.noties.markwon.html.HtmlTag;
-import io.noties.markwon.html.MarkwonHtmlRenderer;
-import io.noties.markwon.html.TagHandler;
+import java.util.stream.IntStream;
 
 public class AcademyNotification extends AppCompatActivity {
 
-    ActivityPagerBinding binding;
-    Handler handler;
-    AlertDialog dialog;
     HttpManager http;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityPagerBinding.inflate(getLayoutInflater());
+        ActivityPagerBinding binding = ActivityPagerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         binding.toolbar.setTitle(R.string.academic_affair_notice);
-        binding.toolbar.setNavigationOnClickListener(v -> supportFinishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         Params params = new Params(this);
         params.setCallback(this::getNotices);
-        Pager2Adapter adp = new Pager2Adapter(this);
-        NewsFragment f1 = new NewsFragment();
-        NewsFragment f2 = new NewsFragment();
-        AdapterListener l = new AdapterListener() {
+        Pager2Adapter pager2Adapter = new Pager2Adapter(this);
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this).setMessage("").setPositiveButton(R.string.confirm, (_, _) -> {
+        }).create();
+        AdapterListener listener = new AdapterListener() {
             @Override
             public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-                holder.itemView.setOnClickListener(v -> {
+                holder.itemView.setOnClickListener(_ -> {
                     JSONObject item = ((NewsFragment.NewsAdp) adapter).data.get(position);
                     dialog.setTitle(item.getString("title"));
                     getContent(item.getString("id"));
@@ -67,18 +56,17 @@ public class AcademyNotification extends AppCompatActivity {
 
             @Override
             public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
-
             }
         };
-        f1.setListener(this, l);
-        f2.setListener(this, l);
-        adp.add(f1);
-        adp.add(f2);
-        binding.pager.setAdapter(adp);
-        dialog = new MaterialAlertDialogBuilder(this).setMessage("").setPositiveButton(R.string.confirm, (dialogInterface, i) -> {
-        }).create();
+        IntStream.range(0, 2).forEach(_ -> {
+
+            NewsFragment p = new NewsFragment();
+            p.setListener(listener);
+            pager2Adapter.add(p);
+        });
+        binding.pager.setAdapter(pager2Adapter);
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(new int[]{R.string.academic_affair_notice, R.string.school_affair_notice}[position])).attach();
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
@@ -90,40 +78,46 @@ public class AcademyNotification extends AppCompatActivity {
                             switch (msg.what) {
                                 case 0:
                                 case 1:
-                                    response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) adp.getItem(msg.what)).add(AcademyNotification.this, (JSONObject) a));
+                                    response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) pager2Adapter.getItem(msg.what)).add((JSONObject) a));
                                     break;
                                 case 2:
-                                    //System.out.println(response);
-                                    dialog.setMessage(Html.fromHtml(response.getString("data"), Html.FROM_HTML_MODE_COMPACT));
-                                    dialog.show();
-                                    Markwon.builder(AcademyNotification.this).usePlugin(HtmlPlugin.create().addHandler(new TagHandler() {
-                                        @Override
-                                        public void handle(@NonNull MarkwonVisitor visitor, @NonNull MarkwonHtmlRenderer renderer, @NonNull HtmlTag tag) {
-
-                                        }
-
-                                        @NonNull
-                                        @Override
-                                        public Collection<String> supportedTags() {
-                                            return Collections.emptyList();
-                                        }
-                                    })).build().setMarkdown(Objects.requireNonNull(dialog.findViewById(android.R.id.message)), response.getString("data"));
-                                    /*TextView text = Objects.requireNonNull(dialog.findViewById(android.R.id.message));
-                                    text.setMovementMethod(LinkMovementMethod.getInstance());
-                                    CharSequence str = text.getText();
-                                    if (str instanceof Spannable) {
-                                        Spannable sp = (Spannable) text.getText();
-                                        SpannableStringBuilder style = new SpannableStringBuilder(str);
-                                        style.clearSpans();
-                                        for (URLSpan url : sp.getSpans(0, str.length(), URLSpan.class)) {
-                                            try {
-                                                style.setSpan(new MyClickSpan(url.getURL()), sp.getSpanStart(url), sp.getSpanEnd(url), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                            } catch (MalformedURLException e) {
-                                                throw new RuntimeException(e);
-                                            }
-                                        }
-                                        text.setText(style);
-                                    }*/
+                                    startActivity(new Intent(AcademyNotification.this, BrowserActivity.class).putExtra("data", """
+                                                    <!DOCTYPE html><html><head><style>
+                                                    body{
+                                                    padding: 24px !important;
+                                                    }
+                                                    a,body,p,span{
+                                                    font-size: 2.5rem !important;
+                                                    line-height: 2.0 !important;
+                                                     }
+                                                     table{
+                                                    table-layout: auto !important;
+                                                    width: 100% !important;
+                                                     }
+                                                     table,th, td
+                                                            {
+                                                    font-size: 1.0rem !important;
+                                                    line-height: 1.0 !important;
+                                                            border-collapse: collapse !important;
+                                                                border: 2px solid windowtext !important;
+                                                            }
+                                                    </style></head><body>
+                                                    """ + response.getString("data") + "</body></html>"),
+                                            ActivityOptionsCompat.makeSceneTransitionAnimation(AcademyNotification.this, binding.toolbar, "miniapp").toBundle());
+//                                    dialog.setMessage(Html.fromHtml(response.getString("data"), Html.FROM_HTML_MODE_COMPACT));
+//                                    dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.copy), (_, _) -> params.copy("content", response.getString("data")));
+//                                    dialog.show();
+//                                    Markwon.builder(AcademyNotification.this).usePlugin(HtmlPlugin.create().addHandler(new TagHandler() {
+//                                        @Override
+//                                        public void handle(@NonNull MarkwonVisitor visitor, @NonNull MarkwonHtmlRenderer renderer, @NonNull HtmlTag tag) {
+//                                        }
+//
+//                                        @NonNull
+//                                        @Override
+//                                        public Collection<String> supportedTags() {
+//                                            return Collections.emptyList();
+//                                        }
+//                                    })).build().setMarkdown(Objects.requireNonNull(dialog.findViewById(android.R.id.message)), response.getString("data"));
                             }
                         }
                     } else {
@@ -132,8 +126,7 @@ public class AcademyNotification extends AppCompatActivity {
                     }
                 }
             }
-        };
-        http = new HttpManager(handler);
+        });
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/");
         getSchoolNotices();
@@ -155,56 +148,4 @@ public class AcademyNotification extends AppCompatActivity {
     void getContent(String id) {
         http.getRequest("https://jwxt.sysu.edu.cn/jwxt/system-manage/info-delivery/noticeId?id=" + id, 2);
     }
-
-//    class MyClickSpan extends ClickableSpan {
-//        final String url;
-//        String text;
-//
-//        public MyClickSpan(String url) throws MalformedURLException {
-//            this.url = url;
-//            //System.out.println(url);
-//            if (url.startsWith("/")) {
-//                this.text = Uri.parse(url).getQueryParameter("fileName");
-//            }
-//        }
-//
-//        @Override
-//        public void updateDrawState(TextPaint ds) {
-//            ds.setUnderlineText(false);
-//            super.updateDrawState(ds);
-//        }
-//
-//        @Override
-//        public void onClick(@NonNull View v) {
-//            if (url.startsWith("/")) {
-//                new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://jwxt.sysu.edu.cn" + url)
-//                        .header("Cookie", AcademyNotification.this.params.getCookie())
-//                        .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/")
-//                        .build()).enqueue(new Callback() {
-//                    @Override
-//                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-//                    }
-//
-//                    @Override
-//                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-//                        //String mediaType = Objects.requireNonNull(response.header().contentType()).toString();
-//                        // 回到主线程操纵界面
-//                        //runOnUiThread(() -> tv_result.setText("下载网络文件返回："+desc));
-//                        String path = Environment.getExternalStorageDirectory() + "/Download/" + text.replace("\n", "");
-//                        OutputStream outputStream = new FileOutputStream(path);
-//                        byte[] buffer = new byte[4096];
-//                        int bytesRead;
-//                        while ((bytesRead = response.body().byteStream().read(buffer)) != -1) {
-//                            outputStream.write(buffer, 0, bytesRead);
-//                        }
-//                        outputStream.close();
-//                        Intent intent = new Intent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).setAction(Intent.ACTION_VIEW).setDataAndType(Uri.fromFile(new File(path)), "*/*");
-//                        v.getContext().startActivity(intent);
-//                    }
-//                });
-//            } else {
-//                v.getContext().startActivity(new Intent().setAction(Intent.ACTION_VIEW).setData(Uri.parse(url)));
-//            }
-//        }
-//    }
 }

@@ -9,10 +9,10 @@ public class LoginViewModel extends ViewModel {
     final MutableLiveData<String> account = new MutableLiveData<>();
     final MutableLiveData<String> url = new MutableLiveData<>();
     final MutableLiveData<Boolean> login = new MutableLiveData<>();
-    final MutableLiveData<String> sessionId = new MutableLiveData<>();
+//    final MutableLiveData<String> sessionId = new MutableLiveData<>();
     final MutableLiveData<String> cookie = new MutableLiveData<>();
     final MutableLiveData<String> target = new MutableLiveData<>();
-    final MutableLiveData<Integer> loginStatus = new MutableLiveData<>();
+//    final MutableLiveData<Integer> loginStatus = new MutableLiveData<>();
 
     public MutableLiveData<String> getAccount() {
         return account;
@@ -54,9 +54,9 @@ public class LoginViewModel extends ViewModel {
         login.setValue(isLogin);
     }
 
-    public MutableLiveData<String> getSessionId() {
-        return sessionId;
-    }
+//    public MutableLiveData<String> getSessionId() {
+//        return sessionId;
+//    }
 
     public MutableLiveData<String> getCookie() {
         return cookie;
@@ -66,7 +66,7 @@ public class LoginViewModel extends ViewModel {
         cookie.setValue(cookies);
     }
 
-    public void setSessionID(String session) {
-        sessionId.setValue(session);
-    }
+//    public void setSessionID(String session) {
+//        sessionId.setValue(session);
+//    }
 }

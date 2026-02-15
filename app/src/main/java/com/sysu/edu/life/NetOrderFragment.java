@@ -54,7 +54,7 @@ public class NetOrderFragment extends StaggeredFragment {
                                 params.toast(R.string.login_warning);
                                 params.gotoLogin(getView(), TargetUrl.NETPAY);
                             }
-                        } catch (JSONException ignored) {
+                        } catch (JSONException _) {
                             Matcher matcher = Pattern.compile("<tr .+?>(.+?)</tr>", Pattern.DOTALL).matcher((String) msg.obj);
                             while (matcher.find()) {
                                 ArrayList<String> orderDetail = new ArrayList<>();
@@ -131,7 +131,7 @@ public class NetOrderFragment extends StaggeredFragment {
                         try {
                             clear();
                             getInfo();
-                        } catch (JSONException ignored) {}
+                        } catch (JSONException _) {}
                     }
                 }
             });

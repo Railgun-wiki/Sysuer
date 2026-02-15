@@ -98,7 +98,7 @@ public class CrashActivity extends AppCompatActivity {
             params.toast(R.string.copy_successfully);
 
             startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(githubUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-        } catch (Exception ignored) {
+        } catch (Exception _) {
         }
 //        }).start();
     }

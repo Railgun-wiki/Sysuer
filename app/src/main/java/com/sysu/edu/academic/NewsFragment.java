@@ -1,6 +1,5 @@
 package com.sysu.edu.academic;
 
-import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,57 +21,44 @@ import com.sysu.edu.view.AdapterListener;
 import java.util.ArrayList;
 
 public class NewsFragment extends Fragment {
-    public NewsAdp adp;
-    StaggeredGridLayoutManager lm;
+    NewsAdp newsAdapter = new NewsAdp();
+    StaggeredGridLayoutManager staggeredGridLayoutManager;
     Params params;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater);
         params = new Params(requireActivity());
-        lm = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
-        binding.getRoot().setLayoutManager(lm);
-        if (adp == null) {
-            adp = new NewsAdp(requireActivity());
-        }
-        binding.getRoot().setAdapter(adp);
+        staggeredGridLayoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
+        binding.getRoot().setLayoutManager(staggeredGridLayoutManager);
+        binding.getRoot().setAdapter(newsAdapter);
         return binding.getRoot();
     }
 
-    public void add(Context context, JSONObject json) {
-        if (adp == null) {
-            adp = new NewsAdp(context);
-        }
-        adp.add(json);
+    public void add(JSONObject json) {
+        newsAdapter.add(json);
     }
 
-    public void setListener(Context context, AdapterListener listener) {
-        if (adp == null) {
-            adp = new NewsAdp(context);
-        }
-        adp.setListener(listener);
+    public void setListener(AdapterListener listener) {
+        newsAdapter.setListener(listener);
     }
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        lm.setSpanCount(params.getColumn());
+        staggeredGridLayoutManager.setSpanCount(params.getColumn());
     }
 
     public static class NewsAdp extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        public final ArrayList<JSONObject> data = new ArrayList<>();
-        final Context context;
-        AdapterListener listener;
+        final ArrayList<JSONObject> data = new ArrayList<>();
 
-        public NewsAdp(Context context) {
-            super();
-            this.context = context;
-        }
+        AdapterListener listener;
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context)).getRoot()) {};
+            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(parent.getContext())).getRoot()) {
+            };
         }
 
         public void add(JSONObject json) {
