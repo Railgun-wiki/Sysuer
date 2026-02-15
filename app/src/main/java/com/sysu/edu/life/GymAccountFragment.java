@@ -49,7 +49,7 @@ public class GymAccountFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
         ConcatAdapter concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
-        Params params = new Params(requireActivity());
+        Params params = new Params(this);
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {

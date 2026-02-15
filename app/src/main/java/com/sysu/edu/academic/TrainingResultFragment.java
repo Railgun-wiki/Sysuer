@@ -31,9 +31,9 @@ public class TrainingResultFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         FragmentTrainingResultBinding binding = FragmentTrainingResultBinding.inflate(inflater, container, false);
-        Params params = new Params(requireActivity());
+        Params params = new Params(this);
         StaggeredFragment staggeredFragment = new StaggeredFragment();
-        params.setCallback(this, () -> {
+        params.setCallback(() -> {
             page = 0;
             total = -1;
             staggeredFragment.clear();

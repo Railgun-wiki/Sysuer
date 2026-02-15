@@ -33,8 +33,8 @@ public class CVFragment extends StaggeredFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (view == null) {
             view = super.onCreateView(inflater, container, savedInstanceState);
-            Params params = new Params(requireActivity());
-            params.setCallback(this, this::getCV);
+            Params params = new Params(this);
+            params.setCallback(this::getCV);
 
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override

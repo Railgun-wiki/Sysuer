@@ -46,9 +46,9 @@ public class CourseFilterFragment extends Fragment {
             filterValue = vm.getFilterValue();
             filterName = vm.getFilterName();
             binding = FragmentCourseQueryBinding.inflate(inflater, container, false);
-            binding.container.setColumnCount(new Params(requireActivity()).getColumn());
-            params = new Params(requireActivity());
-            params.setCallback(this, () -> getData(0));
+            binding.container.setColumnCount(new Params(this).getColumn());
+            params = new Params(this);
+            params.setCallback(() -> getData(0));
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {

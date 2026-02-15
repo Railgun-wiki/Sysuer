@@ -25,9 +25,9 @@ import com.sysu.edu.databinding.ItemFilterChipBinding;
 
 public class AssistantInfoFilterFragment extends Fragment {
 
-    HttpManager http;
     final MutableLiveData<String> term = new MutableLiveData<>();
     final MutableLiveData<String> campus = new MutableLiveData<>();
+    HttpManager http;
     FragmentAssistantInfoFilterBinding binding;
 
     @Nullable
@@ -38,12 +38,12 @@ public class AssistantInfoFilterFragment extends Fragment {
         if (binding == null) {
             binding = FragmentAssistantInfoFilterBinding.inflate(inflater, container, false);
             PopupMenu pop = new PopupMenu(requireContext(), binding.term.getRoot());
-            Params params = new Params(requireActivity());
-            params.setCallback(this, this::getTerms);
+            Params params = new Params(this);
+            params.setCallback(this::getTerms);
             binding.term.itemTitle.setText(R.string.term);
             binding.term.itemIcon.setImageResource(R.drawable.calendar);
-            binding.term.getRoot().setOnClickListener(view -> pop.show());
-            binding.filter.setOnClickListener(view -> {
+            binding.term.getRoot().setOnClickListener(_ -> pop.show());
+            binding.filter.setOnClickListener(_ -> {
                 Bundle data = new Bundle();
                 data.putString("term", term.getValue());
                 data.putString("campus", campus.getValue());
@@ -65,11 +65,10 @@ public class AssistantInfoFilterFragment extends Fragment {
                         params.toast(R.string.login_warning);
                     } else {
                         JSONObject response = JSONObject.parseObject((String) msg.obj);
-//                    System.out.println(response);
                         if (response.getInteger("code") == 200) {
                             switch (msg.what) {
                                 case 0:
-                                    response.getJSONArray("data").forEach(t -> pop.getMenu().add(((JSONObject) t).getString("acadYearSemester")).setOnMenuItemClickListener(menuItem -> {
+                                    response.getJSONArray("data").forEach(t -> pop.getMenu().add(((JSONObject) t).getString("acadYearSemester")).setOnMenuItemClickListener(_ -> {
                                         term.setValue(((JSONObject) t).getString("acadYearSemester"));
                                         return false;
                                     }));
@@ -79,7 +78,7 @@ public class AssistantInfoFilterFragment extends Fragment {
                                     response.getJSONArray("data").forEach(c -> {
                                         ItemFilterChipBinding item = ItemFilterChipBinding.inflate(inflater, binding.campus, false);
                                         item.getRoot().setText(((JSONObject) c).getString("campusName"));
-                                        item.getRoot().setOnCheckedChangeListener((buttonView, isChecked) -> {
+                                        item.getRoot().setOnCheckedChangeListener((_, isChecked) -> {
                                             if (isChecked) {
                                                 campus.setValue(((JSONObject) c).getString("id"));
                                             }

@@ -56,8 +56,8 @@ public class CourseSelectionPreviewFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (binding == null) {
             binding = FragmentCourseSelectionPreviewBinding.inflate(inflater, container, false);
-            Params params = new Params(requireActivity());
-            params.setCallback(this, this::regetList);
+            Params params = new Params(this);
+            params.setCallback(this::regetList);
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {

@@ -36,7 +36,7 @@ public class RecruitmentInfoFragment extends StaggeredFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        Params params = new Params(requireActivity());
+        Params params = new Params(this);
         params.setCallback(RecruitmentInfoFragment.this, () -> {
             reset();
             getYear();

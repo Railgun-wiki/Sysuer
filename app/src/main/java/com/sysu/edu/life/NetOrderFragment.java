@@ -40,7 +40,7 @@ public class NetOrderFragment extends StaggeredFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         if (view == null) {
             view = super.onCreateView(inflater, container, savedInstanceState);
-            params.setCallback(this, this::getInfo);
+            params.setCallback(this::getInfo);
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {

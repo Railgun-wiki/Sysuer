@@ -26,13 +26,13 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         if (savedInstanceState == null) {
             setPreferencesFromResource(R.xml.privacy, rootKey);
-            Params params = new Params(requireActivity());
-            ((Preference) Objects.requireNonNull(findPreference("netId"))).setSummary(params.getAccount());
+            Params params = new Params(this);
+            ((Preference) Objects.requireNonNull(findPreference("netId"))).setSummary(params.getUserName());
             ((Preference) Objects.requireNonNull(findPreference("password"))).setOnPreferenceClickListener(_ -> {
                         params.toast(params.getPassword());
                         return false;
             });
-            params.setCallback(this,this::getInfo);
+            params.setCallback(this::getInfo);
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {

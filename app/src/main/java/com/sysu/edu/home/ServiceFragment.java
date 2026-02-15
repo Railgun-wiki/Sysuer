@@ -55,7 +55,7 @@ public class ServiceFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (binding == null) {
             binding = FragmentServiceBinding.inflate(inflater);
-            params = new Params(requireActivity());
+            params = new Params(this);
             // 初始化 actions HashMap
             viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
             // 初始化 dialog

@@ -41,8 +41,8 @@ public class CourseCompletionFragment extends StaggeredFragment {
                 super.onScrolled(v, dx, dy);
             }
         });*/
-        Params params = new Params(requireActivity());
-        params.setCallback(this, () -> {
+        Params params = new Params(this);
+        params.setCallback(() -> {
             page = 0;
             getStudentCourse();
         });

@@ -26,12 +26,25 @@ import okhttp3.Response;
 
 public class DownloadManager {
 
+    /**
+     * 下载网络文件到指定路径
+     *
+     * @param context 上下文对象
+     * @param url     网络文件 URL
+     * @param path    本地文件保存路径
+     */
     public static void downloadFile(Activity context, String url, String path) {
         downloadFile(context, new Request.Builder().url(url).build(), path);
     }
 
+    /**
+     * 下载网络文件到指定路径
+     *
+     * @param context 上下文对象
+     * @param request 网络请求对象
+     * @param path    本地文件保存路径
+     */
     public static void downloadFile(Activity context, Request request, String path) {
-
         new OkHttpClient().newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -66,6 +79,12 @@ public class DownloadManager {
         });
     }
 
+    /**
+     * 打开文件
+     *
+     * @param context 上下文对象
+     * @param path    文件路径
+     */
     public static void openFile(Context context, String path) {
         context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_VIEW)
                         .addCategory("android.intent.category.DEFAULT")

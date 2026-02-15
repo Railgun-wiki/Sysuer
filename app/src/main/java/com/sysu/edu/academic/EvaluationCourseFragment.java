@@ -41,7 +41,7 @@ public class EvaluationCourseFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
-        Params params = new Params(requireActivity());
+        Params params = new Params(this);
         StaggeredGridLayoutManager sgm = new StaggeredGridLayoutManager(params.getColumn(), 1);
         binding.getRoot().setLayoutManager(sgm);
         CourseEvaluationAdapter adp = new CourseEvaluationAdapter(requireContext());
@@ -55,7 +55,7 @@ public class EvaluationCourseFragment extends Fragment {
         String account = requireArguments().getString("pjrdm");
         if (type != null && rwid != null && account != null)
             getEvaluation(type, rwid, account);
-        params.setCallback(this, () -> {
+        params.setCallback(() -> {
             page = 1;
             adp.clear();
             getEvaluation(type, rwid, account);

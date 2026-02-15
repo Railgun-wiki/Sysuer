@@ -29,8 +29,8 @@ public class RoomQueryResultFragment extends StaggeredFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         courseQueryResultBinding = FragmentCourseQueryResultBinding.inflate(inflater, container, false);
         courseQueryResultBinding.getRoot().addView(super.onCreateView(inflater, courseQueryResultBinding.getRoot(), savedInstanceState), -1, -1);
-        params = new Params(requireActivity());
-        params.setCallback(this, () -> {
+        params = new Params(this);
+        params.setCallback(() -> {
             clear();
             getRooms();
         });

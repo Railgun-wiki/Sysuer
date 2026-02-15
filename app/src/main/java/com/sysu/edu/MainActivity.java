@@ -30,7 +30,6 @@ import androidx.navigation.NavGraph;
 import androidx.navigation.NavInflater;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-import androidx.preference.PreferenceManager;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -62,7 +61,7 @@ import com.sysu.edu.academic.SchoolWorkWarning;
 import com.sysu.edu.academic.TrainingProgramActivity;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
-import com.sysu.edu.api.SysuerPreferenceManager;
+import com.sysu.edu.api.PreferenceViewModel;
 import com.sysu.edu.databinding.ActivityMainBinding;
 import com.sysu.edu.home.HomeViewModel;
 import com.sysu.edu.life.GymReservationActivity;
@@ -103,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment fragment = (NavHostFragment) Objects.requireNonNull(getSupportFragmentManager().findFragmentById(R.id.dashboard_scroll));
         NavController navController = fragment.getNavController();
         NavGraph graph = new NavInflater(this, navController.getNavigatorProvider()).inflate(R.navigation.main_nav);
-        graph.setStartDestination(new int[]{R.id.navigation_dashboard, R.id.navigation_service, R.id.navigation_account}[Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("home", "0"))]);
+        graph.setStartDestination(new int[]{R.id.navigation_dashboard, R.id.navigation_service, R.id.navigation_account}[Integer.parseInt(androidx.preference.PreferenceManager.getDefaultSharedPreferences(this).getString("home", "0"))]);
 //        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
 //            //Log.d(TAG, "Shizuku 权限已授予");
 //        } else {
@@ -141,8 +140,8 @@ public class MainActivity extends AppCompatActivity {
         navController.setGraph(graph);
         NavigationUI.setupWithNavController((NavigationBarView) binding.navView, navController);
 
-        SysuerPreferenceManager spm = new ViewModelProvider(this).get(SysuerPreferenceManager.class);
-        spm.setPM(PreferenceManager.getDefaultSharedPreferences(this));
+        PreferenceViewModel spm = new ViewModelProvider(this).get(PreferenceViewModel.class);
+        spm.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(this));
         spm.initLiveData();
         AlertDialog dialog = new MaterialAlertDialogBuilder(this).setTitle(R.string.user_agreement_and_privacy_policy)
                 .setMessage("")
@@ -336,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 官方服务 (id: 6xx)
         actionMap.put(601, _ -> {    // 二维码
-            String linking = PreferenceManager.getDefaultSharedPreferences(this).getString("qrcode", "");
+            String linking = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this).getString("qrcode", "");
             if (!linking.isEmpty()) {
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(linking)));

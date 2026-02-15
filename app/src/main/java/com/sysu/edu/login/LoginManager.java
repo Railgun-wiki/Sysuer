@@ -23,11 +23,18 @@ public class LoginManager {
 
     static int time = 0;
 
+    /**
+     * 初始化登录模型
+     * @param activity 活动上下文
+     * @param model    登录视图模型
+     * @param target   目标登录网址
+     * @param afterLogin 登录成功后的回调
+     */
     public static void initLoginModel(FragmentActivity activity, LoginViewModel model, String target, Runnable afterLogin) {
         Params params = new Params(activity);
         model.getPassword().observe(activity, params::setPassword);
-        model.getAccount().observe(activity, params::setAccount);
-        model.setAccount(params.getAccount());
+        model.getAccount().observe(activity, params::setUserName);
+        model.setAccount(params.getUserName());
         model.setPassword(params.getPassword());
         model.setTarget(target);
         model.setUrl(TargetUrl.LOGIN);
@@ -46,7 +53,13 @@ public class LoginManager {
             }
         });
     }
-
+    /**
+     * 初始化登录WebView
+     * @param activity 活动上下文
+     * @param model    登录视图模型
+     * @param afterLoad 登录完成后的回调
+     * @return 初始化好的WebView
+     */
     public static WebView initLoginWebView(@NonNull FragmentActivity activity, LoginViewModel model, Runnable afterLoad) {
         WebView web = new WebView(activity);
         CookieManager cookieManager = CookieManager.getInstance();
@@ -113,6 +126,10 @@ public class LoginManager {
         return web;
     }
 
+    /**
+     * 初始化WebView设置
+     * @param web 要初始化设置的WebView
+     */
     @SuppressLint("SetJavaScriptEnabled")
     public static void initWeb(WebView web) {
         WebSettings webSettings = web.getSettings();

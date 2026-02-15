@@ -28,7 +28,7 @@ public class NewsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater);
-        params = new Params(requireActivity());
+        params = new Params(this);
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
         binding.getRoot().setLayoutManager(staggeredGridLayoutManager);
         binding.getRoot().setAdapter(newsAdapter);

@@ -25,7 +25,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -41,7 +40,7 @@ import com.sysu.edu.academic.AgendaActivity;
 import com.sysu.edu.academic.CourseDetailActivity;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
-import com.sysu.edu.api.SysuerPreferenceManager;
+import com.sysu.edu.api.PreferenceViewModel;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.DialogServiceActionBinding;
 import com.sysu.edu.databinding.DialogServiceOrderBinding;
@@ -114,7 +113,7 @@ public class DashboardFragment extends Fragment {
                 }
             });
             binding.qrcode.setOnClickListener(_ -> {
-                String linking = PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("qrcode", "");
+                String linking = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("qrcode", "");
                 if (!linking.isEmpty()) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(linking)));
@@ -130,8 +129,8 @@ public class DashboardFragment extends Fragment {
             binding.courseList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.examList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.examList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-            params = new Params(requireActivity());
-            params.setCallback(this, this::getTerm);
+            params = new Params(this);
+            params.setCallback(this::getTerm);
             CourseAdapter courseAdapter = new CourseAdapter(requireActivity());
             courseAdapter.setOnClick((jsonObject, view) -> startActivity(new Intent(getContext(), CourseDetailActivity.class).putExtra("code", jsonObject.getString("courseNum")).putExtra("class", jsonObject.getString("classesNum")), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle()));
             binding.courseList.setAdapter(courseAdapter);
@@ -278,8 +277,8 @@ public class DashboardFragment extends Fragment {
             http = new HttpManager(handler);
             http.setParams(params);
 
-            SysuerPreferenceManager spm = new ViewModelProvider(requireActivity()).get(SysuerPreferenceManager.class);
-            spm.setPM(PreferenceManager.getDefaultSharedPreferences(requireActivity()));
+            PreferenceViewModel spm = new ViewModelProvider(requireActivity()).get(PreferenceViewModel.class);
+            spm.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireActivity()));
             spm.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {
                 if (!a) getTerm();
             });

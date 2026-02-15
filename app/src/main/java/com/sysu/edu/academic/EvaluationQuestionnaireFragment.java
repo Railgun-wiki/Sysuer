@@ -45,12 +45,12 @@ public class EvaluationQuestionnaireFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FragmentQuestionnaireBinding binding = FragmentQuestionnaireBinding.inflate(inflater, container, false);
-        params = new Params(requireActivity());
+        params = new Params(this);
         //StaggeredGridLayoutManager sgm = new StaggeredGridLayoutManager(params.getColumn(), 1);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         ConcatAdapter adp = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(adp);
-        params.setCallback(this, () -> getEvaluation(requireArguments().getString("rwid"),
+        params.setCallback(() -> getEvaluation(requireArguments().getString("rwid"),
                 requireArguments().getString("wjid"),
                 requireArguments().getString("sxz"),
                 requireArguments().getString("pjrdm"),

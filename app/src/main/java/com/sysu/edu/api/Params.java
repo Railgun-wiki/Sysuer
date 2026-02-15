@@ -9,7 +9,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.icu.text.SimpleDateFormat;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -32,216 +32,240 @@ import com.sysu.edu.academic.BrowserActivity;
 import com.sysu.edu.login.LoginActivity;
 import com.sysu.edu.login.LoginViewModel;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-
 public class Params {
-    static final Calendar c = Calendar.getInstance();
-    final SharedPreferences sharedPreferences;
-    final FragmentActivity activity;
-    ActivityResultLauncher<Intent> launch;
-    Runnable afterLogin;
 
+    final SharedPreferences sharedPreferences; // SharedPreferences 对象
+    final FragmentActivity activity; // 关联的 FragmentActivity 对象
+    Fragment fragment; // 关联的 Fragment 对象
+    ActivityResultLauncher<Intent> launcher; // 用于启动登录 Activity 的 ActivityResultLauncher 对象
+    Runnable afterLogin; // 登录成功后的回调 Runnable 对象
+
+    /**
+     * 构造函数，用于初始化 Params 对象
+     *
+     * @param activity 关联的 FragmentActivity 对象
+     */
     public Params(FragmentActivity activity) {
         this.activity = activity;
         sharedPreferences = activity.getSharedPreferences("privacy", Context.MODE_PRIVATE);
-
     }
 
-    public static int getYear() {
-        return c.get(Calendar.YEAR);
+    /**
+     * 构造函数，用于初始化 Params 对象
+     *
+     * @param fragment 关联的 Fragment 对象
+     */
+    public Params(Fragment fragment) {
+        this.fragment = fragment;
+        this(fragment.requireActivity());
     }
 
-    public static int getMonth() {
-        return c.get(Calendar.MONTH);
-    }
-
-    public static int getDay() {
-        return c.get(Calendar.DAY_OF_MONTH);
-    }
-
-    public static String toDate() {
-        return toDate(Calendar.getInstance());
-    }
-
-    public static String getDateTime() {
-        return toDate(Calendar.getInstance());
-    }
-
-    public static String toDate(Calendar calendar) {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTime());
-    }
-
-    public static String toDate(Date date) {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
-    }
-
-    public static String getDateTime(Calendar calendar) {
-        return getDateTime(calendar.getTime());
-    }
-
-    public static String getDateTime(Date date) {
-        return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault()).format(date);
-    }
-
-    public static Calendar getFirstOfMonth() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_MONTH, c.getActualMinimum(Calendar.DAY_OF_MONTH));
-        return calendar;
-    }
-
-    public static Calendar getFirstOfMonth(int month) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, c.getActualMinimum(Calendar.DAY_OF_MONTH));
-        return calendar;
-    }
-
-    public static Calendar getEndOfMonth() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
-        return calendar;
-    }
-
-    public static Calendar getEndOfMonth(int month) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.MONTH, month);
-        calendar.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
-        return calendar;
-    }
-
-  /*  public void setCallback(ActivityResultCallback<ActivityResult> callback) {
-        launch = activity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), callback);
-    }
-
-    public void setCallback(Fragment fragment, ActivityResultCallback<ActivityResult> callback) {
-        launch = fragment.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), callback);
-    }*/
-
+    /**
+     * 设置登录回调
+     *
+     * @param afterLogin 登录成功后的回调 Runnable 对象
+     */
     public void setCallback(Runnable afterLogin) {
         this.afterLogin = afterLogin;
-        this.launch = activity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
-            if (o.getResultCode() == FragmentActivity.RESULT_OK) {
-                afterLogin.run();
-            }
+        this.launcher = (fragment == null ? activity : fragment).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
+            if (o.getResultCode() == FragmentActivity.RESULT_OK) afterLogin.run();
         });
     }
 
-    public void setCallback(Fragment fragment, Runnable afterLogin) {
-        this.afterLogin = afterLogin;
-        this.launch = fragment.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
-            if (o.getResultCode() == FragmentActivity.RESULT_OK) {
-                afterLogin.run();
-            }
-        });
-    }
-
+    /**
+     * 将 dp 值转换为 px 值
+     *
+     * @param dps dp 值
+     * @return 对应的 px 值
+     */
     public int dpToPx(int dps) {
-        return Math.round(activity.getResources().getDisplayMetrics().density * dps);
+        Resources resource = fragment == null ? activity.getResources() : fragment.getResources();
+        return Math.round(resource.getDisplayMetrics().density * dps);
     }
 
+    /**
+     * 获取屏幕宽度
+     *
+     * @return 屏幕宽度（px）
+     */
     public int getWidth() {
         DisplayMetrics dm = new DisplayMetrics();
         activity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
         return dm.widthPixels;
     }
 
+    /**
+     * 获取列数，根据屏幕宽度动态调整，手机屏幕为一列，以此类推
+     *
+     * @return 列数（1、2 或 3）
+     */
     public int getColumn() {
         return (getWidth() < dpToPx(540)) ? 1 : (getWidth() < dpToPx(900)) ? 2 : 3;
     }
 
+    /**
+     * 获取 Cookie
+     *
+     * @return Cookie
+     */
     public String getCookie() {
         return sharedPreferences.getString("Cookie", "");
     }
 
+    /**
+     * 获取 Authorization
+     *
+     * @return Authorization
+     */
     public String getAuthorization() {
         return sharedPreferences.getString("authorization", "");
     }
 
-    public String getAccount() {
+    /**
+     * 获取用户名
+     *
+     * @return 用户名
+     */
+    public String getUserName() {
         return sharedPreferences.getString("username", "");
     }
 
-    public void setAccount(String account) {
-        sharedPreferences.edit().putString("username", account).apply();
+    /**
+     * 设置用户名
+     *
+     * @param userName 用户名
+     */
+    public void setUserName(String userName) {
+        sharedPreferences.edit().putString("username", userName).apply();
     }
 
+    /**
+     * 获取密码
+     *
+     * @return 密码
+     */
     public String getPassword() {
         return sharedPreferences.getString("password", "");
     }
 
+    /**
+     * 设置密码
+     *
+     * @param password 密码
+     */
     public void setPassword(String password) {
         sharedPreferences.edit().putString("password", password).apply();
     }
-/*
-    public boolean isFirstLaunch() {
-        return sharedPreferences.getBoolean("isFirstLaunch", true);
-    }
 
-    public void setIsFirstLaunch(boolean i) {
-        sharedPreferences.edit().putBoolean("isFirstLaunch", i).apply();
-    }*/
-
-    public SharedPreferences getSharedPreferences(){
+    /**
+     * 获取 SharedPreferences 对象
+     *
+     * @return SharedPreferences 对象
+     */
+    public SharedPreferences getSharedPreferences() {
         return sharedPreferences;
     }
 
+    /**
+     * 获取 Token
+     *
+     * @return Token
+     */
     public String getToken() {
         return sharedPreferences.getString("token", "");
     }
 
+    /**
+     * 获取是否为开发者
+     *
+     * @return 是否为开发者
+     */
     public boolean isDeveloper() {
         return sharedPreferences.getBoolean("developer", false);
     }
 
+    /**
+     * 设置是否为开发者
+     *
+     * @param developer 是否为开发者
+     */
     public void setDeveloper(boolean developer) {
         sharedPreferences.edit().putBoolean("developer", developer).apply();
     }
 
+    /**
+     * 打开浏览器
+     *
+     * @param url 要打开的 URL
+     * @return 点击事件监听器
+     */
     public View.OnClickListener browse(String url) {
         return (View v) -> v.getContext().startActivity(new Intent(activity, BrowserActivity.class).setData(Uri.parse(url)));
     }
 
-    public void copy(String a, String b) {
+    /**
+     * 复制文本到剪贴板
+     *
+     * @param tag  剪贴板标签
+     * @param text 要复制的文本
+     */
+    public void copy(String tag, String text) {
         ClipboardManager clip = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        clip.setPrimaryClip(ClipData.newPlainText(a, b));
+        clip.setPrimaryClip(ClipData.newPlainText(tag, text));
     }
 
+    /**
+     * 显示 Toast 消息
+     *
+     * @param resource 字符串资源 ID
+     */
     public void toast(int resource) {
-        toast(activity.getString(resource));
+        Toast.makeText(activity, resource, Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * 显示 Toast 消息
+     *
+     * @param toast 要显示的文本
+     */
     public void toast(String toast) {
         Toast.makeText(activity, toast, Toast.LENGTH_LONG).show();
     }
 
+    /**
+     * 获取登录模式
+     *
+     * @return 登录模式（"0"：弹窗登录；"1"：主页弹窗、其他跳转登录；"2"：跳转登录；"3"：自动登录）
+     */
     public String getLoginMode() {
         return PreferenceManager.getDefaultSharedPreferences(activity).getString("loginMode", "2");
     }
 
+    /**
+     * 跳转登录页面
+     *
+     * @param view 触发跳转的视图
+     * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
+     */
     public void gotoLogin(View view, @Nullable String url) {
         Intent intent = new Intent(activity, LoginActivity.class);
-        if (url != null) {
-            intent.putExtra("url", url);
-        }
+        if (url != null) intent.putExtra("url", url);
         switch (getLoginMode()) {
-            case "0":
-                Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
-                break;
-            case "1":
+            case "0" ->
+                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
+            case "1" -> {
                 if (activity instanceof MainActivity) {
-                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
+                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
                 } else {
-                    launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
+                    gotoLogin(view, intent);
                 }
-                break;
-            case "3":
-                String account = getAccount();
+            }
+            case "3" -> {
+                String account = getUserName();
                 String password = getPassword();
                 if (account.isEmpty() || password.isEmpty()) {
                     toast(R.string.require_netid_password);
-                    launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
+                    gotoLogin(view, intent);
                     break;
                 }
                 toast(R.string.logging_in);
@@ -259,12 +283,19 @@ public class Params {
                     toast(R.string.login_successfully);
                 });
 //                ((FrameLayout)activity.findViewById(android.R.id.content)).addView(web);
-                break;
-            case "2":
-            default:
-                launch.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
-                break;
+            }
+            default -> gotoLogin(view, intent);
         }
+    }
+
+    /**
+     * 跳转登录页面
+     *
+     * @param view   触发跳转的视图
+     * @param intent 登录 Intent
+     */
+    private void gotoLogin(View view, Intent intent) {
+        launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
     }
 
 }

@@ -34,8 +34,8 @@ public class CourseQueryResultFragment extends StaggeredFragment {
                              Bundle savedInstanceState) {
         FragmentCourseQueryResultBinding courseQueryResultBinding = FragmentCourseQueryResultBinding.inflate(inflater, container, false);
         courseQueryResultBinding.getRoot().addView(super.onCreateView(inflater, courseQueryResultBinding.getRoot(), savedInstanceState), -1, -1);
-        params = new Params(requireActivity());
-        params.setCallback(this, () -> {
+        params = new Params(this);
+        params.setCallback(() -> {
             reset();
             getCourses();
         });

@@ -65,8 +65,8 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
             bundle.putString("params", getParams().toString());
             Navigation.findNavController(binding.getRoot()).navigate(R.id.query_to_result, bundle, new NavOptions.Builder().build());
         });
-        Params params = new Params(requireActivity());
-        params.setCallback(this, () -> getData(0));
+        Params params = new Params(this);
+        params.setCallback(() -> getData(0));
         MaterialSwitchPreference isWeekPreference = Objects.requireNonNull(findPreference("isWeek"));
         SimpleMenuPreference campusPreference = Objects.requireNonNull(findPreference("campus"));
         SimpleMenuPreference buildingPreference = Objects.requireNonNull(findPreference("teachingBuilding"));

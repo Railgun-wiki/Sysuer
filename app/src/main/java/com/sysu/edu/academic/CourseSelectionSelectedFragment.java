@@ -59,8 +59,8 @@ public class CourseSelectionSelectedFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         FragmentCourseSelectionSelectedBinding binding = FragmentCourseSelectionSelectedBinding.inflate(inflater, container, false);
-        params = new Params(requireActivity());
-        params.setCallback(this, this::regetSelectedCourses);
+        params = new Params(this);
+        params.setCallback(this::regetSelectedCourses);
         layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
         binding.list.getRoot().setLayoutManager(layoutManager);
         binding.list.getRoot().setAdapter(adapter = new CourseSelectedAdapter());

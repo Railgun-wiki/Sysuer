@@ -126,7 +126,7 @@ public class BrowserActivity extends AppCompatActivity {
                             const element = document.querySelector(selector);\
                             if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}\
                             waitElement('.para-widget-account-psw', () => {\
-                            var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()""", params.getAccount(), params.getPassword()), _ -> {
+                            var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()""", params.getUserName(), params.getPassword()), _ -> {
                     });
                 } else if (Pattern.compile("://appgw.sysu.edu.cn/").matcher(link).find()) {
                     web.stopLoading();

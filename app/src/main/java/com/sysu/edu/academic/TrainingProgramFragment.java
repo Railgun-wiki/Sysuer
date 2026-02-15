@@ -81,8 +81,8 @@ public class TrainingProgramFragment extends Fragment {
                 Navigation.findNavController(binding.getRoot()).navigate(R.id.confirmationAction,
                         arg, null, new FragmentNavigator.Extras(Map.of(v, "result")));
             });
-            Params params = new Params(requireActivity());
-            params.setCallback(this, () -> getColleges(""));
+            Params params = new Params(this);
+            params.setCallback(() -> getColleges(""));
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {

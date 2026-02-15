@@ -66,8 +66,8 @@ public class GymReservationListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        if (savedInstanceState == null) {
         binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
-        params = new Params(requireActivity());
-        params.setCallback(this, this::getCampus);
+        params = new Params(this);
+        params.setCallback(this::getCampus);
         layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
         binding.getRoot().setLayoutManager(layoutManager);
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
@@ -173,7 +173,7 @@ public class GymReservationListFragment extends Fragment {
                                                     if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}
                                                     waitElement('.para-widget-account-psw', () => {
                                                     var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()"""
-                    ,params.getAccount(),params.getPassword()));
+                    ,params.getUserName(),params.getPassword()));
                 }
                 super.onPageFinished(view, url);
             }

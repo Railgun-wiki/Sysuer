@@ -148,7 +148,7 @@ public class AgendaActivity extends AppCompatActivity {
                 JSONObject response = JSONObject.parseObject((String) msg.obj);
                 if (response.getInteger("code").equals(200)) {
                     switch (msg.what) {
-                        case 1: {
+                        case 1 -> {
                             views.forEach(e -> binding.day.removeView(e));
                             views.clear();
                             response.getJSONArray("data").forEach(e -> {
@@ -158,7 +158,7 @@ public class AgendaActivity extends AppCompatActivity {
                                     String startClassTimes = jsonObject.getString("startClassTimes");
                                     String endClassTimes = jsonObject.getString("endClassTimes");
                                     JSONArray info = jsonObject.getJSONArray("teachingInfoList");
-                                    @SuppressWarnings("SequencedCollectionMethodCanBeUsed") JSONObject detail = (JSONObject) info.get(0);
+                                    JSONObject detail = info.getJSONObject(0);
                                     String course = detail.getString("courseName");
                                     String teacher = detail.getString("teacherName");
                                     String campus = detail.getString("teachingCampusName");
@@ -190,16 +190,14 @@ public class AgendaActivity extends AppCompatActivity {
                                     binding.day.addView(item);
                                 }
                             });
-                            break;
                         }
-                        case 2: {
+                        case 2 -> {
                             currentTerm = response.getJSONObject("data").getString("acadYearSemester");
                             binding.term.setText(currentTerm);
                             getAvailableWeeks(currentTerm);
                             getTable(currentTerm, currentWeek);
-                            break;
                         }// 获取 Term
-                        case 3: {
+                        case 3 -> {
                             String from = response.getJSONObject("data").getString("startTime");
                             try {
                                 Calendar calendar1 = Calendar.getInstance();
@@ -216,14 +214,12 @@ public class AgendaActivity extends AppCompatActivity {
                             } catch (ParseException e) {
                                 //throw new RuntimeException(e);
                             }
-                            break;
                         }
-                        case 4: {
+                        case 4 -> {
                             terms.clear();
                             response.getJSONArray("data").forEach(e -> terms.add(((JSONObject) e).getString("acadYearSemester")));
-                            break;
-                        }
-                        case 5: {
+                        }// 获取 Term
+                        case 5 -> {
                             weeks.clear();
                             String nowWeekly = response.getJSONObject("data").getString("nowWeekly");
                             if (nowWeekly != null) currentWeek = Integer.parseInt(nowWeekly);
@@ -231,12 +227,8 @@ public class AgendaActivity extends AppCompatActivity {
                             currentWeekIndex = weeks.indexOf(currentWeek);
                             binding.weekTime.setText(String.format(getString(R.string.week_x), currentWeek));
                             getTable(currentTerm, currentWeek);
-                            break;
                         }
-                        case -1: {
-                            params.toast(R.string.no_wifi_warning);
-                            break;
-                        }
+                        case -1 -> params.toast(R.string.no_wifi_warning);
                     }
                 } else {
                     params.toast(R.string.login_warning);

@@ -58,9 +58,9 @@ public class NewsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             binding = RecyclerViewScrollBinding.inflate(inflater);
-            Params params = new Params(requireActivity());
+            Params params = new Params(this);
             authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
-            params.setCallback(this, () -> run.run());
+            params.setCallback(() -> run.run());
             binding.recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), params.getColumn()));
             binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override

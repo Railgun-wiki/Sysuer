@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModel;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SysuerPreferenceManager extends ViewModel {
+public class PreferenceViewModel extends ViewModel {
+
+
     private final static String Theme = "theme";
     private final static String Home = "home";
     private final static String Language = "language";

@@ -72,8 +72,8 @@ public class CourseSelectionFragment extends Fragment {
         if (binding == null) {
             binding = FragmentCourseSelectionBinding.inflate(inflater, container, false);
             vm = new ViewModelProvider(requireActivity()).get(CourseSelectionViewModel.class);
-            params = new Params(requireActivity());
-            params.setCallback(this, () -> {
+            params = new Params(this);
+            params.setCallback(() -> {
                 clear();
                 getInfo();
             });

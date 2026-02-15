@@ -55,7 +55,7 @@ public class StaggeredFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        params = new Params(requireActivity());
+        params = new Params(this);
         binding = RecyclerViewScrollBinding.inflate(inflater);
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
         binding.recyclerView.setLayoutManager(staggeredGridLayoutManager);

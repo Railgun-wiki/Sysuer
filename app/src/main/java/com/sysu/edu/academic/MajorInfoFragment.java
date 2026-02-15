@@ -41,8 +41,8 @@ public class MajorInfoFragment extends StaggeredFragment {
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         code = requireArguments().getString("code");
-        Params params = new Params(requireActivity());
-        params.setCallback(this, () -> {
+        Params params = new Params(this);
+        params.setCallback(() -> {
             page = 0;
             total = -1;
             clear();

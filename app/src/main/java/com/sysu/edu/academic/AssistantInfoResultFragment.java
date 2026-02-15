@@ -34,8 +34,8 @@ public class AssistantInfoResultFragment extends StaggeredFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        Params params = new Params(requireActivity());
-        params.setCallback(this, this::getResult);
+        Params params = new Params(this);
+        params.setCallback(this::getResult);
         Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {

@@ -1,6 +1,7 @@
 package com.sysu.edu.life;
 
-import android.icu.util.Calendar;
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -22,6 +24,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.CalendarManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -37,10 +40,10 @@ import java.util.List;
 
 public class PayFragment extends StaggeredFragment {
 
-    String token;
     public View view;
     int order = 0;
     HttpManager http;
+    CalendarManager calendarManager;
 
     public static PayFragment newInstance(int position) {
         PayFragment f = new PayFragment();
@@ -51,12 +54,9 @@ public class PayFragment extends StaggeredFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        Params params = new Params(requireActivity());
-        params.setCallback(this, () -> {
-            token = params.getToken();
-            getPage();
-        });
-        token = params.getToken();
+        Params params = new Params(this);
+        calendarManager = new CalendarManager();
+        params.setCallback(this::getPage);
         switch (position) {
             case 0:
                 FragmentPayNeedBinding b0 = FragmentPayNeedBinding.inflate(inflater);
@@ -73,55 +73,56 @@ public class PayFragment extends StaggeredFragment {
                 view = b0.getRoot();
                 break;
             case 2:
-                ArrayList<String> years = new ArrayList<>(List.of("全部", "无区间年度"));
+                ArrayList<String> years = new ArrayList<>(List.of(getString(R.string.all), getString(R.string.no_interval_year)));
                 ArrayList<String> yearCodes = new ArrayList<>(List.of("null", "-1"));
                 for (int i = 0; i < 6; i++) {
-                    years.add(Params.getYear() + 1 - i + "年");
-                    yearCodes.add(String.valueOf(Params.getYear() + 1 - i));
+                    String year = String.valueOf(calendarManager.getYear() + 1 - i);
+                    years.add(year);
+                    yearCodes.add(year);
                 }
-                FragmentPaySituationBinding b1 = FragmentPaySituationBinding.inflate(getLayoutInflater());
-                b1.getRoot().addView(view);
+                FragmentPaySituationBinding fragmentPaySituationBinding = FragmentPaySituationBinding.inflate(getLayoutInflater());
+                fragmentPaySituationBinding.getRoot().addView(view);
                 binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
                     public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                        b1.p.setElevation(recyclerView.canScrollVertically(-1) ? 6 : 0);
+                        fragmentPaySituationBinding.p.setElevation(recyclerView.canScrollVertically(-1) ? 6 : 0);
                         super.onScrolled(recyclerView, dx, dy);
                     }
                 });
-                b1.spinner.setText(String.valueOf(Params.getYear()));
-                b1.spinner.setSimpleItems(years.toArray(new String[]{}));
-                b1.spinner.setOnItemClickListener((_, _, i, _) -> {
+                fragmentPaySituationBinding.spinner.setText(String.valueOf(calendarManager.getYear()));
+                fragmentPaySituationBinding.spinner.setSimpleItems(years.toArray(new String[]{}));
+                fragmentPaySituationBinding.spinner.setOnItemClickListener((_, _, i, _) -> {
                     clear();
                     getFeeList(String.valueOf(yearCodes.get(i)));
                 });
-                view = b1.getRoot();
+                view = fragmentPaySituationBinding.getRoot();
                 break;
             case 3:
                 DateManager dm = new DateManager();
-                dm.fromDate = Params.getFirstOfMonth().getTime();
-                dm.toDate = Params.getEndOfMonth().getTime();
-                FragmentPayRecordBinding b2 = FragmentPayRecordBinding.inflate(inflater);
-                b2.getRoot().addView(view);
-                view = b2.getRoot();
-                b2.from.setText(dm.getFromDateString());
-                b2.from.setOnClickListener(_ -> {
+                dm.fromDate = calendarManager.getFirstOfMonth().getTime();
+                dm.toDate = calendarManager.getEndOfMonth().getTime();
+                FragmentPayRecordBinding fragmentPayRecordBinding = FragmentPayRecordBinding.inflate(inflater);
+                fragmentPayRecordBinding.getRoot().addView(view);
+                view = fragmentPayRecordBinding.getRoot();
+                fragmentPayRecordBinding.from.setText(dm.getFromDateString());
+                fragmentPayRecordBinding.from.setOnClickListener(_ -> {
                     MaterialDatePicker<Long> fromDatePicker = MaterialDatePicker.Builder.datePicker().setSelection(dm.getFromDateTimeMillis()).setCalendarConstraints(new CalendarConstraints.Builder()
                             .setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(dm.getToDateTimeMillis())))).build()).build();
                     fromDatePicker.addOnPositiveButtonClickListener(selection -> {
                         dm.fromDate = new Date(selection);
                         fromDatePicker.dismissAllowingStateLoss();
-                        b2.from.setText(dm.getFromDateString());
+                        fragmentPayRecordBinding.from.setText(dm.getFromDateString());
                         dm.getData();
                     });
                     fromDatePicker.show(requireActivity().getSupportFragmentManager(), null);
                 });
-                b2.to.setText(dm.getToDateString());
-                b2.to.setOnClickListener(_ -> {
+                fragmentPayRecordBinding.to.setText(dm.getToDateString());
+                fragmentPayRecordBinding.to.setOnClickListener(_ -> {
                     MaterialDatePicker<Long> toDatePicker = MaterialDatePicker.Builder.datePicker().setSelection(dm.getToDateTimeMillis()).setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(dm.getFromDateTimeMillis())))).build()).build();
                     toDatePicker.addOnPositiveButtonClickListener(selection -> {
                         dm.toDate = new Date(selection);
                         toDatePicker.dismissAllowingStateLoss();
-                        b2.to.setText(dm.getToDateString());
+                        fragmentPayRecordBinding.to.setText(dm.getToDateString());
                         dm.getData();
                     });
                     toDatePicker.show(requireActivity().getSupportFragmentManager(), null);
@@ -129,11 +130,12 @@ public class PayFragment extends StaggeredFragment {
                 binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
                     public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                        b2.row.setElevation(recyclerView.canScrollVertically(-1) ? 6 : 0);
+                        fragmentPayRecordBinding.row.setElevation(recyclerView.canScrollVertically(-1) ? params.dpToPx(2) : 0);
                     }
                 });
                 break;
         }
+        View finalView = view;
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -143,59 +145,31 @@ public class PayFragment extends StaggeredFragment {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response != null && response.getInteger("code").equals(200)) {
                         if (response.get("data") != null) {
+                            clear();
+                            JSONArray data = response.getJSONArray("data");
                             switch (msg.what) {
-                                case 0:
-                                case 1:
-                                    clear();
-                                    response.getJSONArray("data").forEach(a -> {
-                                        ArrayList<String> values = new ArrayList<>();
-                                        String[] keyName = new String[]{"学号", "交费区间", "当前应交", "本次交费"};
-                                        for (int i = 0; i < keyName.length; i++) {
-                                            values.add(((JSONObject) a).getString(new String[]{"personCode", "intervalName", "nowMoney", "needMoney"}[i]));
-                                        }
-                                        add(((JSONObject) a).getString("itemName"), List.of(keyName), values);
-                                    });
-                                    break;
-                                case 2:
-                                    clear();
-                                    response.getJSONArray("data").forEach(a -> {
-                                        ArrayList<String> values = new ArrayList<>();
-                                        String[] keyName = new String[]{"学号", "收费项目", "交费区间", "应交", "缓交", "实交"};
-                                        for (int i = 0; i < keyName.length; i++) {
-                                            values.add(((JSONObject) a).getString(new String[]{"personCode", "itemName", "intervalName", "needPay", "laterPay", "realPay"}[i]));
-                                        }
-                                        add(((JSONObject) a).getString("itemName"), List.of(keyName), values);
-                                    });
-                                    break;
-                                case 3:
-                                    clear();
-                                    response.getJSONArray("data").forEach(a -> {
-                                        ArrayList<String> values = new ArrayList<>();
-                                        String[] keyName = new String[]{"订单编号", "金额", "支付方式", "支付时间", "支付编号"};
-                                        for (int i = 0; i < keyName.length; i++) {
-                                            values.add(((JSONObject) a).getString(new String[]{"orderNo", "money", "payTypeName", "payTime", "outPayNo"}[i]));
-                                        }
-                                        add(String.valueOf(++order), List.of(keyName), values);
-                                    });
-                                    break;
-                                case 4:
-                                    clear();
-                                    response.getJSONArray("data").forEach(a -> {
-                                        ArrayList<String> values = new ArrayList<>();
-                                        String[] keyName = new String[]{"收费项目", "收费区间", "退费金额", "退费日期", "退费状态"};
-                                        for (int i = 0; i < keyName.length; i++) {
-                                            values.add(((JSONObject) a).getString(new String[]{"itemName", "intervalName", "refundMoney", "refundDate", "refundStateStr"}[i]));
-                                        }
-                                        add(String.valueOf(++order), List.of(keyName), values);
-                                    });
-                                    break;
+                                case 0, 1 ->
+                                        data.forEach(a -> add(((JSONObject) a).getString("itemName"), List.of("学号", "交费区间", "当前应交", "本次交费"),
+                                                extractValue((JSONObject) a, new String[]{"personCode", "intervalName", "nowMoney", "needMoney"})));
+
+                                case 2 ->
+                                        data.forEach(a -> add(((JSONObject) a).getString("itemName"), List.of("学号", "收费项目", "交费区间", "应交", "缓交", "实交"),
+                                                extractValue((JSONObject) a, new String[]{"personCode", "itemName", "intervalName", "needPay", "laterPay", "realPay"})));
+
+                                case 3 ->
+                                        data.forEach(a -> add(String.valueOf(++order), List.of("订单编号", "金额", "支付方式", "支付时间", "支付编号"),
+                                                extractValue((JSONObject) a, new String[]{"orderNo", "money", "payTypeName", "payTime", "outPayNo"})));
+
+                                case 4 ->
+                                        data.forEach(a -> add(String.valueOf(++order), List.of("收费项目", "收费区间", "退费金额", "退费日期", "退费状态"),
+                                                extractValue((JSONObject) a, new String[]{"itemName", "intervalName", "refundMoney", "refundDate", "refundStateStr"})));
                             }
                         }
                     } else if (response != null && response.getInteger("code").equals(4002)) {
                         params.toast(response.getString("message"));
                     } else {
-                        params.toast(getString(R.string.login_warning));
-                        params.gotoLogin(getView(), TargetUrl.PAY);
+                        params.toast(R.string.login_warning);
+                        params.gotoLogin(finalView, TargetUrl.PAY);
                     }
                 }
             }
@@ -222,7 +196,7 @@ public class PayFragment extends StaggeredFragment {
         switch (position) {
             case 0 -> getToPayList();
             case 1 -> getSelectivePayList();
-            case 2 -> getFeeList(String.valueOf(Params.getYear()));
+            case 2 -> getFeeList(String.valueOf(calendarManager.getYear()));
             case 3 -> getPaymentList();
             case 4 -> getRefundList();
         }
@@ -245,7 +219,7 @@ public class PayFragment extends StaggeredFragment {
     }
 
     void getPaymentList() {
-        getPaymentList(Params.getDateTime(Params.getFirstOfMonth()), Params.getDateTime(Params.getEndOfMonth()));
+        getPaymentList(calendarManager.getDateTime(calendarManager.getFirstOfMonth()), calendarManager.getDateTime(calendarManager.getEndOfMonth()));
     }
 
     void getRefundList() {
@@ -255,30 +229,28 @@ public class PayFragment extends StaggeredFragment {
     /*Accept-language: zh-CN*/
 
     class DateManager {
-        final Calendar c = Calendar.getInstance();
-        public Date fromDate;
-        public Date toDate;
+
+        Date fromDate;
+        Date toDate;
 
         public String getFromDateString() {
-            return Params.toDate(fromDate);
+            return calendarManager.toDate(fromDate);
         }
 
         public String getToDateString() {
-            return Params.toDate(toDate);
+            return calendarManager.toDate(toDate);
         }
 
         public long getFromDateTimeMillis() {
-            c.setTime(fromDate);
-            return c.getTimeInMillis();
+            return fromDate.getTime();
         }
 
         public long getToDateTimeMillis() {
-            c.setTime(toDate);
-            return c.getTimeInMillis();
+            return toDate.getTime();
         }
 
         public void getData() {
-            getPaymentList(Params.getDateTime(fromDate), Params.getDateTime(toDate));
+            getPaymentList(calendarManager.getDateTime(fromDate), calendarManager.getDateTime(toDate));
         }
     }
 }

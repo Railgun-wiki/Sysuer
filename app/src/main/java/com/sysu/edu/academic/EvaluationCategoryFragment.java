@@ -40,8 +40,8 @@ public class EvaluationCategoryFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
-        params = new Params(requireActivity());
-        params.setCallback(this, this::getEvaluation);
+        params = new Params(this);
+        params.setCallback(this::getEvaluation);
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(params.getColumn(), 1);
         binding.getRoot().setLayoutManager(staggeredGridLayoutManager);
         CategoryAdapter categoryAdapter = new CategoryAdapter(requireContext());

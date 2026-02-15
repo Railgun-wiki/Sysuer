@@ -75,7 +75,7 @@ public class GymDetailFragment extends Fragment {
         initReservationDialog(dialogBinding);
 
         date.setAction(position::setValue);
-        Params params = new Params(requireActivity());
+        Params params = new Params(this);
         binding.date.recyclerView.setAdapter(date);
         binding.date.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
