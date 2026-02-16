@@ -18,7 +18,6 @@ public class LoginWebFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        return initLoginWebView(requireActivity(), new ViewModelProvider(requireActivity()).get(LoginViewModel.class), () -> {
-        });
+        return initLoginWebView(requireActivity(), new ViewModelProvider(requireActivity()).get(LoginViewModel.class), false);
     }
 }

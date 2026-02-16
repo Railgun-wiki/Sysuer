@@ -8,6 +8,7 @@ import android.webkit.CookieManager;
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 import okhttp3.Call;
@@ -19,17 +20,18 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HttpManager {
-    final OkHttpClient http = new OkHttpClient();
-    final CookieManager cookieManager = CookieManager.getInstance();
-    Handler handler;
-    String referrer;
-    String cookie;
-    String authorization;
-    Params params;
-    String ua;
-    String target;
-    boolean isAuthorizationRequired;
-    boolean isTokenRequired;
+    final OkHttpClient http = new OkHttpClient(); // 全局 OkHttpClient 实例
+    final CookieManager cookieManager = CookieManager.getInstance(); // 全局 CookieManager 实例
+    Handler handler; // 处理消息的 Handler 对象
+    String referrer; // Referer 头字段值
+    String cookie; // Cookie 头字段值
+    String authorization; // Authorization 头字段值
+    Params params; // 请求参数对象
+    String ua; // User-Agent 头字段值
+    String target; // 目标 URL
+    boolean isAuthorizationRequired; // 是否需要 Authorization 头字段
+    boolean isTokenRequired; // 是否需要 token 头字段
+    Map<String, String> header;
 
     /**
      * 构造函数
@@ -121,6 +123,10 @@ public class HttpManager {
         this.target = target;
     }
 
+    public void setHeader(Map<String, String> header){
+        this.header = header;
+    }
+
     /**
      * 发送网络请求
      *
@@ -137,6 +143,8 @@ public class HttpManager {
         } else if (cookieManager.getCookie(url) != null) {
             request.header("Cookie", cookieManager.getCookie(url));
         }
+//        System.out.println(params.getCookie());
+//        System.out.println(cookieManager.getCookie(url));
         if (cookie != null) request.header("Cookie", cookie);
         if (isAuthorizationRequired && params != null)
             request.header("Authorization", params.getAuthorization());
@@ -145,9 +153,11 @@ public class HttpManager {
         if (ua != null) request.header("User-Agent", ua);
         if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
         if (isTokenRequired && params != null) request.header("token", params.getToken());
+        if (header != null) header.forEach(request::header);
         http.newCall(request.build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                System.out.println(url);
                 handler.sendEmptyMessage(-1);
             }
 

@@ -46,9 +46,9 @@ public class PayFragment extends StaggeredFragment {
     CalendarManager calendarManager;
 
     public static PayFragment newInstance(int position) {
-        PayFragment f = new PayFragment();
-        f.position = position;
-        return f;
+        PayFragment payFragment = new PayFragment();
+        payFragment.position = position;
+        return payFragment;
     }
 
     @Override

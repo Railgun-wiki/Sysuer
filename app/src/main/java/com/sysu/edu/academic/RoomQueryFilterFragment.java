@@ -203,28 +203,28 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
         return params;
     }
 
-    private void insertMenuValue(JSONObject params, String key, String value) {
+    void insertMenuValue(JSONObject params, String key, String value) {
         SimpleMenuPreference preference = findPreference(key);
         if (preference != null && (preference.getValue() == null || !preference.getValue().isEmpty())) {
             params.put(value, preference.getValue());
         }
     }
 
-    private void insertEditValue(JSONObject params, String key, String value) {
+    void insertEditValue(JSONObject params, String key, String value) {
         EditPreference preference = findPreference(key);
         if (preference != null) {
             params.put(value, preference.getValue());
         }
     }
 
-    private void insertSliderValue(JSONObject params, String key, String value) {
+    void insertSliderValue(JSONObject params, String key, String value) {
         SliderPreference preference = findPreference(key);
         if (preference != null && preference.getValue() != 0) {
             params.put(value, preference.getValue());
         }
     }
 
-    private void insertFilterValue(JSONObject params, String key, String value) {
+    void insertFilterValue(JSONObject params, String key, String value) {
         FilterPreference preference = findPreference(key);
         if (preference != null) {
             params.put(value, preference.getValue());

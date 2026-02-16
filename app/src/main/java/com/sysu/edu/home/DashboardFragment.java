@@ -263,7 +263,7 @@ public class DashboardFragment extends Fragment {
                                 break;
                         }
                     } else {
-                        params.gotoLogin(getView(), TargetUrl.JWXT);
+                        params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
                     }
                 }
             };
@@ -277,12 +277,12 @@ public class DashboardFragment extends Fragment {
             http = new HttpManager(handler);
             http.setParams(params);
 
-            PreferenceViewModel spm = new ViewModelProvider(requireActivity()).get(PreferenceViewModel.class);
-            spm.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireActivity()));
-            spm.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {
+            PreferenceViewModel preferenceViewModel = new ViewModelProvider(requireActivity()).get(PreferenceViewModel.class);
+            preferenceViewModel.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireActivity()));
+            preferenceViewModel.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {
                 if (!a) getTerm();
             });
-            spm.initLiveData();
+            preferenceViewModel.initLiveData();
 
             TodoFragment todoFragment = new TodoFragment();
             getParentFragmentManager().beginTransaction().add(R.id.todo_list, todoFragment).commit();
@@ -297,7 +297,7 @@ public class DashboardFragment extends Fragment {
                 }
             });
             binding.toggle3.check(R.id.filter_todo);
-            spm.getDashboardLiveData().observe(getViewLifecycleOwner(), s -> {
+            preferenceViewModel.getDashboardLiveData().observe(getViewLifecycleOwner(), s -> {
                 HashSet<String> visible = new HashSet<>(List.of("0", "1", "2", "3", "4", "5"));
                 if (!s.isEmpty()) visible.removeAll(s);
                 visible.forEach(i -> List.of(binding.shortcutGroup, binding.nextClassCard, binding.timeCard, binding.courseGroup, binding.examGroup, binding.todoGroup).get(Integer.parseInt(i)).setVisibility(View.GONE));
@@ -335,7 +335,8 @@ public class DashboardFragment extends Fragment {
             Date fromDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(from);
             Date toDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(to);
             return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException _) {}
+        } catch (ParseException _) {
+        }
         return "before";
     }
 
@@ -539,13 +540,15 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(context)).getRoot()) {};
+        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(context)).getRoot()) {
+        };
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemExamBinding binding = ItemExamBinding.bind(holder.itemView);
-        holder.itemView.setOnClickListener(_ -> {});
+        holder.itemView.setOnClickListener(_ -> {
+        });
         JSONObject examData = data.get(position);
         int startClassTimes = examData.getIntValue("startClassTimes");
         int endClassTimes = examData.getIntValue("endClassTimes");
@@ -557,7 +560,7 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 String.format(context.getString(R.string.section_range), startClassTimes, endClassTimes),
                 String.format("%s：%s", context.getString(R.string.exam_mode), examData.getString("examMode")),
                 String.format("%s：%s", context.getString(R.string.exam_stage), examData.getString("examStage"))};
-        TextView[] materialTextButtons = {binding.examName,binding.examLocation,binding.examDate,binding.examDuration,binding.examTime, binding.examClassTime,binding.examMode,binding.examStage};
+        TextView[] materialTextButtons = {binding.examName, binding.examLocation, binding.examDate, binding.examDuration, binding.examTime, binding.examClassTime, binding.examMode, binding.examStage};
         for (int i = 0; i < 8; i++) {
             materialTextButtons[i].setText(text[i]);
             int finalI = i;

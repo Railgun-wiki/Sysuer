@@ -1,5 +1,7 @@
 package com.sysu.edu.studentAffair;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,7 +24,6 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.view.StaggeredFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecruitmentInfoFragment extends StaggeredFragment {
@@ -37,7 +38,7 @@ public class RecruitmentInfoFragment extends StaggeredFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         Params params = new Params(this);
-        params.setCallback(RecruitmentInfoFragment.this, () -> {
+        params.setCallback(() -> {
             reset();
             getYear();
         });
@@ -52,7 +53,6 @@ public class RecruitmentInfoFragment extends StaggeredFragment {
             reset();
             getRecruitment();
         });
-
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -90,10 +90,8 @@ public class RecruitmentInfoFragment extends StaggeredFragment {
                         switch (what) {
                             case 0 -> {
                                 total = data.getJSONObject("data").getInteger("total");
-                                data.getJSONObject("data").getJSONArray("list").forEach(i -> {
-                                    JSONObject item = (JSONObject) i;
-                                    add(item.getString("qgzxgwmc"), List.of("岗位名称", "岗位类型", "所在校区", "岗位地址", "开始时间", "结束时间", "状态", "设岗单位"), separate(item, new String[]{"qgzxgwmc", "qgzxgwlxmc", "qgzxszxymc", "qgzxdwdz", "qgzxgwzpkssj", "qgzxgwzpjssj", "state", "sgdwmc"}));
-                                });
+                                data.getJSONObject("data").getJSONArray("list").forEach(i -> add(((JSONObject) i).getString("qgzxgwmc"), List.of("岗位名称", "岗位类型", "所在校区", "岗位地址", "开始时间", "结束时间", "状态", "设岗单位"),
+                                        extractValue((JSONObject) i, new String[]{"qgzxgwmc", "qgzxgwlxmc", "qgzxszxymc", "qgzxdwdz", "qgzxgwzpkssj", "qgzxgwzpjssj", "state", "sgdwmc"})));
                             }
                             case 1, 2, 3 -> {
                                 MutableLiveData<String> name = List.of(viewModel.yearName, viewModel.campusName, viewModel.jobTypeName).get(what - 1);
@@ -163,14 +161,5 @@ public class RecruitmentInfoFragment extends StaggeredFragment {
 
     void getJobType() {
         http.getRequest(auth.getBaseUrl() + "qgzx/api/sm-qgzx/gwsq/gwlxlist/get", 3);
-    }
-
-
-    ArrayList<String> separate(JSONObject data, String[] keys) {
-        ArrayList<String> values = new ArrayList<>();
-        for (String i : keys) {
-            values.add(data.getString(i));
-        }
-        return values;
     }
 }

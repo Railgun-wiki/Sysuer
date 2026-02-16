@@ -73,7 +73,7 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_mode"
-        app:icon="@drawable/info"
+        app:icon="@drawable/text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/exam_class_time" />
 
@@ -83,7 +83,7 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="@string/exam_stage"
-        app:icon="@drawable/info"
+        app:icon="@drawable/text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/exam_mode" />
 </androidx.constraintlayout.widget.ConstraintLayout>

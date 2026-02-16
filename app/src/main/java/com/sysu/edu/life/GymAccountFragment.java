@@ -19,27 +19,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class GymAccountFragment extends Fragment {
 
-    final OkHttpClient http = new OkHttpClient.Builder().build();
+    HttpManager http;
     GymReservationViewModel viewModel;
-    Handler handler;
 
     @Nullable
     @Override
@@ -50,7 +44,7 @@ public class GymAccountFragment extends Fragment {
         ConcatAdapter concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -58,9 +52,9 @@ public class GymAccountFragment extends Fragment {
                     params.toast(R.string.no_wifi_warning);
                     // 处理错误
                 } else {
-                    if (msg.getData().getBoolean("isJson")) {
+                    if (msg.getData().getBoolean("isJSON")) {
                         if (msg.what == 0) {
-                            JSONObject json = JSONObject.parseObject(Objects.requireNonNull(msg.getData().getString("data")));
+                            JSONObject json = JSONObject.parseObject(Objects.requireNonNull((String) msg.obj));
 
                             String[] keys = {"Type", "Name", "HostKey", "UserId"};
                             PreferenceAdapter preferenceAdapter = new PreferenceAdapter(requireContext());
@@ -91,38 +85,18 @@ public class GymAccountFragment extends Fragment {
                     }
                 }
             }
-        };
+        });
+        http.setParams(params);
+        http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
         getAccount();
         return binding.getRoot();
     }
 
     void sendRequest(String url, int what) {
-        http.newCall(new Request.Builder()
-                .url(url)
-                .header("Accept", "application/json, text/plain, */*")
-                .header("Cookie", viewModel.token)
-                .header("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
-                .header("User-Agent", viewModel.ua)
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message message = new Message();
-                message.what = what;
-                Bundle data = new Bundle();
-                String dataString = response.body().string();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", dataString);
-                message.setData(data);
-                handler.sendMessage(message);
-            }
-        });
+        http.setCookie(viewModel.token);
+        http.setUA(viewModel.ua);
+        http.setAuthorization(viewModel.authorization.getValue());
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + url, what);
     }
 
     void getAccount() {
@@ -130,7 +104,6 @@ public class GymAccountFragment extends Fragment {
     }
 
     static
-
     class PreferenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         final ArrayList<String> titles = new ArrayList<>();

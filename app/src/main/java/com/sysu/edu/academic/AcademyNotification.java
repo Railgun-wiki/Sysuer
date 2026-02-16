@@ -59,10 +59,9 @@ public class AcademyNotification extends AppCompatActivity {
             }
         };
         IntStream.range(0, 2).forEach(_ -> {
-
-            NewsFragment p = new NewsFragment();
-            p.setListener(listener);
-            pager2Adapter.add(p);
+            NewsFragment fragment = new NewsFragment();
+            fragment.setListener(listener);
+            pager2Adapter.add(fragment);
         });
         binding.pager.setAdapter(pager2Adapter);
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(new int[]{R.string.academic_affair_notice, R.string.school_affair_notice}[position])).attach();
@@ -76,48 +75,32 @@ public class AcademyNotification extends AppCompatActivity {
                     if (response != null && response.getInteger("code").equals(200)) {
                         if (response.get("data") != null) {
                             switch (msg.what) {
-                                case 0:
-                                case 1:
-                                    response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) pager2Adapter.getItem(msg.what)).add((JSONObject) a));
-                                    break;
-                                case 2:
-                                    startActivity(new Intent(AcademyNotification.this, BrowserActivity.class).putExtra("data", """
-                                                    <!DOCTYPE html><html><head><style>
-                                                    body{
-                                                    padding: 24px !important;
-                                                    }
-                                                    a,body,p,span{
-                                                    font-size: 2.5rem !important;
-                                                    line-height: 2.0 !important;
-                                                     }
-                                                     table{
-                                                    table-layout: auto !important;
-                                                    width: 100% !important;
-                                                     }
-                                                     table,th, td
-                                                            {
-                                                    font-size: 1.0rem !important;
-                                                    line-height: 1.0 !important;
-                                                            border-collapse: collapse !important;
-                                                                border: 2px solid windowtext !important;
-                                                            }
-                                                    </style></head><body>
-                                                    """ + response.getString("data") + "</body></html>"),
-                                            ActivityOptionsCompat.makeSceneTransitionAnimation(AcademyNotification.this, binding.toolbar, "miniapp").toBundle());
-//                                    dialog.setMessage(Html.fromHtml(response.getString("data"), Html.FROM_HTML_MODE_COMPACT));
-//                                    dialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.copy), (_, _) -> params.copy("content", response.getString("data")));
-//                                    dialog.show();
-//                                    Markwon.builder(AcademyNotification.this).usePlugin(HtmlPlugin.create().addHandler(new TagHandler() {
-//                                        @Override
-//                                        public void handle(@NonNull MarkwonVisitor visitor, @NonNull MarkwonHtmlRenderer renderer, @NonNull HtmlTag tag) {
-//                                        }
-//
-//                                        @NonNull
-//                                        @Override
-//                                        public Collection<String> supportedTags() {
-//                                            return Collections.emptyList();
-//                                        }
-//                                    })).build().setMarkdown(Objects.requireNonNull(dialog.findViewById(android.R.id.message)), response.getString("data"));
+                                case 0, 1 ->
+                                        response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) pager2Adapter.getItem(msg.what)).add((JSONObject) a));
+                                case 2 ->
+                                        startActivity(new Intent(AcademyNotification.this, BrowserActivity.class).putExtra("data", """
+                                                        <!DOCTYPE html><html><head><style>
+                                                        body{
+                                                        padding: 24px !important;
+                                                        }
+                                                        a,body,p,span{
+                                                        font-size: 2.5rem !important;
+                                                        line-height: 2.0 !important;
+                                                         }
+                                                         table{
+                                                        table-layout: auto !important;
+                                                        width: 100% !important;
+                                                         }
+                                                         table,th, td
+                                                                {
+                                                        font-size: 1.0rem !important;
+                                                        line-height: 1.0 !important;
+                                                                border-collapse: collapse !important;
+                                                                    border: 2px solid windowtext !important;
+                                                                }
+                                                        </style></head><body>
+                                                        """ + response.getString("data") + "</body></html>"),
+                                                ActivityOptionsCompat.makeSceneTransitionAnimation(AcademyNotification.this, binding.toolbar, "miniapp").toBundle());
                             }
                         }
                     } else {

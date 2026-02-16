@@ -247,6 +247,7 @@ public class BrowserActivity extends AppCompatActivity {
             if (web.canGoForward()) web.goForward();
         });
         initWeb(web);
+        webSettings = web.getSettings();
         if (getIntent().hasExtra("data") && getIntent().getStringExtra("data") != null) {
             webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36");
             web.loadDataWithBaseURL("https://jwxt.sysu.edu.cn", Objects.requireNonNull(getIntent().getStringExtra("data")), "text/html", "utf-8", "https://jwxt.sysu.edu.cn");

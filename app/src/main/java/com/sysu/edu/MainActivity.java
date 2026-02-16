@@ -240,11 +240,11 @@ public class MainActivity extends AppCompatActivity {
                         .create();
                 updateDialog.show();
                 Markwon.builder(MainActivity.this).build().setMarkdown(Objects.requireNonNull(updateDialog.findViewById(android.R.id.message)), response.getString("description"));
-            } else if (version > responseVersion) {
+            } /*else if (version > responseVersion) {
                 params.toast(getString(R.string.app_modfied_detected));
             }else {
                 params.toast(getString(R.string.app_latest_installed));
-            }
+            }*/
         } catch (PackageManager.NameNotFoundException _) {}
     }
 

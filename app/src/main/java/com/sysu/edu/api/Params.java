@@ -270,19 +270,15 @@ public class Params {
                 }
                 toast(R.string.logging_in);
                 LoginViewModel model = new ViewModelProvider(activity).get(LoginViewModel.class);
-                WebView web = initLoginWebView(activity, model, () -> model.setUrl(String.format("""
-                        javascript:(function(){\
-                        function waitElement(selector, callback) {\
-                        const element = document.querySelector(selector);\
-                        if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}\
-                        waitElement('.para-widget-account-psw', () => {\
-                        var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()""", account, password)));
+                WebView web = initLoginWebView(activity, model, true);
                 initLoginModel(activity, model, url, () -> {
                     afterLogin.run();
+//                    model.setUrl("about:blank");
+//                    if(!isEmpty(getCookie()))
                     web.destroy();
                     toast(R.string.login_successfully);
                 });
-//                ((FrameLayout)activity.findViewById(android.R.id.content)).addView(web);
+//                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
             }
             default -> gotoLogin(view, intent);
         }
