@@ -32,6 +32,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentCourseSelectionSelectedBinding;
 import com.sysu.edu.databinding.ItemCourseSelectionBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,12 +129,12 @@ public class CourseSelectionSelectedFragment extends Fragment {
         http.setParams(params);
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE");
         adapter.setSelectAction(position -> {
-            if (adapter.getItem(position).getInteger("selectedStatus") == 3 || adapter.getItem(position).getInteger("selectedStatus") == 4) {
+            if (adapter.get(position).getInteger("selectedStatus") == 3 || adapter.get(position).getInteger("selectedStatus") == 4) {
                 unselect(adapter.convert(position, "courseId"), adapter.convert(position, "teachingClassId"),
-                        adapter.getItem(position).getString("selectedType"));
+                        adapter.get(position).getString("selectedType"));
             } else {
                 select(adapter.convert(position, "teachingClassId"), adapter.convert(position, "selectedType"),
-                        adapter.getItem(position).getString("courseCateCode"));
+                        adapter.get(position).getString("courseCateCode"));
             }
         });
         adapter.setLikeAction(this::setPNP);
@@ -184,17 +185,11 @@ public class CourseSelectionSelectedFragment extends Fragment {
         layoutManager.setSpanCount(params.getColumn());
     }
 
-    static class CourseSelectedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    static class CourseSelectedAdapter extends RecyclerAdapter<JSONObject> {
 
         final String[] info = new String[]{"credit", "teachingClassNum", "scheduleExamTime", "examFormName"};
-        final ArrayList<JSONObject> data = new ArrayList<>();
         Consumer<Integer> selectAction;
         BiConsumer<String, String> likeAction;
-
-        public void add(JSONObject e) {
-            data.add(e);
-            notifyItemInserted(getItemCount() - 1);
-        }
 
         @NonNull
         @Override
@@ -214,13 +209,8 @@ public class CourseSelectionSelectedFragment extends Fragment {
             };
         }
 
-
         public void setSelectAction(Consumer<Integer> action) {
             this.selectAction = action;
-        }
-
-        public JSONObject getItem(int position) {
-            return data.get(position);
         }
 
         @Override
@@ -228,7 +218,7 @@ public class CourseSelectionSelectedFragment extends Fragment {
             ItemCourseSelectionBinding binding = ItemCourseSelectionBinding.bind(holder.itemView);
             Context context = binding.getRoot().getContext();
             binding.courseName.setText(String.format("%s-%s", convert(position, "courseNum"), convert(position, "courseName")));
-            JSONObject item = data.get(position);
+            JSONObject item = get(position);
             Integer status = item.getInteger("status");
             binding.select.setSelected(status == 3 || status == 4);
 
@@ -254,29 +244,16 @@ public class CourseSelectionSelectedFragment extends Fragment {
             ArrayList<String> infoList = new ArrayList<>(Arrays.asList(seatInfoLabels));
             infoList.remove(1);
             for (int i = 0; i < info.length; i++) {
-                String content = convert(position, info[i]);
-                ((Chip) binding.courseInfo.getChildAt(i)).setText(String.format("%s：%s", courseInfoLabels[i], content));
+                ((Chip) binding.courseInfo.getChildAt(i)).setText(String.format("%s：%s", courseInfoLabels[i], convert(position, info[i])));
             }
             String[] seats = new String[]{"baseReceiveNum", "selectCount"};
             for (int i = 0; i < seats.length; i++) {
-                String content = convert(position, seats[i]);
-                (new MaterialButton[]{binding.left, binding.selected}[i]).setText(String.format("%s\n%s", infoList.get(i), content));
+                (new MaterialButton[]{binding.left, binding.selected}[i]).setText(String.format("%s\n%s", infoList.get(i), convert(position, seats[i])));
             }
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
         }
 
         public String convert(int position, String key) {
             return trim(data.get(position).getString(key)).replace("\n\n", "\n");
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
         }
 
         public void setLikeAction(BiConsumer<String, String> action) {

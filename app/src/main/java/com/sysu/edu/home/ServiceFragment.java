@@ -30,10 +30,9 @@ import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentServiceBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemServiceBoxBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.stream.IntStream;
 
 import io.noties.markwon.Markwon;
@@ -208,50 +207,22 @@ public class ServiceFragment extends Fragment {
 
     void updateService() {
         IntStream.range(0, collectionAdapter.getItemCount()).forEach(i -> {
-            collectionAdapter.getItem(i);
-            db.updateServicePosition(collectionAdapter.getItem(i).getInteger("id"), i);
+            collectionAdapter.get(i);
+            db.updateServicePosition(collectionAdapter.get(i).getInteger("id"), i);
         });
     }
 
-    static class CollectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final ArrayList<JSONObject> serviceNames = new ArrayList<>();
-
+    static class CollectionAdapter extends RecyclerAdapter<JSONObject> {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {
-            };
+            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {};
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            ((TextView) holder.itemView).setText(serviceNames.get(position).getString("name"));
-
-        }
-
-        @Override
-        public int getItemCount() {
-            return serviceNames.size();
-        }
-
-        public void add(JSONObject service) {
-            serviceNames.add(service);
-            notifyItemInserted(serviceNames.size() - 1);
-        }
-
-        public void swap(int position1, int position2) {
-            Collections.swap(serviceNames, position1, position2);
-            notifyItemMoved(position1, position2);
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            serviceNames.clear();
-            notifyItemRangeRemoved(0, tmp);
-        }
-
-        public JSONObject getItem(int position) {
-            return serviceNames.get(position);
+            ((TextView) holder.itemView).setText(data.get(position).getString("name"));
+            super.onBindViewHolder(holder, position);
         }
     }
 }

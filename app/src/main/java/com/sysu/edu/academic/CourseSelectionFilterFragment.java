@@ -1,5 +1,8 @@
 package com.sysu.edu.academic;
 
+import static android.text.TextUtils.isEmpty;
+
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -7,6 +10,7 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -18,23 +22,24 @@ import androidx.navigation.Navigation;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.transition.MaterialContainerTransform;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
-import com.sysu.edu.databinding.FragmentCourseQueryBinding;
+import com.sysu.edu.databinding.FragmentCourseFilterBinding;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class CourseFilterFragment extends Fragment {
+public class CourseSelectionFilterFragment extends Fragment {
 
     HttpManager http;
     HashMap<String, String> filterValue = new HashMap<>();
     HashMap<String, String> filterName = new HashMap<>();
     CourseSelectionViewModel vm;
-    FragmentCourseQueryBinding binding;
+    FragmentCourseFilterBinding binding;
     Params params;
     NavController navController;
 
@@ -45,7 +50,7 @@ public class CourseFilterFragment extends Fragment {
             vm = new ViewModelProvider(requireActivity()).get(CourseSelectionViewModel.class);
             filterValue = vm.getFilterValue();
             filterName = vm.getFilterName();
-            binding = FragmentCourseQueryBinding.inflate(inflater, container, false);
+            binding = FragmentCourseFilterBinding.inflate(inflater, container, false);
             binding.container.setColumnCount(new Params(this).getColumn());
             params = new Params(this);
             params.setCallback(() -> getData(0));
@@ -129,12 +134,20 @@ public class CourseFilterFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        view.setTransitionName("miniapp");
         navController = Navigation.findNavController(view);
         binding.reset.setOnClickListener(_ -> reset());
         binding.submit.setOnClickListener(_ -> submit());
+        MaterialContainerTransform transition = new MaterialContainerTransform();
+        transition.setScrimColor(Color.TRANSPARENT);
+        transition.setAllContainerColors(requireContext().getColor(com.google.android.material.R.color.design_default_color_surface));
+        setSharedElementEnterTransition(transition);
+        setSharedElementReturnTransition(transition);
     }
 
-    private void submit() {
+
+
+    void submit() {
         vm.setReturnData(parseFilter(getMap()));
         vm.setFilterName(filterName);
         vm.setFilterValue(filterValue);
@@ -149,14 +162,18 @@ public class CourseFilterFragment extends Fragment {
                 "https://jwxt.sysu.edu.cn/jwxt/base-info/codedata/findcodedataNames?datableNumber=387"}[i], i);
     }
 
-    public HashMap<String, String> getMap() {
-        filterValue.put("course", binding.course.getText() == null ? "" : binding.course.getText().toString());
-        filterValue.put("teacher", binding.teacher.getText() == null ? "" : binding.teacher.getText().toString());
-        filterValue.put("school", binding.school.getText() == null ? "" : binding.school.getText().toString());
-        filterName.put("course", binding.course.getText() == null ? "" : binding.course.getText().toString());
-        filterName.put("teacher", binding.teacher.getText() == null ? "" : binding.teacher.getText().toString());
-        filterName.put("school", binding.school.getText() == null ? "" : binding.school.getText().toString());
+    HashMap<String, String> getMap() {
+        filterValue.put("course", getEditText(binding.course));
+        filterValue.put("teacher", getEditText(binding.teacher));
+        filterValue.put("school", getEditText(binding.school));
+        filterName.put("course", getEditText(binding.course));
+        filterName.put("teacher", getEditText(binding.teacher));
+        filterName.put("school", getEditText(binding.school));
         return filterValue;
+    }
+
+    String getEditText(EditText editText){
+        return editText.getText() == null ? "" : editText.getText().toString();
     }
 
     String parseFilter(HashMap<String, String> filter) {
@@ -165,9 +182,7 @@ public class CourseFilterFragment extends Fragment {
         String[] key = new String[]{"courseName", "studyCampusId", "week", "classTimes", "courseUnitNum", "teachingTeacherNum", "teachingLanguageCode", "specialClassCode"};
         for (int i = 0; i < keys.length; i++) {
             String v = filter.getOrDefault(keys[i], "");
-            if (v != null && !v.isEmpty()) {
-                str.append(String.format(",\"%s\":\"%s\"", key[i], v));
-            }
+            if (isEmpty(v)) str.append(String.format(",\"%s\":\"%s\"", key[i], v));
         }
         return str.toString();
     }

@@ -2,6 +2,9 @@ package com.sysu.edu.api;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.util.ArrayList;
@@ -95,5 +98,65 @@ public class CommonUtil {
      */
     public static String[] getString(Context context, List<Integer> resource) {
         return resource.stream().mapToInt(Integer::intValue).mapToObj(context::getString).toArray(String[]::new);
+    }
+
+    /**
+     * 从 JSONArray 中提取指定键的值
+     *
+     * @param array    JSONArray 数据
+     * @param nameKey  要提取的键名
+     * @param valueKey 要提取的值键名
+     * @return 包含提取值的 Tuple2 对象，其中第一个元素为名称数组，第二个元素为值数组
+     *
+     */
+    public static Tuple2<ArrayList<String>, ArrayList<String>> extractValue(JSONArray array, String nameKey, String valueKey) {
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> values = new ArrayList<>();
+        array.forEach(i -> {
+            JSONObject item = (JSONObject) i;
+            names.add(item.getString(nameKey));
+            values.add(item.getString(valueKey));
+        });
+        return new Tuple2<>(names, values);
+    }
+
+    /**
+     * 从 JSONArray 中提取指定键的值
+     *
+     * @param array   JSONArray
+     * @param nameKey 要提取的键名
+     * @return 包含提取值的 ArrayList
+     *
+     */
+    public static ArrayList<String> extractValue(JSONArray array, String nameKey) {
+        ArrayList<String> names = new ArrayList<>();
+        array.forEach(i -> names.add(((JSONObject) i).getString(nameKey)));
+        return names;
+    }
+
+    /**
+     * 将boolean值转换为整数1或0
+     *
+     * @param bool 要转换的 boolean 值
+     * @return 转换后的整数1或0
+     *
+     */
+    public static int bool2int(boolean bool) {
+        return bool ? 1 : 0;
+    }
+
+    /**
+     * 简单的元组类，用于存储两个值
+     *
+     * @param <T>  第一个值的类型
+     * @param <T1> 第二个值的类型
+     */
+    public record Tuple2<T, T1>(T first, T1 second) {
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "(" + first + ", " + second + ")";
+        }
     }
 }

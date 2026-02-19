@@ -1,4 +1,4 @@
-package com.sysu.edu.extra;
+package com.sysu.edu.browser;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -21,7 +21,6 @@ public class JavaScript {
     public ArrayList<JSONObject> searchJS(String key) {
         ArrayList<JSONObject> list = new ArrayList<>();
         jsList.forEach(a -> {
-            //System.out.println(a);
             for (Object e : ((JSONObject) a).getJSONArray("matches")) {
                 Pattern pattern = Pattern.compile((String) e);
                 if (pattern.matcher(key).find()) {
@@ -31,11 +30,5 @@ public class JavaScript {
             }
         });
         return list;
-    }
-
-    public String[] getTitles(ArrayList<JSONObject> json) {
-        ArrayList<String> items = new ArrayList<>();
-        json.forEach(a -> items.add(a.getString("title")));
-        return items.toArray(new String[]{});
     }
 }

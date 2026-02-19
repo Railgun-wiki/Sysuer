@@ -28,7 +28,7 @@ import androidx.preference.PreferenceManager;
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.MainActivity;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.BrowserActivity;
+import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.login.LoginActivity;
 import com.sysu.edu.login.LoginViewModel;
 

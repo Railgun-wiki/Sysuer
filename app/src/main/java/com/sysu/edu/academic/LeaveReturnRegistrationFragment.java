@@ -28,6 +28,7 @@ import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.databinding.DialogRegionBinding;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.databinding.ItemTitleBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.StaggeredFragment;
 
@@ -313,9 +314,8 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
         http.getRequest(authorizationManager.getBaseUrl() + "jjrlfx/api/sm-jjrlfx/student/city/drop?fdm=" + province, 5);
     }
 
-    static class OneColumnAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    static class OneColumnAdapter extends RecyclerAdapter<String> {
 
-        final ArrayList<String> value = new ArrayList<>();
         Consumer<Integer> action;
         int selection = -1;
 
@@ -323,17 +323,6 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
-        }
-
-        public void add(String value) {
-            this.value.add(value);
-            notifyItemInserted(this.value.size() - 1);
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            value.clear();
-            notifyItemRangeRemoved(0, tmp);
         }
 
         public void setAction(Consumer<Integer> action) {
@@ -344,7 +333,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int pos) {
             int position = holder.getBindingAdapterPosition();
             ItemTitleBinding binding = ItemTitleBinding.bind(holder.itemView);
-            binding.title.setText(value.get(position));
+            binding.title.setText(get(position));
             binding.getRoot().setBackgroundResource(position == selection ? R.drawable.bg_selected : R.drawable.box_background);
             binding.getRoot().setOnClickListener(_ -> {
                 if (action != null)
@@ -354,19 +343,14 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
             });
         }
 
-        @Override
-        public int getItemCount() {
-            return value.size();
-        }
-
         public String getResult() {
             if (selection == -1)
                 return "";
-            return value.get(selection);
+            return get(selection);
         }
 
         public void setResult(String result) {
-            if (value.contains(result)) selection = value.indexOf(result);
+            if (data.contains(result)) selection = data.indexOf(result);
         }
     }
 }

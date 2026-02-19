@@ -23,15 +23,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.BrowserActivity;
 import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ActivityNewsBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.Pager2Adapter;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
@@ -129,25 +129,12 @@ public class NewsActivity extends AppCompatActivity {
         http.postRequest(authorizationManager.getBaseUrl() + "ai_service/search-server/needle/suggest", String.format("{\"aliasName\":\"collection_data\",\"keyWord\":\"%s\"}", keyword), 1);
     }
 
-    static class SuggestionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final ArrayList<String> data = new ArrayList<>();
-
-        public void add(String a) {
-            data.add(a);
-            notifyItemInserted(getItemCount() - 1);
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
-        }
+    static class SuggestionAdapter extends RecyclerAdapter<String> {
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sug, parent, false)) {
-            };
+            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sug, parent, false)) {};
         }
 
         @Override
@@ -155,11 +142,7 @@ public class NewsActivity extends AppCompatActivity {
             ((TextView) holder.itemView).setText(data.get(position));
             Context context = holder.itemView.getContext();
             holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(String.format("https://iportal.sysu.edu.cn/searchWeb/#/index?searchWord=%s&module=default&size=10&current=1&sortType=score&searchType=3", data.get(position)))), ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context, v, "miniapp").toBundle()));
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
+            super.onBindViewHolder(holder, position);
         }
     }
 }

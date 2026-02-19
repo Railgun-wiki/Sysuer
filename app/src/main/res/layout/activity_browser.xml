@@ -59,6 +59,14 @@
                     app:icon="@drawable/js" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/website"
+                    style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/web"
+                    app:icon="@drawable/web" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu"
                     style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
                     android:layout_width="wrap_content"

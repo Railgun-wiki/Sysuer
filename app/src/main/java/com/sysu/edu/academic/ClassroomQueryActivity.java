@@ -30,6 +30,7 @@ import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityClassroomQueryBinding;
 import com.sysu.edu.databinding.ItemClassroomResultBinding;
 import com.sysu.edu.databinding.ItemFilterChipBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,7 +81,8 @@ public class ClassroomQueryActivity extends AppCompatActivity {
             dateStr = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(selection));
             binding.dateText.setText(new SimpleDateFormat("yyyy年MM月dd日", Locale.getDefault()).format(new Date(selection)));
         });
-        roomAdapter = new RoomAdapter(this);
+        roomAdapter = new RoomAdapter();
+        roomAdapter.setParams(params);
         binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         binding.result.setAdapter(roomAdapter);
         binding.result.setLayoutManager(new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL));
@@ -193,9 +195,8 @@ public class ClassroomQueryActivity extends AppCompatActivity {
         classType.clear();
         binding.typeGroup.getCheckedChipIds().forEach(e -> classType.add(((Chip) findViewById(e)).getText().toString().equals("自习室") ? "003" : "002"));
         binding.officeGroup.getCheckedChipIds().forEach(e -> {
-            if (findViewById(e).getVisibility() == View.VISIBLE) {
+            if (findViewById(e).getVisibility() == View.VISIBLE)
                 teachingBuildIDs.add(office.get(e));
-            }
         });
         if (teachingBuildIDs.isEmpty()) {
             Message message = new Message();
@@ -207,57 +208,41 @@ public class ClassroomQueryActivity extends AppCompatActivity {
         http.postRequest("https://jwxt.sysu.edu.cn/jwxt/schedule/agg/selfStudyClassRoom/pageListStudyClassroom", String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":20,\"param\":{\"dateStr\":\"%s\",\"teachingBuildIDs\":%s,\"startClassTimes\":%s,\"endClassTimes\":%s,\"classRoomTagList\":%s}}", page++, dateStr, JSON.toJSONString(teachingBuildIDs), startClassTime, endClassTime, JSON.toJSONString(classType)), 3);
     }
 
-    static class RoomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final Context context;
-        final ArrayList<JSONObject> json = new ArrayList<>();
+    static class RoomAdapter extends RecyclerAdapter<JSONObject> {
 
-        public RoomAdapter(Context context) {
-            this.context = context;
-        }
-
-        public void add(JSONObject jsonobject) {
-            json.add(jsonobject);
-            notifyItemInserted(getItemCount() - 1);
-        }
-
-        public void clear() {
-            int temp = getItemCount();
-            json.clear();
-            notifyItemRangeRemoved(0, temp);
-        }
+        Params params;
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemClassroomResultBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemClassroomResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+        }
+        public void setParams(Params params) {
+            this.params = params;
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemClassroomResultBinding binding = ItemClassroomResultBinding.bind(holder.itemView);
-            binding.location.setText(json.get(position).getString("teachingBuildingName"));
-            binding.time.setText(json.get(position).getString("classTimes"));
-            binding.floor.setText(json.get(position).getString("floor"));
-            binding.seat.setText(json.get(position).getString("seats"));
-            binding.type.setText(json.get(position).getString("classRoomTag"));
-            binding.name.setText(json.get(position).getString("classRoomNum"));
+            Context context = holder.itemView.getContext();
+            JSONObject item = get(position);
+            binding.location.setText(item.getString("teachingBuildingName"));
+            binding.time.setText(item.getString("classTimes"));
+            binding.floor.setText(item.getString("floor"));
+            binding.seat.setText(item.getString("seats"));
+            binding.type.setText(item.getString("classRoomTag"));
+            binding.name.setText(item.getString("classRoomNum"));
             Glide.with(context)
-                    .load(new GlideUrl("https://jwxt.sysu.edu.cn/jwxt/base-info/classroom/classRoomView?fileName=jspic.png&filePath=" + json.get(position).get("photoPath"), new LazyHeaders.Builder()
-                            .addHeader("Cookie", ((ClassroomQueryActivity) context).params.getCookie())
+                    .load(new GlideUrl("https://jwxt.sysu.edu.cn/jwxt/base-info/classroom/classRoomView?fileName=jspic.png&filePath=" + item.get("photoPath"), new LazyHeaders.Builder()
+                            .addHeader("Cookie", params.getCookie())
                             .addHeader("Referer", "https://jwxt.sysu.edu.cn/jwxt//yd/studyRoom/")
                             .build()))
                     .placeholder(R.drawable.logo)
                     .override((int) (145 * 3.6), (int) (132 * 3.6))
                     .fitCenter()
                     .into(binding.image);
-            binding.getRoot().setOnClickListener(_ -> {
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return json.size();
+            binding.getRoot().setOnClickListener(_ -> {});
+            super.onBindViewHolder(holder, position);
         }
     }
 }

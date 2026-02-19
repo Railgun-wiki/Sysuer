@@ -27,8 +27,8 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemEvaluationBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -44,7 +44,7 @@ public class EvaluationCourseFragment extends Fragment {
         Params params = new Params(this);
         StaggeredGridLayoutManager sgm = new StaggeredGridLayoutManager(params.getColumn(), 1);
         binding.getRoot().setLayoutManager(sgm);
-        CourseEvaluationAdapter adp = new CourseEvaluationAdapter(requireContext());
+        CourseEvaluationAdapter adp = new CourseEvaluationAdapter();
         binding.getRoot().setAdapter(adp);
         adp.setKeys(new String[]{"kcmc", "skjsmc", "kcdlmc", "kkyxmc", "bjmc", "kcdm", "xnxqmc", "lsjgzt"});
         adp.setValues(new String[]{"%s", "教师：%s", "课程类型：%s", "开课院系：%s", "教学班号：%s", "课程代码：%s", "学期：%s", "评价状态：%s"});
@@ -88,35 +88,20 @@ public class EvaluationCourseFragment extends Fragment {
     }
 
 
-    static class CourseEvaluationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final Context context;
-        final ArrayList<JSONObject> data = new ArrayList<>();
+    static class CourseEvaluationAdapter extends RecyclerAdapter<JSONObject> {
         String[] keys;
         String[] values;
         String[] params;
         int nav;
 
-        public CourseEvaluationAdapter(Context context) {
+        public CourseEvaluationAdapter() {
             super();
-            this.context = context;
-        }
-
-        public void add(JSONObject e) {
-            data.add(e);
-            notifyItemInserted(data.size() - 1);
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemMoved(0, tmp);
         }
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemEvaluationBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemEvaluationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
         }
 
         public void setKeys(String[] keys) {
@@ -139,6 +124,7 @@ public class EvaluationCourseFragment extends Fragment {
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemEvaluationBinding binding = ItemEvaluationBinding.bind(holder.itemView);
             Bundle args = new Bundle();
+            Context context = holder.itemView.getContext();
             for (String param : params) args.putString(param, data.get(position).getString(param));
             Drawable drawable = AppCompatResources.getDrawable(context, Objects.equals(data.get(position).getString("lsjgzt"), "2") ? R.drawable.submit : R.drawable.window);
             if (drawable != null) drawable.setBounds(0, 0, 72, 72);
@@ -146,18 +132,12 @@ public class EvaluationCourseFragment extends Fragment {
             binding.title.setCompoundDrawablePadding(36);
             binding.open.setOnClickListener(_ -> ((NavHostFragment) Objects.requireNonNull(((AppCompatActivity) context).getSupportFragmentManager().findFragmentById(R.id.fragment))).getNavController().navigate(nav, args));
             holder.itemView.setOnClickListener(_ -> {
-
             });
             binding.title.setText(String.format(values[0], data.get(position).getString(keys[0]) == null ? "" : data.get(position).getString(keys[0])));
             StringBuilder val = new StringBuilder();
             for (int i = 1; i < keys.length; i++)
                 val.append(String.format(values[i], Objects.equals(keys[i], "lsjgzt") ? Map.of("0", "待评价", "2", "已评价", "3", "已保存").getOrDefault(data.get(position).getString(keys[i]), "未知") : data.get(position).getString(keys[i]) == null ? "" : data.get(position).getString(keys[i]))).append("\n");
             binding.startTime.setText(val.toString().trim());
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
         }
     }
 }

@@ -29,10 +29,10 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentCourseSelectionPreviewBinding;
 import com.sysu.edu.databinding.ItemEvaluationBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import org.commonmark.node.Node;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -121,17 +121,14 @@ public class CourseSelectionPreviewFragment extends Fragment {
                         page++, type.getValue() == null ? 1 : type.getValue(), vm.getReturnData()), 0);
     }
 
-    static class CourseSelectionPreviewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-        final ArrayList<JSONObject> data = new ArrayList<>();
+    static class CourseSelectionPreviewAdapter extends RecyclerAdapter<JSONObject> {
 
         final String[] key = new String[]{"courseName", "courseCategoryName", "courseUnitName", "scheduleExamTime", "examFormName", "credit", "teachingClassId", "teachingClassNum", "teachingClassName", "courseNum"};
         final String[] name = new String[]{"课程名称", "课程类别", "开设学院", "考试时间", "考核方式", "学分", "教学班ID", "教学班号", "教学班名", "课程号"};
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemEvaluationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemEvaluationBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
         }
 
         @Override
@@ -163,22 +160,6 @@ public class CourseSelectionPreviewFragment extends Fragment {
                     });
                 }
             }, TablePlugin.create(binding.getRoot().getContext()))).build().setMarkdown(binding.startTime, md.toString());
-        }
-
-        public void add(JSONObject item) {
-            data.add(item);
-            notifyItemInserted(getItemCount() - 1);
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
         }
     }
 }

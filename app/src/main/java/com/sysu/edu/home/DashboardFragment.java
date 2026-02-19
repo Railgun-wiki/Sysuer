@@ -47,6 +47,7 @@ import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentDashboardBinding;
 import com.sysu.edu.databinding.ItemCourseBinding;
 import com.sysu.edu.databinding.ItemExamBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.todo.InitTodo;
 import com.sysu.edu.todo.TodoFragment;
 import com.sysu.edu.todo.info.TodoInfo;
@@ -395,8 +396,8 @@ public class DashboardFragment extends Fragment {
 
     void updateShortcut() {
         IntStream.range(0, collectionAdapter.getItemCount()).forEach(i -> {
-            collectionAdapter.getItem(i);
-            db.updateDashboardShortcutPosition(collectionAdapter.getItem(i).getInteger("id"), i);
+            collectionAdapter.get(i);
+            db.updateDashboardShortcutPosition(collectionAdapter.get(i).getInteger("id"), i);
         });
     }
 
@@ -446,10 +447,9 @@ public class DashboardFragment extends Fragment {
     }
 }
 
-class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class CourseAdapter extends RecyclerAdapter<JSONObject> {
     final Params params;
     final Context context;
-    final ArrayList<JSONObject> data = new ArrayList<>();
     BiConsumer<JSONObject, View> onClick;
 
     public CourseAdapter(Context context) {
@@ -458,23 +458,10 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.params = new Params((FragmentActivity) context);
     }
 
-    public void set(ArrayList<JSONObject> d) {
-        clear();
-        data.addAll(d);
-        notifyItemRangeInserted(0, getItemCount());
-    }
-
-    public void clear() {
-        int temp = getItemCount();
-        data.clear();
-        notifyItemRangeRemoved(0, temp);
-    }
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemCourseBinding.inflate(LayoutInflater.from(context)).getRoot()) {
-        };
+        return new RecyclerView.ViewHolder(ItemCourseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
     }
 
     public void setOnClick(BiConsumer<JSONObject, View> onClick) {
@@ -485,14 +472,14 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemCourseBinding binding = ItemCourseBinding.bind(holder.itemView);
         BiConsumer<Integer, String> a = (id, s) -> {
-            ((TextView) holder.itemView.findViewById(id)).setText(data.get(position).getString(s));
+            ((TextView) holder.itemView.findViewById(id)).setText(get(position).getString(s));
             holder.itemView.findViewById(id).setOnLongClickListener(_ -> {
-                params.copy(s + "：", data.get(position).getString(s));
+                params.copy(s + "：", get(position).getString(s));
                 params.toast(R.string.copy_successfully);
                 return true;
             });
         };
-        holder.itemView.setOnClickListener(v -> onClick.accept(data.get(position), v));
+        holder.itemView.setOnClickListener(v -> onClick.accept(get(position), v));
         a.accept(R.id.course_title, "courseName");
         a.accept(R.id.location_container, "teachingPlace");
         a.accept(R.id.time_container, "time");
@@ -502,15 +489,11 @@ class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TypedValue colorSurface = new TypedValue();
         context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceDim, colorSurfaceDim, true);
         context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, colorSurface, true);
-        boolean isBefore = Objects.equals(data.get(position).getString("status"), "before");
+        boolean isBefore = Objects.equals(get(position).getString("status"), "before");
         binding.courseTitle.setTextAppearance(isBefore ? com.google.android.material.R.style.TextAppearance_Material3_TitleMedium : com.google.android.material.R.style.TextAppearance_Material3_TitleMedium_Emphasized);
-        holder.itemView.getBackground().setTint(Objects.equals(data.get(position).getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
+        holder.itemView.getBackground().setTint(Objects.equals(get(position).getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
         binding.item.setAlpha(isBefore ? 0.64f : 1.0f);
-    }
-
-    @Override
-    public int getItemCount() {
-        return data.size();
+        super.onBindViewHolder(holder, position);
     }
 }
 

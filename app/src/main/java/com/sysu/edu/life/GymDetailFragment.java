@@ -30,10 +30,10 @@ import com.sysu.edu.databinding.DialogGymReservationBinding;
 import com.sysu.edu.databinding.FragmentGymDetailBinding;
 import com.sysu.edu.databinding.ItemDateBinding;
 import com.sysu.edu.databinding.ItemFieldDetailBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -88,7 +88,7 @@ public class GymDetailFragment extends Fragment {
         });
         GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 4, GridLayoutManager.HORIZONTAL, false);
         binding.field.recyclerView.setLayoutManager(gridLayoutManager);
-        FieldAdapter field = new FieldAdapter(requireContext());
+        FieldAdapter field = new FieldAdapter();
         binding.field.recyclerView.setAdapter(field);
         id = requireArguments().getString("id");
         field.setAction((JSONObject p) -> {
@@ -358,21 +358,14 @@ public class GymDetailFragment extends Fragment {
         }
     }
 
-    static class FieldAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final Context context;
-        final ArrayList<JSONObject> field = new ArrayList<>();
-        Consumer<JSONObject> action;
+    static class FieldAdapter extends RecyclerAdapter<JSONObject> {
 
-        public FieldAdapter(Context context) {
-            super();
-            this.context = context;
-        }
+        Consumer<JSONObject> action;
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(
-                    ItemFieldDetailBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+            return new RecyclerView.ViewHolder(ItemFieldDetailBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
             };
         }
 
@@ -385,44 +378,26 @@ public class GymDetailFragment extends Fragment {
             int position = holder.getBindingAdapterPosition();
             ItemFieldDetailBinding binding = ItemFieldDetailBinding.bind(holder.itemView);
             binding.fieldDetail.setAlpha(1.0f);
-            JSONObject item = field.get(position);
+            JSONObject item = get(position);
+            Context context = holder.itemView.getContext();
             binding.getRoot().setOnClickListener(_ -> {
-                if (item.getInteger("Type") == 1 && item.getInteger("AvailableCapacity") > 0) {
+                if (item.getInteger("Type") == 1 && item.getInteger("AvailableCapacity") > 0)
                     action.accept(item);
-                }
             });
             switch (item.getInteger("Type")) {
-                case 0:
+                case 0->
                     binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("VenueName")));
-                    break;
-                case 2:
+                case 2->
                     binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("Name")));
-                    break;
-                case 1:
+                case 1-> {
                     if (item.getInteger("AvailableCapacity") == 0) {
                         binding.fieldDetail.setText(context.getString(R.string.reserved));
                         binding.fieldDetail.setAlpha(0.5f);
                     } else {
                         binding.fieldDetail.setText(context.getString(R.string.reservable));
                     }
-                    break;
+                }
             }
-        }
-
-        void add(JSONObject data) {
-            field.add(data);
-            notifyItemInserted(field.size() - 1);
-        }
-
-        void clear() {
-            int tmp = field.size();
-            field.clear();
-            notifyItemRangeRemoved(0, tmp);
-        }
-
-        @Override
-        public int getItemCount() {
-            return field.size();
         }
 
     }

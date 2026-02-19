@@ -23,6 +23,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityGradeBinding;
 import com.sysu.edu.databinding.ItemScoreBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;
@@ -287,8 +288,8 @@ public class GradeActivity extends AppCompatActivity {
         http.getRequest("https://jwxt.sysu.edu.cn/jwxt/achievement-manage/score-check/getPull", 2);
     }
 
-    static class ScoreAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final ArrayList<JSONObject> data = new ArrayList<>();
+    static class ScoreAdapter extends RecyclerAdapter<JSONObject> {
+
         Consumer<Integer> action;
 
         @NonNull
@@ -302,16 +303,16 @@ public class GradeActivity extends AppCompatActivity {
         }
 
         public void setGrade(int position, String grade) {
-            data.get(position).put("originalScore", grade);
+            get(position).put("originalScore", grade);
             notifyItemChanged(position);
         }
 
         public String getLevel(int position) {
-            return data.get(position).getString("scoFinalScore");
+            return get(position).getString("scoFinalScore");
         }
 
         public String getClassNumber(int position) {
-            return data.get(position).getString("scoCourseNumber");
+            return get(position).getString("scoCourseNumber");
         }
 
         @Override
@@ -338,22 +339,6 @@ public class GradeActivity extends AppCompatActivity {
                     info.getString("scoCourseNumber"),
                     info.getString("teachClassNumber"),
                     (info.getString("originalScore") == null ? binding.getRoot().getContext().getString(R.string.click_for_grade) : Objects.requireNonNull(grade.getValue()) + "=" + info.getString("originalScore"))));
-        }
-
-        public void add(JSONObject a) {
-            data.add(a);
-            notifyItemInserted(getItemCount() - 1);
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
         }
     }
 }

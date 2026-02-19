@@ -1,7 +1,8 @@
-package com.sysu.edu.academic;
+package com.sysu.edu.browser;
 
 import static com.sysu.edu.api.CommonUtil.trim;
 import static com.sysu.edu.api.DownloadManager.downloadFile;
+import static com.sysu.edu.api.FileManager.readAssets;
 import static com.sysu.edu.login.LoginManager.initWeb;
 
 import android.annotation.SuppressLint;
@@ -12,7 +13,6 @@ import android.os.Environment;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
@@ -30,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewbinding.ViewBinding;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -38,20 +39,17 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.sysu.edu.R;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ActivityBrowserBinding;
-import com.sysu.edu.databinding.DialogGridBinding;
 import com.sysu.edu.databinding.DialogJsBinding;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
-import com.sysu.edu.extra.JavaScript;
+import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.AdapterListener;
+import com.sysu.edu.view.GridDialog;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -65,6 +63,7 @@ public class BrowserActivity extends AppCompatActivity {
     CookieManager cookie;
     MutableLiveData<Integer> progress = new MutableLiveData<>();
     MaterialButton refreshButton;
+    BrowserHelper db;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -72,36 +71,23 @@ public class BrowserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityBrowserBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        db = new BrowserHelper(this);
         binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
         Params params = new Params(this);
-        StringBuilder result = new StringBuilder();
         String url = getIntent().getDataString() != null ? getIntent().getDataString() : "https://www.sysu.edu.cn/";
-        try {
-            InputStreamReader input = new InputStreamReader(getAssets().open("js.json"));
-            BufferedReader buffer = new BufferedReader(input);
-            String line;
-            while ((line = buffer.readLine()) != null) result.append(line);
-            input.close();
-            buffer.close();
-        } catch (IOException _) {}
-        JavaScript js = new JavaScript(result.toString());
+        JavaScript js = new JavaScript(readAssets(this, "js.json"));
         web = binding.web;
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url1 = String.valueOf(request.getUrl());
-//                if (Pattern.compile("//jwxt.sysu.edu.cn/jwxt/system-manage/infoRelease/downloadFile", Pattern.DOTALL).matcher(url1).find()) {
-//                    view.loadUrl(url1,Map.of("Cookie", cookie.getCookie(url1), "Referer", "https://jwxt.sysu.edu.cn/jwxt/"));
-//                }else{
-                view.loadUrl(url1);
-//                }
+                view.loadUrl(String.valueOf(request.getUrl()));
                 return true;
             }
 
             @Nullable
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                String url1 = request.getUrl().toString();
+                String url1 = String.valueOf(request.getUrl());
                 if (Pattern.compile("//jwxt.sysu.edu.cn/jwxt/system-manage/infoRelease/downloadFile", Pattern.DOTALL).matcher(url1).find()) {
                     try {
                         Response response = new OkHttpClient().newCall(new Request.Builder().url(url1)
@@ -183,6 +169,59 @@ public class BrowserActivity extends AppCompatActivity {
                     .header("Cookie", cookie.getCookie(url1))
                     .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/").build(), fileName);
         });
+
+        /*
+         * 脚本弹窗
+         * */
+        BottomSheetDialog jsDialog = new BottomSheetDialog(BrowserActivity.this);
+        DialogJsBinding JSBinding = DialogJsBinding.inflate(getLayoutInflater());
+        jsDialog.setContentView(JSBinding.getRoot());
+        jsDialog.setTitle(R.string.js);
+        JSAdapter jsAdapter = new JSAdapter();
+        jsAdapter.setListener(new AdapterListener() {
+            @Override
+            public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                holder.itemView.setOnClickListener(_ -> web.evaluateJavascript(jsAdapter.get(position).getString("script"), null));
+            }
+
+            @Override
+            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
+            }
+        });
+
+        RecyclerView jsList = JSBinding.recyclerView.getRoot();
+        jsList.setLayoutManager(new LinearLayoutManager(BrowserActivity.this));
+        jsList.setAdapter(jsAdapter);
+
+        /*
+         * 菜单弹窗
+         * */
+        GridDialog menuDialog = new GridDialog(this);
+        List<Integer> menuTitle = List.of(R.string.back, R.string.forward, R.string.refresh, R.string.exit, R.string.page_up, R.string.page_down, R.string.zoom_in, R.string.zoom_out);
+        List<Integer> menuIcon = List.of(R.drawable.left, R.drawable.right, R.drawable.refresh, R.drawable.exit, R.drawable.up, R.drawable.down, R.drawable.zoom_in, R.drawable.zoom_out);
+        List<Consumer<MaterialButton>> menuAction = List.of(_ -> goBack(), _ -> goForward(), _ -> refresh(), _ -> supportFinishAfterTransition(), _ -> pageUp(), _ -> pageDown()
+                , _ -> web.zoomIn(), _ -> web.zoomOut());
+        menuDialog.loadMenu(menuTitle, menuIcon, menuAction);
+        refreshButton = menuDialog.getMenu(2);
+
+        /*
+         * 网页弹窗
+         * */
+        GridDialog webDialog = new GridDialog(this);
+        List<Integer> webTitle = List.of(R.string.back);
+        List<Integer> webIcon = List.of(R.drawable.left);
+        List<Consumer<MaterialButton>> webAction = List.of(_ -> goBack());
+        webDialog.loadMenu(webTitle, webIcon, webAction);
+
+
+        binding.js.setOnClickListener(_ -> {
+            jsAdapter.set(js.searchJS(trim(web.getUrl())));
+            jsDialog.show();
+        });
+        binding.menu.setOnClickListener(_ -> menuDialog.show());
+        binding.website.setOnClickListener(_ -> webDialog.show());
+
+
         progress.observe(this, p -> {
             if (p == 100) {
                 refreshButton.setIconResource(R.drawable.refresh);
@@ -192,34 +231,6 @@ public class BrowserActivity extends AppCompatActivity {
                 refreshButton.setText(R.string.stop);
             }
         });
-        BottomSheetDialog jsDialog = new BottomSheetDialog(BrowserActivity.this);
-        DialogJsBinding JSBinding = DialogJsBinding.inflate(getLayoutInflater());
-        jsDialog.setContentView(JSBinding.getRoot());
-        jsDialog.setTitle(R.string.js);
-        RecyclerView recyclerView = JSBinding.recyclerView.getRoot();
-        JSAdapter jsAdapter = new JSAdapter(web);
-        recyclerView.setLayoutManager(new LinearLayoutManager(BrowserActivity.this));
-        recyclerView.setAdapter(jsAdapter);
-
-        BottomSheetDialog menuDialog = new BottomSheetDialog(BrowserActivity.this);
-        DialogGridBinding menuBinding = DialogGridBinding.inflate(getLayoutInflater());
-        List<Integer> menuTitle = List.of(R.string.back, R.string.forward, R.string.refresh, R.string.exit, R.string.page_up, R.string.page_down, R.string.zoom_in, R.string.zoom_out);
-        List<Integer> menuIcon = List.of(R.drawable.left, R.drawable.right, R.drawable.refresh, R.drawable.exit, R.drawable.up, R.drawable.down, R.drawable.zoom_in, R.drawable.zoom_out);
-        List<Consumer<MaterialButton>> menuAction = List.of(_ -> goBack(), _ -> goForward(), _ -> refresh(), _ -> supportFinishAfterTransition(), _ -> pageUp(), _ -> pageDown()
-                , _ -> web.zoomIn(), _ -> web.zoomOut());
-        int[] referenceIds = loadMenu(menuBinding, menuTitle, menuIcon, menuAction);
-        menuDialog.setContentView(menuBinding.getRoot());
-
-        refreshButton = menuBinding.getRoot().findViewById(referenceIds[2]);
-        binding.js.setOnClickListener(_ -> {
-            jsAdapter.setJS(js.searchJS(trim(web.getUrl())));
-            jsDialog.show();
-        });
-        binding.menu.setOnClickListener(_ -> {
-            menuBinding.grid.setReferencedIds(referenceIds);
-            menuDialog.show();
-        });
-
         cookie = CookieManager.getInstance();
         Menu menu = binding.toolbar.getMenu();
         menu.add(R.string.open_in_browser).setOnMenuItemClickListener(_ -> {
@@ -278,27 +289,6 @@ public class BrowserActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    int[] loadMenu(DialogGridBinding binding, List<Integer> menuTitle, List<Integer> menuIcon, List<Consumer<MaterialButton>> menuAction) {
-        ArrayList<Integer> ids = new ArrayList<>();
-        IntStream.range(0, menuTitle.size()).forEach(i -> {
-            MaterialButton menu = new MaterialButton(this, null, androidx.appcompat.R.attr.borderlessButtonStyle);
-            menu.setText(menuTitle.get(i));
-            menu.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_TOP);
-            if (menuIcon.size() > i && menuIcon.get(i) != 0)
-                menu.setIconResource(menuIcon.get(i));
-            int id = View.generateViewId();
-            ids.add(id);
-            menu.setId(id);
-            if (menuAction.size() > i && menuAction.get(i) != null)
-                menu.setOnClickListener(_ -> menuAction.get(i).accept(menu));
-            binding.getRoot().addView(menu);
-        });
-        int[] referenceIds = ids.stream().mapToInt(Integer::intValue).toArray();
-        binding.grid.setReferencedIds(referenceIds);
-        binding.grid.setRows((menuTitle.size() + 3) / 4);
-        return referenceIds;
-    }
-
     void goBack() {
         if (web.canGoBack()) web.goBack();
     }
@@ -323,27 +313,7 @@ public class BrowserActivity extends AppCompatActivity {
         web.pageDown(true);
     }
 
-    static class JSAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final WebView web;
-        ArrayList<JSONObject> data = new ArrayList<>();
-
-        public JSAdapter(WebView web) {
-            super();
-            this.web = web;
-        }
-
-        public void setJS(ArrayList<JSONObject> list) {
-            clear();
-            data = list;
-            notifyItemRangeInserted(0, getItemCount());
-        }
-
-        public void clear() {
-            int size = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, size);
-        }
-
+    static class JSAdapter extends RecyclerAdapter<JSONObject> {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -354,18 +324,12 @@ public class BrowserActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemPreferenceBinding binding = ItemPreferenceBinding.bind(holder.itemView);
-            binding.itemTitle.setText(data.get(position).getString("title"));
-            binding.itemContent.setText(data.get(position).getString("description"));
+            JSONObject item = get(position);
+            binding.itemTitle.setText(item.getString("title"));
+            binding.itemContent.setText(item.getString("description"));
             binding.itemIcon.setImageResource(R.drawable.js);
             binding.getRoot().updateAppearance(position, getItemCount());
-            binding.getRoot().setOnClickListener(_ -> web.evaluateJavascript(data.get(position).getString("script"), _ -> {
-            }));
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
+            super.onBindViewHolder(holder, position);
         }
     }
-
 }

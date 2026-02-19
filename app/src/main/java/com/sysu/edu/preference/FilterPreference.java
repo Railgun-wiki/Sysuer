@@ -62,7 +62,7 @@ public class FilterPreference extends ListPreference {
         binding.textField.setSelection(binding.textField.getText().length());
         if (getEntries() != null)
             binding.textField.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, getEntries()));
-        binding.textField.setOnItemClickListener((parent, view, position, id) -> {
+        binding.textField.setOnItemClickListener((_, _, position, _) -> {
             setValueIndex(position);
             valueLiveData.setValue(getEntries()[position].toString());
         });
@@ -87,7 +87,7 @@ public class FilterPreference extends ListPreference {
             };
             binding.textField.addTextChangedListener(textWatcher);
         }
-        binding.getRoot().setOnClickListener(v -> binding.textField.showDropDown());
+        binding.getRoot().setOnClickListener(_ -> binding.textField.showDropDown());
 
     }
 

@@ -27,10 +27,9 @@ import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
-import com.sysu.edu.databinding.FragmentCourseQueryFilterBinding;
-import com.sysu.edu.preference.EditPreference;
+import com.sysu.edu.databinding.FragmentQueryBinding;
 import com.sysu.edu.preference.FilterPreference;
-import com.sysu.edu.preference.SliderPreference;
+import com.sysu.edu.preference.PreferenceUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ import rikka.preference.SimpleMenuPreference;
 public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
 
     HttpManager http;
-    FragmentCourseQueryFilterBinding binding;
+    FragmentQueryBinding binding;
     MaterialDatePicker<Pair<Long, Long>> datePicker;
 
     @Override
@@ -58,7 +57,7 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         LinearLayout list = (LinearLayout) super.onCreateView(inflater, container, savedInstanceState);
 //        if (binding == null) {
-        binding = FragmentCourseQueryFilterBinding.inflate(inflater, container, false);
+        binding = FragmentQueryBinding.inflate(inflater, container, false);
         binding.getRoot().addView(list);
         binding.fab.setOnClickListener(_ -> {
             Bundle bundle = new Bundle();
@@ -175,59 +174,30 @@ public class RoomQueryFilterFragment extends PreferenceFragmentCompat {
      * {"campusId":"5062201","teachingBuildID":"2513856","classroomID":"2514104","sectionA":"1","sectionB":"12","checkType":"2","yearTerm":"2025-1","weekA":"11","weekB":"11","singleOrDoubleWeek":"0","dayWeeks":["日","一","二"],"weekOrTime":"week"}
      * */
     public JSONObject getParams() {
-        JSONObject params = new JSONObject();
-        insertMenuValue(params, "campus", "campusId");
-        insertMenuValue(params, "teachingBuilding", "teachingBuildID");
-        insertFilterValue(params, "classroom", "classroomID");
-        insertSliderValue(params, "classBegin", "sectionA");
-        insertSliderValue(params, "classEnd", "sectionB");
-        insertMenuValue(params, "checkType", "checkType");
-        insertMenuValue(params, "occupySource", "occupySource");
-        insertEditValue(params, "occupyReason", "occupyReason");
+        PreferenceUtil preferenceUtil = new PreferenceUtil(this);
+        preferenceUtil.insertMenuValue("campus", "campusId");
+        preferenceUtil.insertMenuValue("teachingBuilding", "teachingBuildID");
+        preferenceUtil.insertFilterValue("classroom", "classroomID");
+        preferenceUtil.insertSliderValue("classBegin", "sectionA");
+        preferenceUtil.insertSliderValue("classEnd", "sectionB");
+        preferenceUtil.insertMenuValue("checkType", "checkType");
+        preferenceUtil.insertMenuValue("occupySource", "occupySource");
+        preferenceUtil.insertEditValue("occupyReason", "occupyReason");
 
         boolean isWeek = ((MaterialSwitchPreference) Objects.requireNonNull(findPreference("isWeek"))).isChecked();
-        params.put("weekOrTime", isWeek ? "week" : "time");
+        preferenceUtil.getParams().put("weekOrTime", isWeek ? "week" : "time");
         if (isWeek) {
-            insertMenuValue(params, "yearSemester", "yearTerm");
-            insertSliderValue(params, "weekBegin", "weekA");
-            insertSliderValue(params, "weekEnd", "weekB");
-            insertMenuValue(params, "weekTime", "singleOrDoubleWeek");
-            params.put("dayWeeks", (((MultiSelectListPreference) Objects.requireNonNull(findPreference("weekdays"))).getValues()));
+            preferenceUtil.insertMenuValue("yearSemester", "yearTerm");
+            preferenceUtil.insertSliderValue("weekBegin", "weekA");
+            preferenceUtil.insertSliderValue("weekEnd", "weekB");
+            preferenceUtil.insertMenuValue("weekTime", "singleOrDoubleWeek");
+            preferenceUtil.insert("dayWeeks", (((MultiSelectListPreference) Objects.requireNonNull(findPreference("weekdays"))).getValues()));
         } else if (datePicker.getSelection() != null) {
             if (datePicker.getSelection().first != null)
-                params.put("dateA", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(datePicker.getSelection().first)));
+                preferenceUtil.insert("dateA", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(datePicker.getSelection().first)));
             if (datePicker.getSelection().second != null)
-                params.put("dateB", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(datePicker.getSelection().second)));
+                preferenceUtil.insert("dateB", new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(datePicker.getSelection().second)));
         }
-//        System.out.println(params);
-        return params;
-    }
-
-    void insertMenuValue(JSONObject params, String key, String value) {
-        SimpleMenuPreference preference = findPreference(key);
-        if (preference != null && (preference.getValue() == null || !preference.getValue().isEmpty())) {
-            params.put(value, preference.getValue());
-        }
-    }
-
-    void insertEditValue(JSONObject params, String key, String value) {
-        EditPreference preference = findPreference(key);
-        if (preference != null) {
-            params.put(value, preference.getValue());
-        }
-    }
-
-    void insertSliderValue(JSONObject params, String key, String value) {
-        SliderPreference preference = findPreference(key);
-        if (preference != null && preference.getValue() != 0) {
-            params.put(value, preference.getValue());
-        }
-    }
-
-    void insertFilterValue(JSONObject params, String key, String value) {
-        FilterPreference preference = findPreference(key);
-        if (preference != null) {
-            params.put(value, preference.getValue());
-        }
+        return preferenceUtil.getParams();
     }
 }

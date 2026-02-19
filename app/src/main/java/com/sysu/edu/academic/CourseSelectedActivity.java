@@ -31,6 +31,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityCourseSelectedBinding;
 import com.sysu.edu.databinding.ItemCourseSelectedBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -108,14 +109,7 @@ public class CourseSelectedActivity extends AppCompatActivity {
         http.postRequest("https://jwxt.sysu.edu.cn/jwxt/choose-course-front-server/selectedCourse/list", String.format(Locale.getDefault(), "{\"pageNo\":%d,\"pageSize\":10,\"total\":true,\"param\":{\"courseName\":\"%s\",\"successStatus\":\"1\",\"failureStatus\":\"0\",\"retiredClass\":\"0\",\"waitingScreen\":\"0\"}}", ++page, courseName), 1);
     }
 
-    public static class CourseSelectedAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-        final ArrayList<JSONObject> data = new ArrayList<>();
-
-        public void add(JSONObject jsonObject) {
-            data.add(jsonObject);
-            notifyItemInserted(getItemCount() - 1);
-        }
+    public static class CourseSelectedAdapter extends RecyclerAdapter<JSONObject> {
 
         @NonNull
         @Override
@@ -131,9 +125,8 @@ public class CourseSelectedActivity extends AppCompatActivity {
             md.append("| 课程名称 | 课程类别 | 开设学院 | 考试时间 | 考核方式 | 学分 | 班级ID | 班级号 | 班级名 | 课程号 |\n");
             md.append("| -------- | -------- | -------- | -------- | -------- | -------- | -------- | -------- | -------- | -------- |\n");
             data.forEach(item -> {
-                for (String s : key) {
+                for (String s : key)
                     md.append(item.getString(s) == null ? "无" : item.getString(s)).append(" | ");
-                }
                 md.append("\n");
             });
             return md.toString();
@@ -144,22 +137,12 @@ public class CourseSelectedActivity extends AppCompatActivity {
             ((ViewHolder) holder).setInfo(data.get(position));
             ((ViewHolder) holder).binding.getRoot().setOnClickListener(view -> view.getContext().startActivity(new Intent(view.getContext(), CourseDetailActivity.class).putExtra("id", data.get(position).getString("teachingClassId")).putExtra("code", data.get(position).getString("courseNum")).putExtra("class", data.get(position).getString("teachingClassNum")),
                     ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) view.getContext(), ((ViewHolder) holder).binding.title, "miniapp").toBundle()));
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
+            super.onBindViewHolder(holder, position);
         }
 
         @Override
         public int getItemViewType(int position) {
             return position;
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
         }
 
         static class ViewHolder extends RecyclerView.ViewHolder {

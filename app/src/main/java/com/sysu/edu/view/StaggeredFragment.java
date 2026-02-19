@@ -105,23 +105,13 @@ public class StaggeredFragment extends Fragment {
         return staggeredAdapter;
     }
 
-
     public void add(String title, Integer icon, List<String> keys, List<String> values) {
         staggeredAdapter.add(title, keys, values, icon);
     }
 
-
-    /*public void add(String title, Integer icon, int[] keys, List<String> values) {
-        staggeredAdapter.add(title, Arrays.asList(Arrays.stream(keys).mapToObj(requireContext()::getString).toArray(String[]::new)), values, icon);
-    }*/
-
     public void add(String title, List<String> keys, List<String> values) {
         add(title, null, keys, values);
     }
-
-   /* public void add(String title, int[] keys, List<String> values) {
-        add(title, null, keys, values);
-    }*/
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {

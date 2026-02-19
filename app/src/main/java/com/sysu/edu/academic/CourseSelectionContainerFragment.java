@@ -56,7 +56,7 @@ public class CourseSelectionContainerFragment extends Fragment {
         super.onResume();
         NavigationUI.setupWithNavController(requireActivity().findViewById(R.id.toolbar), nav, new AppBarConfiguration.Builder().setFallbackOnNavigateUpListener(() -> {
             requireActivity().supportFinishAfterTransition();
-            return true;
+            return false;
         }).build());
     }
 }

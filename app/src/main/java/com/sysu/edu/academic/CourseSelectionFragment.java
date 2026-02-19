@@ -1,5 +1,8 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.bool2int;
+import static com.sysu.edu.api.CommonUtil.trim;
+
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.ClipData;
@@ -7,6 +10,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,6 +38,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.transition.MaterialContainerTransform;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -41,15 +46,13 @@ import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentCourseSelectionBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemCourseSelectionBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-@SuppressWarnings("ALL")
 public class CourseSelectionFragment extends Fragment {
 
     final MutableLiveData<String> filter = new MutableLiveData<>();
@@ -97,9 +100,8 @@ public class CourseSelectionFragment extends Fragment {
                 } else {
                     type.setValue((cid == R.id.college_public_selective) ? 4 : 2);
                 }
-                if (cid != R.id.my_major && binding.head.category.getHeight() != 0) {
+                if (cid != R.id.my_major && binding.head.category.getHeight() != 0)
                     tmp = binding.head.category.getHeight();
-                }
                 ValueAnimator animator = ValueAnimator.ofInt(chipGroup.getCheckedChipId() == R.id.my_major ? new int[]{0, tmp} : new int[]{binding.head.category.getHeight() == 0 ? 0 : tmp, 0});
                 animator.addUpdateListener(valueAnimator -> {
                     LinearLayout.LayoutParams lp = ((LinearLayout.LayoutParams) binding.head.category.getLayoutParams());
@@ -118,7 +120,7 @@ public class CourseSelectionFragment extends Fragment {
             binding.course.setAdapter(adp = new CourseAdapter());
             binding.head.filter.setOnCheckedStateChangeListener((_, _) -> regetCourseList());
             adp.setSelectAction(position -> {
-                if (adp.getItem(position).getInteger("selectedStatus") == 3 || adp.getItem(position).getInteger("selectedStatus") == 4) {
+                if (adp.get(position).getInteger("selectedStatus") == 3 || adp.get(position).getInteger("selectedStatus") == 4) {
                     unselect(adp.convert(position, "courseId"), adp.convert(position, "teachingClassId"));
                 } else {
                     select(adp.convert(position, "teachingClassId"));
@@ -129,9 +131,8 @@ public class CourseSelectionFragment extends Fragment {
             binding.course.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(@NonNull RecyclerView v, int dx, int dy) {
-                    if (!v.canScrollVertically(1) && total / 10 + 1 > page && dy > 0) {
+                    if (!v.canScrollVertically(1) && total / 10 + 1 > page && dy > 0)
                         getCourseList();
-                    }
                     binding.head.getRoot().setElevation(v.canScrollVertically(-1) ? params.dpToPx(2) : 0);
                     super.onScrolled(v, dx, dy);
                 }
@@ -208,13 +209,22 @@ public class CourseSelectionFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             binding.head.addFilter.setOnClickListener(v ->
+                    {
+                        Navigation.findNavController(view).navigate(R.id.selection_to_filter1, null, new NavOptions.Builder()
+//                                            .setExitAnim(androidx.navigation.ui.R.anim.nav_default_pop_enter_anim)
+//                            .setEnterAnim()
+//                            .setExitAnim(android.R.animator.fade_out)
 
-                    Navigation.findNavController(view).navigate(R.id.selection_to_filter1, null, new NavOptions.Builder()
-                            .setEnterAnim(android.R.animator.fade_in)
-                            .setExitAnim(android.R.animator.fade_out)
-                            .build(), new FragmentNavigator.Extras(Map.of(v, "miniapp")))
+                                .build(), new FragmentNavigator.Extras.Builder().addSharedElement(v, "miniapp").build());
+
+                    }
             );
         }
+        MaterialContainerTransform transition = new MaterialContainerTransform();
+        transition.setScrimColor(Color.TRANSPARENT);
+        transition.setAllContainerColors(requireContext().getColor(com.google.android.material.R.color.design_default_color_surface));
+        setSharedElementEnterTransition(transition);
+        setSharedElementReturnTransition(transition);
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -228,10 +238,6 @@ public class CourseSelectionFragment extends Fragment {
         if (adp != null) adp.clear();
         page = 0;
         total = -1;
-    }
-
-    int bool2int(boolean b) {
-        return b ? 1 : 0;
     }
 
     void getCourseList() {
@@ -265,7 +271,6 @@ public class CourseSelectionFragment extends Fragment {
     }
 
     int getType() {
-        //noinspection SequencedCollectionMethodCanBeUsed
         return Objects.requireNonNull(typeCate.getValue()).get(0) == null ? 1 : typeCate.getValue().get(0);
     }
 
@@ -296,20 +301,10 @@ public class CourseSelectionFragment extends Fragment {
         }
     }
 
-    public static class CourseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public static class CourseAdapter extends RecyclerAdapter<JSONObject> {
         final String[] info = new String[]{"credit", "clazzNum", "scheduleExamTime", "examFormName", "statusName"};
-        final ArrayList<JSONObject> data = new ArrayList<>();
         Consumer<Integer> selectAction;
         Consumer<String> likeAction;
-
-        public CourseAdapter() {
-            super();
-        }
-
-        public void add(JSONObject e) {
-            data.add(e);
-            notifyItemInserted(getItemCount() - 1);
-        }
 
         @NonNull
         @Override
@@ -335,10 +330,6 @@ public class CourseSelectionFragment extends Fragment {
 
         public void setLikeAction(Consumer<String> action) {
             this.likeAction = action;
-        }
-
-        public JSONObject getItem(int position) {
-            return data.get(position);
         }
 
         @Override
@@ -377,20 +368,8 @@ public class CourseSelectionFragment extends Fragment {
             }
         }
 
-        @Override
-        public int getItemCount() {
-            return data.size();
-        }
-
         public String convert(int position, String key) {
-            String a = data.get(position).getString(key);
-            return (a == null ? "" : a).replace("\n\n", "\n");
-        }
-
-        public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
+            return trim(get(position).getString(key)).replace("\n\n", "\n");
         }
     }
 }

@@ -3,8 +3,6 @@
     "title": "网页调试",
     "description": "使用Eruda，开启网页调试",
     "matches": [
-      ".+",
-      ".?",
       "."
     ],
     "script": "var script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/eruda';document.body.appendChild(script);script.onload=function(){eruda.init()};"
@@ -44,5 +42,13 @@
       "://welearn.sflep.com/student/studycourse.aspx"
     ],
     "script": "var script=document.createElement('script');script.src='https://sysu-tang.github.io/WeLearn_Assistant.js';document.body.appendChild(script);"
+  },
+  {
+    "title": "自由复制",
+    "description": "自动复制网页中的所有文本",
+    "matches": [
+      "."
+    ],
+    "script": "document.addEventListener('copy', function(e) {e.clipboardData.setData('text/plain', document.body.innerText);e.preventDefault();});"
   }
 ]

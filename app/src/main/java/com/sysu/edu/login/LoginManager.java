@@ -132,7 +132,6 @@ public class LoginManager {
                             System.out.println("登录成功");
                             System.out.println("Cookie：" + cookieManager.getCookie(url));
                             model.setCookie(cookieManager.getCookie(url));
-
                             if (Boolean.FALSE.equals(model.getLogin().getValue()))
                                 model.setLogin(true);
                         }, 500);

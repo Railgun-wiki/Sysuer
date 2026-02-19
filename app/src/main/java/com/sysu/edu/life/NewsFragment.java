@@ -2,6 +2,8 @@ package com.sysu.edu.life;
 
 import static com.sysu.edu.api.CommonUtil.trim;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,7 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,15 +28,15 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.BrowserActivity;
 import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ItemNewsBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,8 @@ public class NewsFragment extends Fragment {
                     if (!recyclerView.canScrollVertically(1) && position != 0 && dy > 0) run.run();
                 }
             });
-            NewsAdapter newsAdapter = new NewsAdapter(requireActivity());
+            NewsAdapter newsAdapter = new NewsAdapter();
+            newsAdapter.setParams(params);
             binding.recyclerView.setAdapter(newsAdapter);
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
@@ -184,50 +186,40 @@ public class NewsFragment extends Fragment {
         http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"4cef8rqw\",\"notice\":false}", 5);
     }
 
-    static class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final ArrayList<HashMap<String, String>> data = new ArrayList<>();
-        final FragmentActivity context;
-        final Params params;
+    static class NewsAdapter extends RecyclerAdapter<HashMap<String, String>> {
+        Params params;
 
-        public NewsAdapter(FragmentActivity context) {
-            super();
-            this.context = context;
-            params = new Params(context);
+        public void setParams(Params params) {
+            this.params = params;
         }
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemNewsBinding binding = ItemNewsBinding.bind(holder.itemView);
-            HashMap<String, String> item = data.get(position);
-            holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(item.get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation(context, v, "miniapp").toBundle()));
+            HashMap<String, String> item = get(position);
+            Context context = holder.itemView.getContext();
+            holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(item.get("url"))), ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context, v, "miniapp").toBundle()));
             binding.title.setText(item.getOrDefault("title", ""));
             binding.content.setText(String.format("#%s #%s", item.getOrDefault("source", ""), item.getOrDefault("time", "")));
             String img = trim(item.get("image"));
             if (!img.isEmpty())
                 Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
-                            .addHeader("Cookie", params.getCookie())
-                            .addHeader("Authorization", params.getAuthorization())
-                            .build()))
-                    .timeout(30000)
-                    .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
-                    .into(binding.image);
+                                .addHeader("Cookie", params.getCookie())
+                                .addHeader("Authorization", params.getAuthorization())
+                                .build()))
+                        .timeout(30000)
+                        .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
+                        .into(binding.image);
         }
 
         void add(String title, String image, String url, String time, String source) {
-            data.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", source)));
-            notifyItemInserted(getItemCount() - 1);
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
+            add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", source)));
         }
     }
 }

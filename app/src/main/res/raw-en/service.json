@@ -290,6 +290,10 @@
         "id": 715,
         "name": "Classroom Occupation",
         "description": "Classroom inquiry system, with functions such as available classrooms, class schedule, and room capacity inquiry"
+      },{
+        "id": 716,
+        "name": "Assistant Evaluation",
+        "description": "Assistant evaluation result inquiry system, with functions such as assistant names, courses they are teaching, and evaluation grades"
       }
     ]
   },

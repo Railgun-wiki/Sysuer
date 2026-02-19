@@ -251,7 +251,7 @@ public class InitTodo {
         // 清除已有 adapters
         f.getConcatAdapter().getAdapters().forEach(adp -> f.getConcatAdapter().removeAdapter(adp));
         try {
-            TodoAdapter todoAdapter = new TodoAdapter(activity, this);
+            TodoAdapter todoAdapter = new TodoAdapter(this);
             TitleAdapter titleAdapter = new TitleAdapter(activity);
             SQLiteDatabase db = todoDB.getWritableDatabase();
             try (Cursor cursor = db.query("todos", null, selection, args, null, null, "due_date")) {
@@ -281,7 +281,7 @@ public class InitTodo {
                         titleAdapter = new TitleAdapter(activity);
                         titleAdapter.setTitle(dueDate);
                         f.getConcatAdapter().addAdapter(titleAdapter);
-                        todoAdapter = new TodoAdapter(activity, this);
+                        todoAdapter = new TodoAdapter(this);
                         f.getConcatAdapter().addAdapter(todoAdapter);
                     }
                     todoAdapter.add(todoDetail);

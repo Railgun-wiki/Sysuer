@@ -1,9 +1,10 @@
 package com.sysu.edu.life;
 
+import static android.text.TextUtils.isEmpty;
+import static com.sysu.edu.api.CommonUtil.trim;
 import static com.sysu.edu.life.GymReservationActivity.encode;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,9 +38,9 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemFieldBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
+import com.sysu.edu.template.RecyclerAdapter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -71,7 +72,7 @@ public class GymReservationListFragment extends Fragment {
         layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
         binding.getRoot().setLayoutManager(layoutManager);
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-        FieldAdapter fieldAdapter = new FieldAdapter(requireContext(), viewModel);
+        FieldAdapter fieldAdapter = new FieldAdapter(viewModel);
         fieldAdapter.setAction(id -> {
             Bundle bundle = new Bundle();
             bundle.putString("id", id);
@@ -160,20 +161,20 @@ public class GymReservationListFragment extends Fragment {
             public void onPageFinished(WebView view, String url) {
                 if (url.contains(link)) {
                     viewModel.token = cookie.getCookie(url);
-                    web.evaluateJavascript("(function(){return JSON.parse(window.localStorage.getItem(\"scientia-session-authorization\")).access_token;})()", string -> {
+                    web.evaluateJavascript("(function(){return JSON.parse(window.localStorage.get(\"scientia-session-authorization\")).access_token;})()", string -> {
 //                        System.out.println(string);
                         if (!Objects.equals(string, "null") && !Objects.equals("Bearer " + string.replace("\"", ""), viewModel.authorization.getValue()))
                             viewModel.authorization.setValue("Bearer " + string.replace("\"", ""));
                     });
                 } else if (Pattern.compile("//cas.+?sysu\\.edu\\.cn/esc-sso/login/page").matcher(url).find()) {
                     web.loadUrl(String.format("""
-                            javascript:(function(){
-                                                    function waitElement(selector, callback) {
-                                                    const element = document.querySelector(selector);
-                                                    if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}
-                                                    waitElement('.para-widget-account-psw', () => {
-                                                    var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()"""
-                    ,params.getUserName(),params.getPassword()));
+                                    javascript:(function(){
+                                                            function waitElement(selector, callback) {
+                                                            const element = document.querySelector(selector);
+                                                            if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}
+                                                            waitElement('.para-widget-account-psw', () => {
+                                                            var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()"""
+                            , params.getUserName(), params.getPassword()));
                 }
                 super.onPageFinished(view, url);
             }
@@ -272,16 +273,13 @@ public class GymReservationListFragment extends Fragment {
 
     }
 
-    private static class FieldAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final Context context;
+    private static class FieldAdapter extends RecyclerAdapter<JSONObject> {
 
-        final ArrayList<JSONObject> data = new ArrayList<>();
-        Consumer<String> action;
         final GymReservationViewModel viewModel;
+        Consumer<String> action;
 
-        public FieldAdapter(Context context, GymReservationViewModel viewModel) {
+        public FieldAdapter(GymReservationViewModel viewModel) {
             super();
-            this.context = context;
             this.viewModel = viewModel;
         }
 
@@ -292,40 +290,23 @@ public class GymReservationListFragment extends Fragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemFieldBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+            return new RecyclerView.ViewHolder(ItemFieldBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
             };
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemFieldBinding binding = ItemFieldBinding.bind(holder.itemView);
-            JSONObject item = data.get(position);
+            JSONObject item = get(position);
             binding.title.setText(item.getString("Name"));
             binding.getRoot().setOnClickListener(_ -> action.accept(item.getString("Identity")));
             String imageUrl = item.getString("ImageUrl");
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                Glide.with(context).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", viewModel.ua)
+            if (!isEmpty(imageUrl))
+                Glide.with(holder.itemView.getContext()).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", viewModel.ua)
                         .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
                         .addHeader("Cookie", viewModel.token)
-                        .addHeader("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
+                        .addHeader("Authorization", trim(viewModel.authorization.getValue()))
                         .build())).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(binding.image);
-            }
-        }
-
-        public void add(JSONObject jsonObject) {
-            data.add(jsonObject);
-            notifyItemInserted(data.size() - 1);
-        }
-
-       /* public void clear() {
-            int tmp = getItemCount();
-            data.clear();
-            notifyItemRangeRemoved(0, tmp);
-        }*/
-
-        @Override
-        public int getItemCount() {
-            return data.size();
         }
     }
 }

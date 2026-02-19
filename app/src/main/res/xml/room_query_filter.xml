@@ -27,7 +27,6 @@
 
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/query">
-        F
         <rikka.preference.SimpleMenuPreference
             app:entries="@array/check_types"
             app:entryValues="@array/check_type_values"

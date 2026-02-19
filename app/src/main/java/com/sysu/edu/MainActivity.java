@@ -36,8 +36,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationBarView;
 import com.sysu.edu.academic.AcademyNotification;
 import com.sysu.edu.academic.AgendaActivity;
+import com.sysu.edu.academic.AssistantEvaluationActivity;
 import com.sysu.edu.academic.AssistantInfoActivity;
-import com.sysu.edu.academic.BrowserActivity;
 import com.sysu.edu.academic.CETActivity;
 import com.sysu.edu.academic.CalendarActivity;
 import com.sysu.edu.academic.ClassroomQueryActivity;
@@ -62,6 +62,7 @@ import com.sysu.edu.academic.TrainingProgramActivity;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
+import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ActivityMainBinding;
 import com.sysu.edu.home.HomeViewModel;
 import com.sysu.edu.life.GymReservationActivity;
@@ -371,6 +372,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(713, newActivity(AssistantInfoActivity.class));       // 助教信息
         actionMap.put(714, newActivity(GradeForLevelActivity.class));           // 等级制成绩
         actionMap.put(715, newActivity(RoomQueryActivity.class));           // 教室
+        actionMap.put(716, newActivity(AssistantEvaluationActivity.class)); // 助教考核
 
 
         // 学习平台 (id: 8xx)

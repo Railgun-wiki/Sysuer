@@ -19,8 +19,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.databinding.FragmentCourseOutlineBinding;
 import com.sysu.edu.databinding.ItemCourseOutlineBinding;
-
-import java.util.ArrayList;
+import com.sysu.edu.template.RecyclerAdapter;
 
 public class CourseOutlineFragment extends Fragment {
 
@@ -51,19 +50,11 @@ public class CourseOutlineFragment extends Fragment {
         super.setArguments(args);
     }
 
-    static class CourseOutlineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final ArrayList<JSONObject> data = new ArrayList<>();
-
-        public void add(JSONObject json) {
-            data.add(json);
-            notifyItemInserted(getItemCount() - 1);
-        }
-
+    static class CourseOutlineAdapter extends RecyclerAdapter<JSONObject> {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemCourseOutlineBinding.inflate(LayoutInflater.from(parent.getContext())).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemCourseOutlineBinding.inflate(LayoutInflater.from(parent.getContext())).getRoot()) {};
         }
 
         @Override
@@ -71,11 +62,6 @@ public class CourseOutlineFragment extends Fragment {
             ItemCourseOutlineBinding binding = ItemCourseOutlineBinding.bind(holder.itemView);
             binding.title.setText(String.format("%s（%s%s）", convert(position, "sectionDesignation"), convert(position, "teachingHours"), holder.itemView.getResources().getString(R.string.study_hour)));
             binding.intro.setText(String.format("教学内容：%s\n育人元素：%s\n重点、难点：%s", convert(position, "teachingMainContent"), convert(position, "courseElements"), convert(position, "keyPoints")));
-        }
-
-        @Override
-        public int getItemCount() {
-            return data.size();
         }
 
         String convert(int position, String key) {

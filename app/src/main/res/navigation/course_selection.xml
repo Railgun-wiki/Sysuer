@@ -13,6 +13,6 @@
     </fragment>
     <fragment
         android:id="@+id/filter1_fragment"
-        android:name="com.sysu.edu.academic.CourseFilterFragment"
+        android:name="com.sysu.edu.academic.CourseSelectionFilterFragment"
         android:label="@string/filter" />
 </navigation>
