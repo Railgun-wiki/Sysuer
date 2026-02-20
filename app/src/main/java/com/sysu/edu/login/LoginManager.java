@@ -166,29 +166,4 @@ public class LoginManager {
         return web;
     }
 
-    /**
-     * 初始化 WebView 设置
-     *
-     * @param web 要初始化设置的 WebView
-     */
-    @SuppressLint("SetJavaScriptEnabled")
-    public static void initWeb(WebView web) {
-        WebSettings webSettings = web.getSettings();
-        webSettings.supportZoom();
-        webSettings.setDatabaseEnabled(true);
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setSupportMultipleWindows(true);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setLoadWithOverviewMode(true);
-        webSettings.setSupportZoom(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0");
-        webSettings.setDisplayZoomControls(false);
-        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        webSettings.setLoadsImagesAutomatically(true);
-        webSettings.setDefaultTextEncodingName("utf-8");
-    }
 }

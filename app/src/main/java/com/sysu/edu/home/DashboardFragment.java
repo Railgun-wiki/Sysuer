@@ -481,8 +481,8 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
         };
         holder.itemView.setOnClickListener(v -> onClick.accept(get(position), v));
         a.accept(R.id.course_title, "courseName");
-        a.accept(R.id.location_container, "teachingPlace");
-        a.accept(R.id.time_container, "time");
+        a.accept(R.id.location, "teachingPlace");
+        a.accept(R.id.time, "time");
         a.accept(R.id.teacher, "teacherName");
         a.accept(R.id.course, "course");
         TypedValue colorSurfaceDim = new TypedValue();

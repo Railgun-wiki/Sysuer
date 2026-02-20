@@ -63,7 +63,7 @@
                     style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/web"
+                    android:contentDescription="@string/website"
                     app:icon="@drawable/web" />
 
                 <com.google.android.material.button.MaterialButton

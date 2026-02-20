@@ -3,14 +3,15 @@ package com.sysu.edu.browser;
 import static com.sysu.edu.api.CommonUtil.trim;
 import static com.sysu.edu.api.DownloadManager.downloadFile;
 import static com.sysu.edu.api.FileManager.readAssets;
-import static com.sysu.edu.login.LoginManager.initWeb;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.ViewGroup;
@@ -46,6 +47,7 @@ import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.GridDialog;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -74,6 +76,7 @@ public class BrowserActivity extends AppCompatActivity {
         db = new BrowserHelper(this);
         binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
         Params params = new Params(this);
+        BrowserPreference preference = new BrowserPreference(this);
         String url = getIntent().getDataString() != null ? getIntent().getDataString() : "https://www.sysu.edu.cn/";
         JavaScript js = new JavaScript(readAssets(this, "js.json"));
         web = binding.web;
@@ -117,7 +120,7 @@ public class BrowserActivity extends AppCompatActivity {
                 } else if (Pattern.compile("://appgw.sysu.edu.cn/").matcher(link).find()) {
                     web.stopLoading();
                     web.loadUrl(url.replace(".sysu.edu.cn/", "-443.webvpn.sysu.edu.cn/"));
-                } else {
+                } else if (preference.isPC()) {
                     view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
                 }
                 super.onPageFinished(view, link);
@@ -169,6 +172,24 @@ public class BrowserActivity extends AppCompatActivity {
                     .header("Cookie", cookie.getCookie(url1))
                     .header("Referer", "https://jwxt.sysu.edu.cn/jwxt/").build(), fileName);
         });
+        webSettings = web.getSettings();
+        webSettings.supportZoom();
+        webSettings.setDatabaseEnabled(true);
+        webSettings.setJavaScriptEnabled(preference.isJSEnabled());
+        webSettings.setSupportMultipleWindows(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setCacheMode(preference.isSaveMobileDataMode() ? WebSettings.LOAD_NO_CACHE : WebSettings.LOAD_DEFAULT);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+        webSettings.setLoadsImagesAutomatically(true);
+        webSettings.setBlockNetworkImage(preference.isImageBlocked());
+        webSettings.setDefaultTextEncodingName("utf-8");
+//        webSettings = web.getSettings();
 
         /*
          * 脚本弹窗
@@ -201,18 +222,79 @@ public class BrowserActivity extends AppCompatActivity {
         List<Integer> menuIcon = List.of(R.drawable.left, R.drawable.right, R.drawable.refresh, R.drawable.exit, R.drawable.up, R.drawable.down, R.drawable.zoom_in, R.drawable.zoom_out);
         List<Consumer<MaterialButton>> menuAction = List.of(_ -> goBack(), _ -> goForward(), _ -> refresh(), _ -> supportFinishAfterTransition(), _ -> pageUp(), _ -> pageDown()
                 , _ -> web.zoomIn(), _ -> web.zoomOut());
-        menuDialog.loadMenu(menuTitle, menuIcon, menuAction);
+        menuDialog.loadMenu(menuTitle, menuIcon, menuAction, Integer.class);
         refreshButton = menuDialog.getMenu(2);
+
+        /*
+         * UA 弹窗
+         * */
+        GridDialog uaDialog = new GridDialog(this);
+        uaDialog.setColumn(2);
+        uaDialog.setSelectable(true);
+        Cursor cursor = db.getReadableDatabase().query("ua", null, null, null, null, null, null);
+        ArrayList<String> uaNames = new ArrayList<>();
+        ArrayList<Integer> uaIcons = new ArrayList<>();
+        ArrayList<Consumer<MaterialButton>> uaAction = new ArrayList<>();
+        uaNames.add(getString(R.string.follow_system));
+        uaIcons.add(R.drawable.setting);
+        uaAction.add(_ -> {
+            this.webSettings.setUserAgentString(WebSettings.getDefaultUserAgent(this));
+            preference.setUA(0);
+            web.reload();
+        });
+        if (cursor.moveToFirst()) {
+            do {
+                uaNames.add(cursor.getString(cursor.getColumnIndexOrThrow("title")));
+                int uaId = cursor.getInt(cursor.getColumnIndexOrThrow("uaId"));
+                uaIcons.add(List.of(R.drawable.laptop, R.drawable.laptop, R.drawable.laptop, R.drawable.mac, R.drawable.android, R.drawable.tablet, R.drawable.iphone, R.drawable.ipad, R.drawable.ua, R.drawable.laptop, R.drawable.laptop, R.drawable.android).get(uaId));
+                String ua = cursor.getString(cursor.getColumnIndexOrThrow("ua"));
+                uaAction.add(_ -> {
+                    this.webSettings.setUserAgentString(ua);
+                    preference.setUA(uaId);
+                    web.reload();
+                });
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        uaDialog.loadMenu(uaNames, uaIcons, uaAction, String.class);
+        uaDialog.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
+        uaDialog.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+        uaDialog.selectMenu(preference.getUA());
 
         /*
          * 网页弹窗
          * */
         GridDialog webDialog = new GridDialog(this);
-        List<Integer> webTitle = List.of(R.string.back);
-        List<Integer> webIcon = List.of(R.drawable.left);
-        List<Consumer<MaterialButton>> webAction = List.of(_ -> goBack());
-        webDialog.loadMenu(webTitle, webIcon, webAction);
-
+        List<Integer> webTitle = List.of(R.string.ua, preference.isPC() ? R.string.pc_mode : R.string.mobile_mode, preference.isImageBlocked() ? R.string.image_blocked : R.string.image, R.string.javascript, R.string.save_mobile_data_mode);
+        List<Integer> webIcon = List.of(R.drawable.ua, preference.isPC() ? R.drawable.laptop : R.drawable.phone, preference.isImageBlocked() ? R.drawable.image_block : R.drawable.image, R.drawable.js, R.drawable.wifi);
+        List<Consumer<MaterialButton>> webAction = List.of(_ -> uaDialog.show(), v -> {
+                    boolean pc = !preference.isPC();
+                    preference.setPC(pc);
+                    v.setText(pc ? R.string.pc_mode : R.string.mobile_mode);
+                    v.setIconResource(pc ? R.drawable.laptop : R.drawable.phone);
+                    web.reload();
+                },
+                v -> {
+                    boolean imageBlocked = !preference.isImageBlocked();
+                    preference.setImageBlocked(imageBlocked);
+                    v.setText(imageBlocked ? R.string.image_blocked : R.string.image);
+                    v.setIconResource(imageBlocked ? R.drawable.image_block : R.drawable.image);
+                    webSettings.setBlockNetworkImage(imageBlocked);
+                },
+                _ -> {
+                    boolean jsEnabled = !preference.isJSEnabled();
+                    preference.setJSEnabled(jsEnabled);
+                    webSettings.setJavaScriptEnabled(jsEnabled);
+                }, v -> {
+                    boolean saveMobileDataMode = !preference.isSaveMobileDataMode();
+                    preference.setSaveMobileDataMode(saveMobileDataMode);
+                    v.setIconResource(saveMobileDataMode ? R.drawable.no_wifi : R.drawable.wifi);
+                    webSettings.setCacheMode(saveMobileDataMode ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_NO_CACHE);
+                });
+        webDialog.loadMenu(webTitle, webIcon, webAction, Integer.class);
+        webDialog.setTogglable(new int[]{3, 4}, true);
+        webDialog.setColumn(4);
+        webDialog.toggleMenu(3, true);
 
         binding.js.setOnClickListener(_ -> {
             jsAdapter.set(js.searchJS(trim(web.getUrl())));
@@ -223,13 +305,8 @@ public class BrowserActivity extends AppCompatActivity {
 
 
         progress.observe(this, p -> {
-            if (p == 100) {
-                refreshButton.setIconResource(R.drawable.refresh);
-                refreshButton.setText(R.string.refresh);
-            } else {
-                refreshButton.setIconResource(R.drawable.close);
-                refreshButton.setText(R.string.stop);
-            }
+            refreshButton.setIconResource(p == 100 ? R.drawable.refresh : R.drawable.close);
+            refreshButton.setText(p == 100 ? R.string.refresh : R.string.stop);
         });
         cookie = CookieManager.getInstance();
         Menu menu = binding.toolbar.getMenu();
@@ -257,10 +334,8 @@ public class BrowserActivity extends AppCompatActivity {
         binding.forward.setOnClickListener(_ -> {
             if (web.canGoForward()) web.goForward();
         });
-        initWeb(web);
-        webSettings = web.getSettings();
         if (getIntent().hasExtra("data") && getIntent().getStringExtra("data") != null) {
-            webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36");
+            this.webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36");
             web.loadDataWithBaseURL("https://jwxt.sysu.edu.cn", Objects.requireNonNull(getIntent().getStringExtra("data")), "text/html", "utf-8", "https://jwxt.sysu.edu.cn");
         } else {
             web.loadUrl(url);

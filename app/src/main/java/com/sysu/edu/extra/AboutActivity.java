@@ -149,7 +149,7 @@ public class AboutActivity extends AppCompatActivity {
                 updateDialog.show();
                 Markwon.builder(AboutActivity.this).build().setMarkdown(Objects.requireNonNull(updateDialog.findViewById(android.R.id.message)), response.getString("description"));
             } else if (version > responseVersion) {
-                params.toast(getString(R.string.app_modfied_detected));
+                params.toast(getString(R.string.app_modified_detected));
             }else if(version == responseVersion){
                 params.toast(getString(R.string.app_latest_installed));
             }

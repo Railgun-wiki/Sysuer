@@ -151,12 +151,39 @@ public class CommonUtil {
      * @param <T>  第一个值的类型
      * @param <T1> 第二个值的类型
      */
-    public record Tuple2<T, T1>(T first, T1 second) {
+    public static class Tuple2<T, T1> {
+
+        public T first;
+        public T1 second;
+
+        public Tuple2(T first, T1 second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public Tuple2() {
+        }
 
         @NonNull
         @Override
         public String toString() {
             return "(" + first + ", " + second + ")";
+        }
+
+        public T getFirst() {
+            return first;
+        }
+
+        public void setFirst(T first) {
+            this.first = first;
+        }
+
+        public T1 getSecond() {
+            return second;
+        }
+
+        public void setSecond(T1 second) {
+            this.second = second;
         }
     }
 }
