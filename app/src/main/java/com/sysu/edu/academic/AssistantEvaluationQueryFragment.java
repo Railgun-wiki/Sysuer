@@ -79,8 +79,8 @@ public class AssistantEvaluationQueryFragment extends PreferenceFragmentCompat {
                                 }
                                 case 1 -> {
                                     CommonUtil.Tuple2<ArrayList<String>, ArrayList<String>> extractValue = extractValue(response.getJSONArray("data"), "departmentName", "departmentNumber");
-                                    unit.setEntries(extractValue.first().toArray(new String[0]));
-                                    unit.setEntryValues(extractValue.second().toArray(new String[0]));
+                                    unit.setEntries(extractValue.first.toArray(new String[0]));
+                                    unit.setEntryValues(extractValue.second.toArray(new String[0]));
                                 }
                             }
                         } else {

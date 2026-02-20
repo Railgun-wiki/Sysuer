@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textview.MaterialTextView;
 import com.sysu.edu.R;
+import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -38,13 +41,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-@SuppressWarnings("ALL")
+
 public class AgendaActivity extends AppCompatActivity {
 
     final ArrayList<String> terms = new ArrayList<>();
     final ArrayList<Integer> weeks = new ArrayList<>();
     final ArrayList<View> views = new ArrayList<>();
     final MutableLiveData<String> id = new MutableLiveData<>();
+    CommonUtil.Tuple2<String, Integer> realTime = new CommonUtil.Tuple2<>();
     HttpManager http;
     PopupMenu termPop;
     PopupMenu weekPop;
@@ -63,7 +67,7 @@ public class AgendaActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         params = new Params(this);
         params.setCallback(() -> {
-            if (currentTerm != null && !currentTerm.isEmpty() && currentWeekIndex != -1) {
+            if (!isEmpty(currentTerm) && currentWeekIndex != -1) {
                 getTable(currentTerm, currentWeek);
             } else {
                 getTerm();
@@ -73,8 +77,8 @@ public class AgendaActivity extends AppCompatActivity {
         binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         String[] duration = getResources().getStringArray(R.array.duration);
         binding.toolbar.getMenu().add(R.string.today).setOnMenuItemClickListener(_ -> {
-            getTable(currentTerm, currentWeek);
-            getRange(currentTerm, currentWeek);
+            changeTerm(realTime.first);
+            changeWeek(realTime.second);
             return false;
         }).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         Calendar calendar = Calendar.getInstance();
@@ -152,12 +156,12 @@ public class AgendaActivity extends AppCompatActivity {
                             views.forEach(e -> binding.day.removeView(e));
                             views.clear();
                             response.getJSONArray("data").forEach(e -> {
-                                JSONObject jsonObject = (JSONObject) e;
-                                String week = jsonObject.getString("week");
+                                JSONObject data = (JSONObject) e;
+                                String week = data.getString("week");
                                 if (week != null) {
-                                    String startClassTimes = jsonObject.getString("startClassTimes");
-                                    String endClassTimes = jsonObject.getString("endClassTimes");
-                                    JSONArray info = jsonObject.getJSONArray("teachingInfoList");
+                                    String startClassTimes = data.getString("startClassTimes");
+                                    String endClassTimes = data.getString("endClassTimes");
+                                    JSONArray info = data.getJSONArray("teachingInfoList");
                                     JSONObject detail = info.getJSONObject(0);
                                     String course = detail.getString("courseName");
                                     String teacher = detail.getString("teacherName");
@@ -177,7 +181,6 @@ public class AgendaActivity extends AppCompatActivity {
                                         setDialogDetail(course, location, teacher, String.format(getString(R.string.from_to), startClassTimes, endClassTimes), detail.getString("assistantInfo"));
                                         id.setValue(detail.getString("classesId"));
                                         detailDialog.show();
-                                        //setDetail(course, location,teacher,String.format("第%s节到第%s节",startClassTimes,endClassTimes));
                                     });
                                     itemAgendaBinding.content.setText(String.format("%s/%s-%s", course, teachingBuildingName == null ? "" : teachingBuildingName, classroomNum == null ? "" : classroomNum));
                                     GridLayout.LayoutParams gl = new GridLayout.LayoutParams();
@@ -196,23 +199,25 @@ public class AgendaActivity extends AppCompatActivity {
                             binding.term.setText(currentTerm);
                             getAvailableWeeks(currentTerm);
                             getTable(currentTerm, currentWeek);
+                            realTime.setFirst(currentTerm);
                         }// 获取 Term
                         case 3 -> {
-                            String from = response.getJSONObject("data").getString("startTime");
-                            try {
-                                Calendar calendar1 = Calendar.getInstance();
-                                Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(from);
-                                if (date != null) {
-                                    calendar1.setTime(date);
-                                    //binding.month.setText(new SimpleDateFormat("M月", Locale.CHINESE).format(date.getTime()));
-                                    binding.month.setText(getResources().getStringArray(R.array.months)[calendar.get(Calendar.MONTH)]);
+                            JSONObject data = response.getJSONObject("data");
+                            if (data != null) {
+                                String from = data.getString("startTime");
+                                try {
+                                    Calendar calendar = Calendar.getInstance();
+                                    Date date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(from);
+                                    if (date != null) {
+                                        calendar.setTime(date);
+                                        binding.month.setText(getResources().getStringArray(R.array.months)[calendar.get(Calendar.MONTH)]);
+                                    }
+                                    for (int i = 0; i < 7; i++) {
+                                        ((MaterialTextView) binding.week.getChildAt(i + 1).findViewById(R.id.course_date)).setText(String.format("%s%s", new SimpleDateFormat("dd", Locale.getDefault()).format(calendar.getTime()), getString(R.string.day)));
+                                        calendar.add(Calendar.DATE, 1);
+                                    }
+                                } catch (ParseException _) {
                                 }
-                                for (int i = 0; i < 7; i++) {
-                                    ((MaterialTextView) binding.week.getChildAt(i + 1).findViewById(R.id.course_date)).setText(String.format("%s%s", new SimpleDateFormat("dd", Locale.getDefault()).format(calendar1.getTime()), getString(R.string.day)));
-                                    calendar1.add(Calendar.DATE, 1);
-                                }
-                            } catch (ParseException e) {
-                                //throw new RuntimeException(e);
                             }
                         }
                         case 4 -> {
@@ -227,6 +232,7 @@ public class AgendaActivity extends AppCompatActivity {
                             currentWeekIndex = weeks.indexOf(currentWeek);
                             binding.weekTime.setText(String.format(getString(R.string.week_x), currentWeek));
                             getTable(currentTerm, currentWeek);
+                            realTime.setSecond(currentWeek);
                         }
                         case -1 -> params.toast(R.string.no_wifi_warning);
                     }
@@ -261,6 +267,7 @@ public class AgendaActivity extends AppCompatActivity {
             binding.term.setText(currentTerm);
             getAvailableWeeks(currentTerm);
             getTable(currentTerm, currentWeek);
+            getRange(currentTerm, currentWeek);
         }
     }
 
