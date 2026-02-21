@@ -5,6 +5,7 @@ import static com.sysu.edu.api.DownloadManager.downloadFile;
 import static com.sysu.edu.api.FileManager.readAssets;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,7 +14,6 @@ import android.os.Environment;
 import android.os.Message;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
@@ -28,6 +28,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,6 +45,7 @@ import com.sysu.edu.databinding.DialogJsBinding;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.AdapterListener;
+import com.sysu.edu.view.EditTextDialog;
 import com.sysu.edu.view.GridDialog;
 
 import java.io.IOException;
@@ -83,7 +85,10 @@ public class BrowserActivity extends AppCompatActivity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                view.loadUrl(String.valueOf(request.getUrl()));
+                String url1 = String.valueOf(request.getUrl());
+                if (url1.startsWith("https://") || url1.startsWith("http://")) view.loadUrl(url1);
+                else
+                    startActivity(new Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).setData(Uri.parse(url1)));
                 return true;
             }
 
@@ -213,6 +218,9 @@ public class BrowserActivity extends AppCompatActivity {
         RecyclerView jsList = JSBinding.recyclerView.getRoot();
         jsList.setLayoutManager(new LinearLayoutManager(BrowserActivity.this));
         jsList.setAdapter(jsAdapter);
+        JSBinding.manage.setOnClickListener(v -> startActivity(new Intent(BrowserActivity.this, JSActivity.class),
+                ActivityOptionsCompat.makeSceneTransitionAnimation(BrowserActivity.this, v, "miniapp").toBundle()));
+
 
         /*
          * 菜单弹窗
@@ -264,7 +272,7 @@ public class BrowserActivity extends AppCompatActivity {
         /*
          * 网页弹窗
          * */
-        GridDialog webDialog = new GridDialog(this);
+        GridDialog browserDialog = new GridDialog(this);
         List<Integer> webTitle = List.of(R.string.ua, preference.isPC() ? R.string.pc_mode : R.string.mobile_mode, preference.isImageBlocked() ? R.string.image_blocked : R.string.image, R.string.javascript, R.string.save_mobile_data_mode);
         List<Integer> webIcon = List.of(R.drawable.ua, preference.isPC() ? R.drawable.laptop : R.drawable.phone, preference.isImageBlocked() ? R.drawable.image_block : R.drawable.image, R.drawable.js, R.drawable.wifi);
         List<Consumer<MaterialButton>> webAction = List.of(_ -> uaDialog.show(), v -> {
@@ -291,17 +299,41 @@ public class BrowserActivity extends AppCompatActivity {
                     v.setIconResource(saveMobileDataMode ? R.drawable.no_wifi : R.drawable.wifi);
                     webSettings.setCacheMode(saveMobileDataMode ? WebSettings.LOAD_DEFAULT : WebSettings.LOAD_NO_CACHE);
                 });
-        webDialog.loadMenu(webTitle, webIcon, webAction, Integer.class);
-        webDialog.setTogglable(new int[]{3, 4}, true);
-        webDialog.setColumn(4);
-        webDialog.toggleMenu(3, true);
+        browserDialog.loadMenu(webTitle, webIcon, webAction, Integer.class);
+        browserDialog.setTogglable(new int[]{3, 4}, true);
+        browserDialog.setColumn(4);
+        browserDialog.toggleMenu(3, true);
+
+        /*
+         * Cookie 弹窗
+         * */
+        var cookieDialog = new EditTextDialog(this);
+        cookieDialog.setTitle(R.string.cookie);
+
+        /*
+         * 网站弹窗
+         * */
+        var websiteDialog = new GridDialog(this);
+        websiteDialog.loadMenu(List.of(R.string.copy, R.string.share, R.string.open_in_browser, R.string.cookie),
+                List.of(R.drawable.copy, R.drawable.share, R.drawable.export, R.drawable.cookie),
+                List.of(_ -> params.copy("url:", web.getUrl()),
+                        _ -> startActivity(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, trim(web.getUrl()))),
+                        _ -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(trim(web.getUrl())))),
+                        _ -> {
+                            String targetUrl = trim(web.getUrl());
+                            cookieDialog.setValue(cookie.getCookie(targetUrl));
+                            cookieDialog.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, getString(R.string.save), (_, _) -> cookie.setCookie(targetUrl, cookieDialog.getText()));
+                            cookieDialog.getDialog().setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.clear), (_, _) -> cookie.setCookie(targetUrl, ""));
+                            cookieDialog.show();
+                        }), Integer.class);
 
         binding.js.setOnClickListener(_ -> {
             jsAdapter.set(js.searchJS(trim(web.getUrl())));
             jsDialog.show();
         });
         binding.menu.setOnClickListener(_ -> menuDialog.show());
-        binding.website.setOnClickListener(_ -> webDialog.show());
+        binding.browser.setOnClickListener(_ -> browserDialog.show());
+        binding.website.setOnClickListener(_ -> websiteDialog.show());
 
 
         progress.observe(this, p -> {
@@ -309,25 +341,6 @@ public class BrowserActivity extends AppCompatActivity {
             refreshButton.setText(p == 100 ? R.string.refresh : R.string.stop);
         });
         cookie = CookieManager.getInstance();
-        Menu menu = binding.toolbar.getMenu();
-        menu.add(R.string.open_in_browser).setOnMenuItemClickListener(_ -> {
-            startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(trim(web.getUrl()))));
-            return false;
-        });
-        menu.add(R.string.refresh).setOnMenuItemClickListener(_ -> {
-            web.reload();
-            return false;
-        });
-        menu.add(R.string.clear_cookie).setOnMenuItemClickListener(_ -> {
-            cookie.removeAllCookies(_ -> {
-            });
-            cookie.flush();
-            return false;
-        });
-        menu.add(R.string.exit).setOnMenuItemClickListener(_ -> {
-            supportFinishAfterTransition();
-            return false;
-        });
         binding.back.setOnClickListener(_ -> {
             if (web.canGoBack()) web.goBack();
         });

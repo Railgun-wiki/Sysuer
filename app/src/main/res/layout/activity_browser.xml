@@ -59,11 +59,11 @@
                     app:icon="@drawable/js" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/website"
+                    android:id="@+id/browser"
                     style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/website"
+                    android:contentDescription="@string/browser"
                     app:icon="@drawable/web" />
 
                 <com.google.android.material.button.MaterialButton
@@ -73,6 +73,14 @@
                     android:layout_height="wrap_content"
                     android:contentDescription="@string/menu"
                     app:icon="@drawable/menu" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/website"
+                    style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/website"
+                    app:icon="@drawable/link" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/forward"

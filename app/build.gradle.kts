@@ -100,6 +100,9 @@ dependencies {
     implementation(libs.api)
     implementation(libs.provider)
     implementation(libs.html)
+    implementation(platform(libs.editor.bom))
+    implementation(libs.editor)
+    implementation(libs.language.textmate)
     /*configurations.all {
         exclude("androidx.appcompat", "appcompat")
     }*/

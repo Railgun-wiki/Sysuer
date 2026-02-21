@@ -10,4 +10,6 @@
     android:checked="false"
     app:iconGravity="textTop"
     app:strokeColor="#CAC4D0"
+    android:ellipsize="end"
+    android:maxLines="2"
     app:toggleCheckedStateOnClick="false" />

@@ -592,5 +592,10 @@
     <string name="image">有图模式</string>
     <string name="javascript">JS</string>
     <string name="save_mobile_data_mode">省流模式</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="browser">浏览器</string>
+    <string name="cookie">Cookie</string>
+    <string name="clear">清除</string>
 
 </resources>

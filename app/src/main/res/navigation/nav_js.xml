@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/js"
+    app:startDestination="@id/js_list_fragment">
+
+    <fragment
+        android:id="@+id/js_list_fragment"
+        android:name="com.sysu.edu.browser.JSListFragment">
+        <action
+            android:id="@+id/list_to_editor"
+            app:destination="@id/js_editor_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/js_editor_fragment"
+        android:name="com.sysu.edu.browser.JSEditorFragment" />
+
+</navigation>
