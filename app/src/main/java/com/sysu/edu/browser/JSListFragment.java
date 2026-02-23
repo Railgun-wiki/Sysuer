@@ -1,5 +1,6 @@
 package com.sysu.edu.browser;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.FragmentNavigator;
@@ -16,11 +18,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.transition.MaterialContainerTransform;
 import com.sysu.edu.R;
-import com.sysu.edu.databinding.RecyclerViewScrollBinding;
+import com.sysu.edu.databinding.FragmentRecyclerFabBinding;
 import com.sysu.edu.view.AdapterListener;
 
 import java.util.Map;
@@ -32,39 +34,89 @@ public class JSListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(getLayoutInflater());
+        FragmentRecyclerFabBinding binding = FragmentRecyclerFabBinding.inflate(getLayoutInflater());
         db = new BrowserHelper(requireContext());
         BrowserActivity.JSAdapter jsAdapter = new BrowserActivity.JSAdapter();
-
+        MaterialToolbar toolbar = requireActivity().findViewById(R.id.toolbar);
+        toolbar.getMenu().setGroupVisible(R.id.editor_group, false);
         jsAdapter.setListener(new AdapterListener() {
             @Override
             public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                 holder.itemView.setOnClickListener(v -> {
                     v.setTransitionName("script");
                     Bundle bundle = new Bundle();
-                    bundle.putString("script", jsAdapter.get(position).getString("script"));
-                    bundle.putString("title", jsAdapter.get(position).getString("title"));
-                    Navigation.findNavController(binding.getRoot()).navigate(R.id.list_to_editor, bundle, null, new FragmentNavigator.Extras(Map.of(v, "script")));
+                    bundle.putString("item", jsAdapter.get(position).toString());
+                    Navigation.findNavController(binding.getRoot()).navigate(R.id.list_to_info, bundle, null, new FragmentNavigator.Extras(Map.of(v, "script")));
                 });
+                holder.itemView.setOnLongClickListener(v -> {
+                    PopupMenu pop = new PopupMenu(requireContext(), v);
+                    pop.getMenuInflater().inflate(R.menu.js_item_menu, pop.getMenu());
+                    pop.show();
+                    pop.getMenu().findItem(R.id.ban).setTitle(jsAdapter.get(position).getInteger("state") == 1 ? R.string.disable : R.string.enable);
+                    pop.setOnMenuItemClickListener(item -> {
+                        if (item.getItemId() == R.id.edit) {
+                            v.performClick();
+                            return true;
+                        } else if (item.getItemId() == R.id.delete) {
+                            db.getWritableDatabase().delete("js", "id=?", new String[]{String.valueOf(jsAdapter.get(position).getLong("id"))});
+                            jsAdapter.remove(position);
+                            return true;
+                        } else if (item.getItemId() == R.id.ban) {
+                            ContentValues value = new ContentValues();
+                            int state = 1 - jsAdapter.get(position).getInteger("state");
+                            value.put("state", state);
+                            db.getWritableDatabase().update("js", value, "id=?", new String[]{String.valueOf(jsAdapter.get(position).getLong("id"))});
+                            jsAdapter.get(position).fluentPut("state", state);
+                            jsAdapter.notifyItemChanged(position);
+                            return true;
+                        }
+                        return false;
+                    });
+                    return false;
+                });
+                holder.itemView.setAlpha(jsAdapter.get(position).getInteger("state") == 1 ? 1f : 0.5f);
             }
 
             @Override
-            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding1) {
+            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
+
             }
         });
-        binding.getRoot().setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.getRoot().setAdapter(jsAdapter);
+        binding.recyclerViewScroll.getRoot().setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recyclerViewScroll.getRoot().setAdapter(jsAdapter);
 
         Cursor cursor = db.getReadableDatabase().query("js", null, null, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
                 jsAdapter.add(new JSONObject().fluentPut("title", cursor.getString(cursor.getColumnIndexOrThrow("title")))
                         .fluentPut("description", cursor.getString(cursor.getColumnIndexOrThrow("description")))
-                        .fluentPut("matches", JSONArray.parse(cursor.getString(cursor.getColumnIndexOrThrow("matches"))))
+                        .fluentPut("matches", cursor.getString(cursor.getColumnIndexOrThrow("matches")))
+                        .fluentPut("state", cursor.getInt(cursor.getColumnIndexOrThrow("state")))
+                        .fluentPut("author", cursor.getString(cursor.getColumnIndexOrThrow("author")))
+                        .fluentPut("id", cursor.getInt(cursor.getColumnIndexOrThrow("id")))
+                        .fluentPut("run", cursor.getString(cursor.getColumnIndexOrThrow("run")))
                         .fluentPut("script", cursor.getString(cursor.getColumnIndexOrThrow("script"))));
             } while (cursor.moveToNext());
         }
         cursor.close();
+
+        binding.fab.setIconResource(R.drawable.add);
+        binding.fab.setText(R.string.add);
+        binding.fab.setContentDescription(getString(R.string.add));
+        binding.fab.setOnClickListener(v -> {
+            v.setTransitionName("miniapp");
+            ContentValues values = new ContentValues();
+            values.put("title", "新脚本");
+            values.put("description", "");
+            values.put("matches", "[]");
+            values.put("author", "");
+            values.put("script", "");
+            long id = db.getWritableDatabase().insert("js", null, values);
+//            System.out.println(id);
+            Bundle bundle = new Bundle();
+            bundle.putString("item", JSONObject.of("title", "新脚本", "description", "", "matches", "[]", "author", "", "run", "", "script", "","id", id).toString());
+            Navigation.findNavController(binding.getRoot()).navigate(R.id.list_to_info, bundle, null, new FragmentNavigator.Extras(Map.of(binding.fab, "miniapp")));
+        });
 
         return binding.getRoot();
     }

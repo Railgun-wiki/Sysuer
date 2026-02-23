@@ -119,4 +119,8 @@
         <item>Intended Offline Campus</item>
         <item>Intended Cross-Campus Synchronous Course</item>
     </string-array>
+    <string-array name="run">
+        <item>Manual Run</item>
+        <item>Automatic Run</item>
+    </string-array>
 </resources>

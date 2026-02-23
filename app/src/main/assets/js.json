@@ -10,6 +10,7 @@
   {
     "title": "心理健康视频速通",
     "description": "在线教学平台，视频一键通关",
+    "author": "SYSU-Tang",
     "matches": [
       "lms.sysu.edu.cn/mod/fsresource/view.php"
     ],

@@ -1,5 +1,6 @@
 package com.sysu.edu.view;
 
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.view.View;
 import android.widget.GridLayout;
@@ -24,9 +25,12 @@ public class GridDialog {
     private final DialogGridBinding menuBinding;
     private final BottomSheetDialog menuDialog;
     private final FragmentActivity activity;
-    int selected = -1;
-    boolean selectable = false;
     ArrayList<Integer> referenceIds = new ArrayList<>();
+    private int selected = -1;
+    private boolean selectable = false;
+    private boolean multipleSelectable = false;
+    private int iconGravity;
+    private int gravity;
 
     public GridDialog(FragmentActivity activity) {
         this.activity = activity;
@@ -42,10 +46,12 @@ public class GridDialog {
     }
 
     public void setIconGravity(int gravity) {
+        iconGravity = gravity;
         referenceIds.forEach(id -> ((MaterialButton) menuBinding.grid.findViewById(id)).setIconGravity(gravity));
     }
 
     public void setGravity(int gravity) {
+        this.gravity = gravity;
         referenceIds.forEach(id -> ((MaterialButton) menuBinding.grid.findViewById(id)).setGravity(gravity));
     }
 
@@ -62,13 +68,19 @@ public class GridDialog {
             int id = View.generateViewId();
             referenceIds.add(id);
             menu.setId(id);
-            menu.addOnCheckedChangeListener((_, isChecked) -> menu.setStrokeWidth(isChecked && selectable ? 3 : 0));
-            if (menuAction.size() > i && menuAction.get(i) != null)
-                menu.setOnClickListener(_ -> {
+            menu.addOnCheckedChangeListener((_, isChecked) -> menu.setStrokeWidth((isChecked && (selectable || multipleSelectable)) ? 3 : 0));
+            menu.setOnClickListener(_ -> {
+                if (menuAction.size() > i && menuAction.get(i) != null)
                     menuAction.get(i).accept(menu);
-                    if (selectable)
-                        selectMenu(i);
-                });
+                if (multipleSelectable)
+                    toggleMenu(i);
+                else if (selectable)
+                    selectMenu(i);
+            });
+            if (iconGravity != 0)
+                menu.setIconGravity(iconGravity);
+            if (gravity != 0)
+                menu.setGravity(gravity);
             menuBinding.grid.addView(menu);
         });
     }
@@ -90,6 +102,10 @@ public class GridDialog {
 
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
+    }
+
+    public void setMultipleSelectable(boolean multipleSelectable) {
+        this.multipleSelectable = multipleSelectable;
     }
 
     public void selectMenu(int position) {
@@ -118,9 +134,9 @@ public class GridDialog {
     }
 
 
-    public void selectMenu(int[] positions) {
+    /*public void multipleSelectMenu(int[] positions) {
         IntStream.of(positions).forEach(this::selectMenu);
-    }
+    }*/
 
     public void setTogglable(int[] positions, boolean togglable) {
         IntStream.of(positions).forEach(i -> setTogglable(i, togglable));
@@ -137,4 +153,43 @@ public class GridDialog {
         }
     }
 
+    public void setPositiveButton(CharSequence text, DialogInterface.OnClickListener action) {
+        menuBinding.positive.setText(text);
+        menuBinding.positive.setOnClickListener(_ -> action.onClick(menuDialog, DialogInterface.BUTTON_POSITIVE));
+        menuBinding.buttonGroup.setVisibility(View.VISIBLE);
+    }
+
+    public void setPositiveButton(int text, DialogInterface.OnClickListener action) {
+        menuBinding.positive.setText(text);
+        menuBinding.positive.setOnClickListener(_ -> action.onClick(menuDialog, DialogInterface.BUTTON_POSITIVE));
+        menuBinding.buttonGroup.setVisibility(View.VISIBLE);
+    }
+
+    public void setNegativeButton(CharSequence text, DialogInterface.OnClickListener action) {
+        menuBinding.negative.setText(text);
+        menuBinding.negative.setOnClickListener(_ -> action.onClick(menuDialog, DialogInterface.BUTTON_NEGATIVE));
+        menuBinding.buttonGroup.setVisibility(View.VISIBLE);
+    }
+
+    public void setNegativeButton(int text, DialogInterface.OnClickListener action) {
+        menuBinding.negative.setText(text);
+        menuBinding.negative.setOnClickListener(_ -> action.onClick(menuDialog, DialogInterface.BUTTON_NEGATIVE));
+        menuBinding.buttonGroup.setVisibility(View.VISIBLE);
+    }
+
+    public void setNeutralButton(CharSequence text, DialogInterface.OnClickListener action) {
+        menuBinding.neutral.setText(text);
+        menuBinding.neutral.setOnClickListener(_ -> action.onClick(menuDialog, DialogInterface.BUTTON_NEUTRAL));
+        menuBinding.buttonGroup.setVisibility(View.VISIBLE);
+    }
+
+    public void setNeutralButton(int text, DialogInterface.OnClickListener action) {
+        menuBinding.neutral.setText(text);
+        menuBinding.neutral.setOnClickListener(_ -> action.onClick(menuDialog, DialogInterface.BUTTON_NEUTRAL));
+        menuBinding.buttonGroup.setVisibility(View.VISIBLE);
+    }
+
+    public void dismiss() {
+        menuDialog.dismiss();
+    }
 }

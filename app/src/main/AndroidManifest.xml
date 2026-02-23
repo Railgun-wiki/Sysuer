@@ -30,6 +30,10 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="36">
         <activity
+            android:name=".browser.JSEditorActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true" />
+        <activity
             android:name=".browser.JSActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true" />
@@ -246,10 +250,10 @@
         </activity>
 
         <activity-alias
-            android:name=".MainActivityDark"
+            android:name=".MainActivityDefault"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/icon_dark"
+            android:icon="@mipmap/icon"
             android:label="@string/app_name"
             android:targetActivity=".MainActivity">
             <intent-filter>
@@ -272,10 +276,10 @@
             </intent-filter>
         </activity-alias>
         <activity-alias
-            android:name=".MainActivityDefault"
+            android:name=".MainActivityDark"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/icon"
+            android:icon="@mipmap/icon_dark"
             android:label="@string/app_name"
             android:targetActivity=".MainActivity">
             <intent-filter>

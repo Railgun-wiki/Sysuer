@@ -23,5 +23,6 @@ public class JSActivity extends AppCompatActivity {
                 supportFinishAfterTransition();
                 return false;
             }).build());
+        getMenuInflater().inflate(R.menu.editor,binding.toolbar.getMenu());
     }
 }

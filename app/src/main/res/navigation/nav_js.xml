@@ -8,11 +8,20 @@
         android:id="@+id/js_list_fragment"
         android:name="com.sysu.edu.browser.JSListFragment">
         <action
+            android:id="@+id/list_to_info"
+            app:destination="@id/js_info_fragment" />
+        <action
             android:id="@+id/list_to_editor"
-            app:destination="@id/js_editor_fragment" />
+            app:destination="@id/js_editor_activity" />
     </fragment>
     <fragment
-        android:id="@+id/js_editor_fragment"
-        android:name="com.sysu.edu.browser.JSEditorFragment" />
-
+        android:id="@+id/js_info_fragment"
+        android:name="com.sysu.edu.browser.JSInfoFragment">
+        <action
+            android:id="@+id/info_to_editor"
+            app:destination="@id/js_editor_activity" />
+    </fragment>
+    <activity
+        android:id="@+id/js_editor_activity"
+        android:name="com.sysu.edu.browser.JSEditorActivity" />
 </navigation>

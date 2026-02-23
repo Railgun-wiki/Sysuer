@@ -10,13 +10,19 @@
             android:summary="https://github.com/SYSU-Tang/Sysuer/releases"
             app:icon="@drawable/down"
             app:title="@string/download_link">
-            <intent android:data="https://github.com/SYSU-Tang/Sysuer/releases" />
+            <intent
+                android:data="https://github.com/SYSU-Tang/Sysuer/releases"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             android:summary="https://sysu-tang.github.io/sysuer-website/"
             app:icon="@drawable/web"
             app:title="@string/official_website">
-            <intent android:data="https://sysu-tang.github.io/sysuer-website/" />
+            <intent
+                android:data="https://sysu-tang.github.io/sysuer-website/"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/project">
@@ -24,19 +30,28 @@
             app:icon="@drawable/account"
             app:summary="https://github.com/SYSU-Tang"
             app:title="SYSU—Tang">
-            <intent android:data="https://github.com/SYSU-Tang" />
+            <intent
+                android:data="https://github.com/SYSU-Tang"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/SYSU-Tang/Sysuer/"
             app:title="@string/app_name">
-            <intent android:data="https://github.com/SYSU-Tang/Sysuer/" />
+            <intent
+                android:data="https://github.com/SYSU-Tang/Sysuer/"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/group"
             app:summary="1063579244"
             app:title="@string/qq_group">
-            <intent android:data="mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3Di4M0YfNzHskNiXgiYTAvA1EAWZh7HNQx" />
+            <intent
+                android:data="mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3Di4M0YfNzHskNiXgiYTAvA1EAWZh7HNQx"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/feedback">
@@ -44,7 +59,10 @@
             android:summary="https://github.com/SYSU-Tang/Sysuer/issues"
             app:icon="@drawable/question"
             app:title="@string/submit_issues">
-            <intent android:data="https://github.com/SYSU-Tang/Sysuer/issues" />
+            <intent
+                android:data="https://github.com/SYSU-Tang/Sysuer/issues"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/money"
@@ -52,7 +70,10 @@
             app:persistent="false"
             app:summary="@string/sponsor_appreciation"
             app:title="@string/sponsor">
-            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/sponsor" />
+            <intent
+                android:data="https://sysu-tang.github.io/sysuer-website/docs/sponsor"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/permission">
@@ -63,7 +84,10 @@
             app:persistent="false"
             app:summary="https://sysu-tang.github.io/sysuer-website/docs/privacyPolicy/"
             app:title="@string/privacy_policy">
-            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/privacyPolicy/" />
+            <intent
+                android:data="https://sysu-tang.github.io/sysuer-website/docs/privacyPolicy/"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:defaultValue="true"
@@ -72,7 +96,10 @@
             app:persistent="false"
             app:summary="https://sysu-tang.github.io/sysuer-website/docs/userAgreement/"
             app:title="@string/user_agreement">
-            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/userAgreement/" />
+            <intent
+                android:data="https://sysu-tang.github.io/sysuer-website/docs/userAgreement/"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/open_source">
@@ -80,55 +107,82 @@
             app:icon="@drawable/version"
             app:summary="https://github.com/alibaba/fastjson2"
             app:title="fastjson2">
-            <intent android:data="https://github.com/alibaba/fastjson2" />
+            <intent
+                android:data="https://github.com/alibaba/fastjson2"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/square/okhttp"
             app:title="okhttp">
-            <intent android:data="https://github.com/square/okhttp" />
+            <intent
+                android:data="https://github.com/square/okhttp"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/androidx/androidx"
             app:title="androidx">
-            <intent android:data="https://github.com/androidx/androidx" />
+            <intent
+                android:data="https://github.com/androidx/androidx"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/material-components/material-components-android"
             app:title="Material3">
-            <intent android:data="https://github.com/material-components/material-components-android" />
+            <intent
+                android:data="https://github.com/material-components/material-components-android"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/JetBrains/kotlin"
             app:title="Kotlin">
-            <intent android:data="https://github.com/JetBrains/kotlin" />
+            <intent
+                android:data="https://github.com/JetBrains/kotlin"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/RikkaApps/Shizuku"
             app:title="Shizuku">
-            <intent android:data="https://github.com/RikkaApps/Shizuku" />
+            <intent
+                android:data="https://github.com/RikkaApps/Shizuku"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/bumptech/glide"
             app:title="Glide">
-            <intent android:data="https://github.com/bumptech/glide" />
+            <intent
+                android:data="https://github.com/bumptech/glide"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/RikkaApps/RikkaX"
             app:title="RikkaX">
-            <intent android:data="https://github.com/RikkaApps/RikkaX" />
+            <intent
+                android:data="https://github.com/RikkaApps/RikkaX"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference
             app:icon="@drawable/version"
             app:summary="https://github.com/noties/Markwon"
             app:title="Markwon">
-            <intent android:data="https://github.com/noties/Markwon" />
+            <intent
+                android:data="https://github.com/noties/Markwon"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

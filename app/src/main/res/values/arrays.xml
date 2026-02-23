@@ -4,6 +4,10 @@
         <item>@string/dark</item>
         <item>@string/follow_system</item>
     </string-array>
+    <string-array name="values_2">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
     <string-array name="values_3">
         <item>0</item>
         <item>1</item>
@@ -214,7 +218,7 @@
         <item>研究生排考</item>
     </string-array>
     <string-array name="occupy_source_values">
-        <item />
+        <item/>
         <item>2</item>
         <item>3</item>
         <item>4</item>
@@ -248,5 +252,9 @@
         <item>意向开课学期</item>
         <item>意向线下上课校区</item>
         <item>是否有意向开设跨校园同步课程</item>
+    </string-array>
+    <string-array name="run">
+        <item>手动运行</item>
+        <item>自动运行</item>
     </string-array>
 </resources>

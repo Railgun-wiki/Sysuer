@@ -83,7 +83,10 @@
         <Preference
             app:icon="@drawable/help"
             app:title="@string/help">
-            <intent android:data="https://sysu-tang.github.io/sysuer-website/docs/user/introduction" />
+            <intent
+                android:data="https://sysu-tang.github.io/sysuer-website/docs/user/introduction"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
         </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

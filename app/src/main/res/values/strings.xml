@@ -595,5 +595,22 @@
     <string name="browser">浏览器</string>
     <string name="cookie">Cookie</string>
     <string name="clear">清除</string>
+    <string name="light_mode">亮色模式</string>
+    <string name="dark_mode">暗色模式</string>
+    <string name="open_as_url">打开为网页</string>
+    <string name="link">链接</string>
+    <string name="download">下载</string>
+    <string name="edit">编辑</string>
+    <string name="ban">禁用</string>
+    <string name="disable">禁用</string>
+    <string name="enable">启用</string>
+    <string name="matches">匹配</string>
+    <string name="run">运行</string>
+    <string name="keyword">关键词</string>
+    <string name="find_text">查找文本</string>
+    <string name="webpage_source">网页源码</string>
+    <string name="privacy_mode">无痕模式</string>
+    <string name="third_party_cookie">第三方Cookie</string>
+    <string name="author">作者</string>
 
 </resources>

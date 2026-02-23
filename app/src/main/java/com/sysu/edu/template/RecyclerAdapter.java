@@ -50,6 +50,7 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
     }
 
     public T get(int position) {
+        if (position < 0 || position >= getItemCount()) return null;
         return data.get(position);
     }
 

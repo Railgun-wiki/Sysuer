@@ -107,7 +107,6 @@
             app:useSimpleSummaryProvider="true" />
         <rikka.preference.SimpleMenuPreference
             app:icon="@drawable/menu"
-            app:isFilter="false"
             app:key="classLevel"
             app:persistent="false"
             app:title="@string/class_level"

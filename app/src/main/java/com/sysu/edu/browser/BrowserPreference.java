@@ -45,12 +45,50 @@ public class BrowserPreference {
         preference.edit().putBoolean("javascript_enabled", jsEnabled).apply();
     }
 
-     public boolean isSaveMobileDataMode() {
+    public boolean isSaveMobileDataMode() {
         return preference.getBoolean("save_mobile_data_mode", false);
     }
 
     public void setSaveMobileDataMode(boolean saveMobileDataMode) {
         preference.edit().putBoolean("save_mobile_data_mode", saveMobileDataMode).apply();
+    }
+
+    public int getTheme() {
+        return preference.getInt("theme", 0);
+    }
+
+    /*
+     * 主题
+     * 0: 系统默认
+     * 1: 强制深色
+     * 2: 强制浅色
+     * */
+    public void setTheme(int theme) {
+        preference.edit().putInt("theme", theme).apply();
+    }
+
+    public boolean isPrivacyMode() {
+        return preference.getBoolean("privacy_mode", false);
+    }
+
+    public void setPrivacyMode(boolean privacyMode) {
+        preference.edit().putBoolean("privacy_mode", privacyMode).apply();
+    }
+
+    public boolean isCookieAccept() {
+        return preference.getBoolean("cookie_accept", true);
+    }
+
+    public void setCookieAccept(boolean accept) {
+        preference.edit().putBoolean("cookie_accept", accept).apply();
+    }
+
+    public boolean isThirdPartyCookieAccept() {
+        return preference.getBoolean("third_party_cookie_accept", true);
+    }
+
+    public void setThirdPartyCookieAccept(boolean accept) {
+        preference.edit().putBoolean("third_party_cookie_accept", accept).apply();
     }
 
     public Context getContext() {

@@ -1,5 +1,7 @@
 package com.sysu.edu.home;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -25,6 +27,7 @@ import com.alibaba.fastjson2.JSONReader;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.DialogServiceActionBinding;
 import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentServiceBinding;
@@ -200,7 +203,12 @@ public class ServiceFragment extends Fragment {
             isShortcutCollected.setValue(!isShortcutCollect);
         });
         actionBinding.feedback.setOnClickListener(_ -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
-        Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s", item.getString("name"), item.getString("description")));
+        actionBinding.openAsUrl.setOnClickListener(_ -> {
+            String url = item.getString("url");
+            if (!isEmpty(url))
+                startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)));
+        });
+        Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s\n\n%s", item.getString("name"), item.getString("description"), item.getString("url")));
         actionDialog.show();
         return true;
     }
@@ -216,7 +224,8 @@ public class ServiceFragment extends Fragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {};
+            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false)) {
+            };
         }
 
         @Override

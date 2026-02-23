@@ -66,6 +66,18 @@ public class CommonUtil {
     }
 
     /**
+     * 检查对象是否为空或仅包含空格
+     *
+     * @param str 要检查的对象
+     * @return 如果对象为空或仅包含空格，则返回true；否则返回false
+     *
+     */
+    public static <T> boolean isEmpty(T str) {
+        return str == null || str.toString().trim().isEmpty();
+    }
+
+
+    /**
      * 对字符串进行trim操作，若字符串为空则返回空字符串
      *
      * @param str 要进行修剪操作的字符串

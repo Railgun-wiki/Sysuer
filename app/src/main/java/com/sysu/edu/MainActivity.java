@@ -246,7 +246,8 @@ public class MainActivity extends AppCompatActivity {
             }else {
                 params.toast(getString(R.string.app_latest_installed));
             }*/
-        } catch (PackageManager.NameNotFoundException _) {}
+        } catch (PackageManager.NameNotFoundException _) {
+        }
     }
 
     @Override
