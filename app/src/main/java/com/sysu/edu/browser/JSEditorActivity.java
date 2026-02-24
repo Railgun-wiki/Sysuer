@@ -55,17 +55,10 @@ public class JSEditorActivity extends AppCompatActivity {
                     value.clear();
                     value.put("script", binding.editor.getText().toString());
                     db.getWritableDatabase().update("js", value, "id = ?", new String[]{data.getString("id")});
-                    return true;
-                } else if (item.getItemId() == R.id.redo) {
-                    binding.editor.redo();
-                    return true;
-                } else if (item.getItemId() == R.id.undo) {
-                    binding.editor.undo();
-                    return true;
-                }
+                } else if (item.getItemId() == R.id.redo) binding.editor.redo();
+                else if (item.getItemId() == R.id.undo) binding.editor.undo();
                 return false;
             });
-            System.out.println(data);
             binding.editor.setText(data.getString("script"));
         }
     }

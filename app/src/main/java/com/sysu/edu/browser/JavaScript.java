@@ -13,13 +13,15 @@ public class JavaScript {
     public JavaScript(String jsList) {
         this.jsList = JSONArray.parse(jsList);
     }
-    public JavaScript(){
+
+    public JavaScript() {
     }
 
     public void add(String title, String description, String[] matches, String script) {
         jsList.add(JSONObject.parse(String.format("{\"title\": \"%s\",\"description\": \"%s\",\"matches\": %s,\"script\": \"%s\"}", title, description, Arrays.toString(matches), script)));
     }
-    public void add(JSONObject item){
+
+    public void add(JSONObject item) {
         jsList.add(item);
     }
 
@@ -37,5 +39,8 @@ public class JavaScript {
             }
         });
         return list;
+    }
+   public void clear() {
+        jsList.clear();
     }
 }

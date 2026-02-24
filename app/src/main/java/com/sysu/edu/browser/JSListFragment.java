@@ -26,17 +26,20 @@ import com.sysu.edu.databinding.FragmentRecyclerFabBinding;
 import com.sysu.edu.view.AdapterListener;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class JSListFragment extends Fragment {
 
     BrowserHelper db;
+    FragmentRecyclerFabBinding binding;
+    private BrowserActivity.JSAdapter jsAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        FragmentRecyclerFabBinding binding = FragmentRecyclerFabBinding.inflate(getLayoutInflater());
+        binding = FragmentRecyclerFabBinding.inflate(getLayoutInflater());
         db = new BrowserHelper(requireContext());
-        BrowserActivity.JSAdapter jsAdapter = new BrowserActivity.JSAdapter();
+        jsAdapter = new BrowserActivity.JSAdapter();
         MaterialToolbar toolbar = requireActivity().findViewById(R.id.toolbar);
         toolbar.getMenu().setGroupVisible(R.id.editor_group, false);
         jsAdapter.setListener(new AdapterListener() {
@@ -85,6 +88,16 @@ public class JSListFragment extends Fragment {
         binding.recyclerViewScroll.getRoot().setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerViewScroll.getRoot().setAdapter(jsAdapter);
 
+        getJSList();
+        binding.fab.setIconResource(R.drawable.add);
+        binding.fab.setText(R.string.add);
+        binding.fab.setContentDescription(getString(R.string.add));
+        binding.fab.setOnClickListener(_ -> add());
+        binding.fab.setTransitionName("miniapp");
+        return binding.getRoot();
+    }
+
+    void getJSList() {
         Cursor cursor = db.getReadableDatabase().query("js", null, null, null, null, null, null);
         if (cursor.moveToFirst()) {
             do {
@@ -99,26 +112,20 @@ public class JSListFragment extends Fragment {
             } while (cursor.moveToNext());
         }
         cursor.close();
+    }
 
-        binding.fab.setIconResource(R.drawable.add);
-        binding.fab.setText(R.string.add);
-        binding.fab.setContentDescription(getString(R.string.add));
-        binding.fab.setOnClickListener(v -> {
-            v.setTransitionName("miniapp");
-            ContentValues values = new ContentValues();
-            values.put("title", "新脚本");
-            values.put("description", "");
-            values.put("matches", "[]");
-            values.put("author", "");
-            values.put("script", "");
-            long id = db.getWritableDatabase().insert("js", null, values);
-//            System.out.println(id);
-            Bundle bundle = new Bundle();
-            bundle.putString("item", JSONObject.of("title", "新脚本", "description", "", "matches", "[]", "author", "", "run", "", "script", "","id", id).toString());
-            Navigation.findNavController(binding.getRoot()).navigate(R.id.list_to_info, bundle, null, new FragmentNavigator.Extras(Map.of(binding.fab, "miniapp")));
-        });
 
-        return binding.getRoot();
+    void add() {
+        ContentValues values = new ContentValues();
+        values.put("title", "新脚本");
+        values.put("description", "");
+        values.put("matches", "[]");
+        values.put("author", "");
+        values.put("script", "");
+        long id = db.getWritableDatabase().insert("js", null, values);
+        Bundle bundle = new Bundle();
+        bundle.putString("item", JSONObject.of("title", "新脚本", "description", "", "matches", "[]", "author", "", "run", 0, "script", "", "state", 1, "id", id).toString());
+        Navigation.findNavController(binding.getRoot()).navigate(R.id.list_to_info, bundle, null, new FragmentNavigator.Extras(Map.of(binding.fab, "miniapp")));
     }
 
     @Override
@@ -129,5 +136,16 @@ public class JSListFragment extends Fragment {
         transition.setAllContainerColors(requireContext().getColor(com.google.android.material.R.color.design_default_color_surface));
         setSharedElementEnterTransition(transition);
         setSharedElementReturnTransition(transition);
+        if (Objects.equals(requireActivity().getIntent().getStringExtra("operation"), "add")) {
+            add();
+            requireActivity().getIntent().removeExtra("operation");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        jsAdapter.clear();
+        getJSList();
     }
 }

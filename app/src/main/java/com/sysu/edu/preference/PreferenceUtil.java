@@ -6,6 +6,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.alibaba.fastjson2.JSONObject;
 
+import rikka.material.preference.MaterialSwitchPreference;
 import rikka.preference.SimpleMenuPreference;
 
 public class PreferenceUtil {
@@ -39,6 +40,19 @@ public class PreferenceUtil {
         FilterPreference preference = fragment.findPreference(preferenceKey);
         if (preference != null) params.put(paramsKey, preference.getValue());
     }
+
+    public <T> void insertSwitchValue(String preferenceKey, String paramsKey, T ifChecked, T ifNotChecked) {
+        MaterialSwitchPreference preference = fragment.findPreference(preferenceKey);
+        if (preference != null)
+            params.put(paramsKey, preference.isChecked() ? ifChecked : ifNotChecked);
+    }
+
+    public void insertSwitchValue(String preferenceKey, String paramsKey) {
+        MaterialSwitchPreference preference = fragment.findPreference(preferenceKey);
+        if (preference != null)
+            params.put(paramsKey, preference.isChecked());
+    }
+
 
     public void insert(String key, Object value) {
         params.put(key, value);

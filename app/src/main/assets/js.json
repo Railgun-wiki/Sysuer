@@ -2,6 +2,7 @@
   {
     "title": "网页调试",
     "description": "使用Eruda，开启网页调试",
+    "author": "网络",
     "matches": [
       "."
     ],
@@ -18,7 +19,8 @@
   },
   {
     "title": "美化",
-    "description": "隐藏底部导航栏",
+    "description": "隐藏底部信息栏",
+    "author": "SYSU-Tang",
     "matches": [
       "www.sysu.edu.cn"
     ],
@@ -26,19 +28,17 @@
   },
   {
     "title": "美化",
-    "description": "个人培养方案查看界面美化",
+    "description": "个人培养方案界面去除无用元素",
+    "author": "SYSU-Tang",
     "matches": [
       "jwxt.sysu.edu.cn/jwxt/mk/#/personalTrainingProgramView"
     ],
-    "script": "['.sys-header','.sys-footer','.ant-breadcrumb'].forEach(function(v){document.querySelector(v).style.display='none';});document.querySelector('div.pyfa > div > h1').style.margin='0px';"
+    "script": "['.sys-header','.sys-footer','.ant-breadcrumb','.ant-tabs-bar'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelector('.stu-con').style.padding='0px';"
   },
   {
     "title": "Welearn助手",
     "description": "自动选择Welearn平台的选择题、判断题、填空题和下拉框答案",
     "matches": [
-      "://welearn.sflep.com/Student/StudyCourse.aspx",
-      "://welearn.sflep.com/student/StudyCourse.aspx",
-      "://welearn.sflep.com/student/studyCourse.aspx",
       "://welearn.sflep.com/student/Studycourse.aspx",
       "://welearn.sflep.com/student/studycourse.aspx"
     ],
@@ -51,5 +51,14 @@
       "."
     ],
     "script": "document.addEventListener('copy', function(e) {e.clipboardData.setData('text/plain', document.body.innerText);e.preventDefault();});"
+  },
+  {
+    "title": "美化",
+    "description": "教务系统界面去除无用元素",
+    "matches": [
+      "://jwxt.sysu.edu.cn/jwxt/mk/"
+    ],
+    "author": "SYSU-Tang",
+    "script": "['.sys-header','.sys-footer','.ant-breadcrumb'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelector('.stu-con').style.padding='0px';"
   }
 ]

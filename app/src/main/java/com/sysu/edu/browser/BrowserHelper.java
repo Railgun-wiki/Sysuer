@@ -14,7 +14,7 @@ public class BrowserHelper extends SQLiteOpenHelper {
     private final Context context;
 
     public BrowserHelper(Context context) {
-        super(context, "browser.db", null, 3);
+        super(context, "browser.db", null, 4);
         this.context = context;
     }
 
@@ -22,13 +22,11 @@ public class BrowserHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS ua (id INTEGER PRIMARY KEY AUTOINCREMENT, uaId INTEGER UNIQUE, position INTEGER, title TEXT, ua TEXT, description TEXT, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
         db.execSQL("CREATE TABLE IF NOT EXISTS js (id INTEGER PRIMARY KEY AUTOINCREMENT, jsId INTEGER UNIQUE, position INTEGER, title TEXT, script TEXT, description TEXT, matches TEXT, state INTEGER DEFAULT 1, run INTEGER DEFAULT 0,author TEXT, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
-        JSONArray js = JSONArray.parseArray(readAssets(getContext(), "js.json"));
-        JSONArray ua = JSONArray.parse(readAssets(getContext(), "ua.json"));
-        js.forEach((i) -> {
+        JSONArray.parseArray(readAssets(getContext(), "js.json")).forEach((i) -> {
             JSONObject item = (JSONObject) i;
             db.execSQL("INSERT OR IGNORE INTO js (jsId, position, title, script, description, matches) VALUES (?, ?, ?, ?, ?, ?)", new Object[]{item.getInteger("jsId"), item.getInteger("position"), item.getString("title"), item.getString("script"), item.getString("description"), item.getJSONArray("matches").toJSONString()});
         });
-        ua.forEach((i) -> {
+        JSONArray.parse(readAssets(getContext(), "ua.json")).forEach((i) -> {
             JSONObject item = (JSONObject) i;
             db.execSQL("INSERT OR IGNORE INTO ua (uaId, position, title, ua, description) VALUES (?, ?, ?, ?, ?)", new Object[]{item.getInteger("uaId"), item.getInteger("position"), item.getString("title"), item.getString("ua"), item.getString("description")});
         });
@@ -45,6 +43,25 @@ public class BrowserHelper extends SQLiteOpenHelper {
         if (oldVersion < 3) {
             db.execSQL("ALTER TABLE js ADD COLUMN run INTEGER DEFAULT 0");
             db.execSQL("ALTER TABLE js ADD COLUMN author TEXT");
+        }
+        if (oldVersion < 4) {
+            ContentValues value = new ContentValues();
+            value.put("state", 1);
+            value.put("run", 0);
+            value.put("author", "SYSU-Tang");
+            value.put("title", "美化");
+            value.put("description", "教务系统界面美化");
+            value.put("matches", "[\"://jwxt.sysu.edu.cn/jwxt/mk/\"]");
+            value.put("script", "['.sys-header','.sys-footer','.ant-breadcrumb'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelector('.stu-con').style.padding='0px';");
+            db.insert("js", null, value);
+            /* {
+    "title": "美化",
+    "description": "教务系统界面美化",
+    "matches": [
+      "://jwxt.sysu.edu.cn/jwxt/mk/"
+    ],
+    "script": "document.styleSheets[0].insertRule('.stu-xk-crumbs,.sys-header,.sys-footer,.stu-con{display:none;}.stu-con{padding-top:0px;}');"
+  }*/
         }
     }
 

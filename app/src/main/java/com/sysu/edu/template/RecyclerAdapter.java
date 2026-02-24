@@ -41,6 +41,8 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
     public void remove(int position) {
         data.remove(position);
         notifyItemRemoved(position);
+        notifyItemRangeChanged(position, position - 1);
+        notifyItemRangeChanged(position, getItemCount() - position);
     }
 
     public void clear() {
@@ -63,6 +65,7 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
         data.addAll(d);
         notifyItemRangeInserted(0, getItemCount());
     }
+
     public void swap(int position1, int position2) {
         Collections.swap(data, position1, position2);
         notifyItemMoved(position1, position2);

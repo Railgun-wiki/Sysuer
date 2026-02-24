@@ -23,6 +23,7 @@ import com.sysu.edu.preference.PreferenceUtil;
 
 import java.util.Objects;
 
+import rikka.material.preference.MaterialSwitchPreference;
 import rikka.preference.SimpleMenuPreference;
 
 public class JSInfoFragment extends PreferenceFragmentCompat {
@@ -52,6 +53,7 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
         preferenceUtil.insertEditValue("author", "author");
         preferenceUtil.insert("matches", JSONArray.from(((EditPreference) Objects.requireNonNull(findPreference("matches"))).getValue().split(",")).toString());
         preferenceUtil.insertMenuValue("run", "run");
+        preferenceUtil.insertSwitchValue("state", "state", 1, 0);
         return preferenceUtil.getParams();
     }
 
@@ -60,6 +62,7 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
         ((EditPreference) Objects.requireNonNull(findPreference("description"))).setValue(info.getString("description"));
         ((EditPreference) Objects.requireNonNull(findPreference("author"))).setValue(info.getString("author"));
         ((EditPreference) Objects.requireNonNull(findPreference("matches"))).setValue(String.join(",", JSONArray.parseArray(trim(info.getString("matches"))).toList(String.class)));
+        ((MaterialSwitchPreference) Objects.requireNonNull(findPreference("state"))).setChecked(info.getInteger("state") == 1);
         ((SimpleMenuPreference) Objects.requireNonNull(findPreference("run"))).setValue(info.getString("run"));
     }
 
@@ -67,14 +70,14 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         db = new BrowserHelper(requireContext());
         NavController navController = Navigation.findNavController(view);
-        JSONObject data = JSONObject.parseObject(requireArguments().getString("item"));
+        var data = JSONObject.parseObject(requireArguments().getString("item"));
         var value = new ContentValues();
         if (data != null) setData(data);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 if (data != null) save(value, data.getString("id"));
-                navController.popBackStack();
+                navController.navigateUp();
             }
         });
         ((Preference) Objects.requireNonNull(findPreference("edit"))).setOnPreferenceClickListener(_ -> {
@@ -89,6 +92,14 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
             if (data != null) save(value, data.getString("id"));
             return false;
         });
+        ((Preference) Objects.requireNonNull(findPreference("delete"))).setOnPreferenceClickListener(_ -> {
+            if (data != null) {
+                db.getWritableDatabase().delete("js", "id = ?", new String[]{data.getString("id")});
+                navController.navigateUp();
+            }
+            return false;
+        });
+        /*
         if (data != null) {
             Preference state = Objects.requireNonNull(findPreference("state"));
             state.setTitle(data.getInteger("state") == 1 ? getString(R.string.enable) : getString(R.string.disable));
@@ -99,7 +110,7 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
                 save(value, data.getString("id"));
                 return false;
             });
-        }
+        }*/
         super.onViewCreated(view, savedInstanceState);
     }
 }

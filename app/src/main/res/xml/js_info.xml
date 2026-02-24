@@ -34,6 +34,12 @@
         app:title="@string/run"
         app:useSimpleSummaryProvider="true" />
 
+    <rikka.material.preference.MaterialSwitchPreference
+        app:icon="@drawable/warning"
+        app:key="state"
+        app:persistent="false"
+        app:title="@string/disable" />
+
     <Preference
         app:allowDividerAbove="true"
         app:icon="@drawable/edit"
@@ -48,8 +54,8 @@
         app:title="@string/save" />
 
     <Preference
-        app:icon="@drawable/warning"
-        app:key="state"
+        app:icon="@drawable/delete"
+        app:key="delete"
         app:persistent="false"
-        app:title="@string/disable" />
+        app:title="@string/delete" />
 </androidx.preference.PreferenceScreen>

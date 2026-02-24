@@ -86,15 +86,7 @@
         <item name="cornerSize">4dp</item>
     </style>
     <!-- Base application theme. -->
-    <style name="Base.Theme.SYSU" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-    </style>
 
-    <style name="ThemeOverlay.中大儿.FullscreenContainer" parent="">
-        <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
-        <item name="fullscreenTextColor">@color/light_blue_A200</item>
-    </style>
     <!-- Base application theme. -->
     <!-- <style name="Base.Theme.中大儿" parent="Theme.Material3.DayNight.NoActionBar">
          &lt;!&ndash; Customize your light theme here. &ndash;&gt;

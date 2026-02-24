@@ -4,11 +4,6 @@
         <item>@string/service</item>
         <item>@string/account</item>
     </string-array>
-    <string-array name="sponsors">
-        <item>Alipay</item>
-        <item>WeChat Pay</item>
-        <item>QQ Wallet</item>
-    </string-array>
     <string-array name="weeks">
         <item>Mon</item>
         <item>Tue</item>

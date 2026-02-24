@@ -79,6 +79,7 @@ public class BrowserActivity extends AppCompatActivity {
     MutableLiveData<Integer> progress = new MutableLiveData<>();
     MaterialButton refreshButton;
     BrowserHelper db;
+    JavaScript js;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -92,20 +93,9 @@ public class BrowserActivity extends AppCompatActivity {
         Params params = new Params(this);
         BrowserPreference preference = new BrowserPreference(this);
         String url = getIntent().getDataString() != null ? getIntent().getDataString() : "https://www.sysu.edu.cn/";
-        JavaScript js = new JavaScript();
-        Cursor cursor = db.getReadableDatabase().query("js", null, null, null, null, null, null);
-        if (cursor.moveToFirst()) {
-            do {
-                JSONObject item = (new JSONObject().fluentPut("title", cursor.getString(cursor.getColumnIndexOrThrow("title")))
-                        .fluentPut("description", cursor.getString(cursor.getColumnIndexOrThrow("description")))
-                        .fluentPut("matches", JSONArray.parse(cursor.getString(cursor.getColumnIndexOrThrow("matches"))))
-                        .fluentPut("state", cursor.getInt(cursor.getColumnIndexOrThrow("state")))
-                        .fluentPut("id", cursor.getInt(cursor.getColumnIndexOrThrow("id")))
-                        .fluentPut("script", cursor.getString(cursor.getColumnIndexOrThrow("script"))));
-                js.add(item);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
+        js = new JavaScript();
+        getJSList();
+        Cursor cursor;
 //        JavaScript js = new JavaScript(readAssets(this, "js.json"));
         web = binding.web;
         web.setWebViewClient(new WebViewClient() {
@@ -285,8 +275,7 @@ public class BrowserActivity extends AppCompatActivity {
         jsList.setAdapter(jsAdapter);
         JSBinding.manage.setOnClickListener(v -> startActivity(new Intent(BrowserActivity.this, JSActivity.class),
                 ActivityOptionsCompat.makeSceneTransitionAnimation(BrowserActivity.this, v, "miniapp").toBundle()));
-
-        JSBinding.add.setOnClickListener(v -> startActivity(new Intent(BrowserActivity.this, JSActivity.class),
+        JSBinding.add.setOnClickListener(v -> startActivity(new Intent(BrowserActivity.this, JSActivity.class).putExtra("operation", "add"),
                 ActivityOptionsCompat.makeSceneTransitionAnimation(BrowserActivity.this, v, "miniapp").toBundle()));
 
         /*
@@ -512,7 +501,23 @@ public class BrowserActivity extends AppCompatActivity {
         });
     }
 
-    private void setPrivacyMode(boolean enabled) {
+    private void getJSList() {
+        Cursor cursor = db.getReadableDatabase().query("js", null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            do {
+                JSONObject item = (new JSONObject().fluentPut("title", cursor.getString(cursor.getColumnIndexOrThrow("title")))
+                        .fluentPut("description", cursor.getString(cursor.getColumnIndexOrThrow("description")))
+                        .fluentPut("matches", JSONArray.parse(cursor.getString(cursor.getColumnIndexOrThrow("matches"))))
+                        .fluentPut("state", cursor.getInt(cursor.getColumnIndexOrThrow("state")))
+                        .fluentPut("id", cursor.getInt(cursor.getColumnIndexOrThrow("id")))
+                        .fluentPut("script", cursor.getString(cursor.getColumnIndexOrThrow("script"))));
+                js.add(item);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+    }
+
+    void setPrivacyMode(boolean enabled) {
         webSettings.setSaveFormData(!enabled);
         webSettings.setDomStorageEnabled(!enabled);
         webSettings.setDatabaseEnabled(!enabled);
@@ -555,6 +560,14 @@ public class BrowserActivity extends AppCompatActivity {
         String path = URLDecoder.decode(URI.create(url).getPath(), StandardCharsets.UTF_8);
         int i = path.lastIndexOf("/");
         return i >= 0 ? path.substring(i + 1) : path;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        js.clear();
+        getJSList();
+        System.out.println(js);
     }
 
     static class JSAdapter extends RecyclerAdapter<JSONObject> {
