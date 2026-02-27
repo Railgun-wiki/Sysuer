@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+#-keep class com.haibin.calendarview.** { *; }
+#-keep interface com.haibin.calendarview.** { *; }
+-keep class com.sysu.edu.view.CustomMonthView
+-keep class com.sysu.edu.view.CustomWeekView

@@ -13,18 +13,21 @@ android {
         versionCode 371
         versionName "3.7.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
+        multiDexEnabled = true
     }
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            consumerProguardFiles 'consumer-rules.pro'
         }
     }
     android {
         lintOptions {
             abortOnError false
         }
+    }
+    buildFeatures {
+        viewBinding true
     }
     tasks.register('intoJar', Copy) {
         delete 'build/libs/CalendarView.jar'
@@ -46,4 +49,3 @@ dependencies {
     implementation libs.recyclerview
     testImplementation libs.junit.v412
 }
-//apply from: '../script/gradle-jcenter-push.gradle'

@@ -67,7 +67,7 @@ public class DownloadManager {
                         fos.write(buf, 0, len);
                         sum += len;
                         String detail = String.format(Locale.getDefault(), "已下载%.2fKB", sum / 1024.0f);
-                        System.out.println("下载进度：" + detail);
+//                        System.out.println("下载进度：" + detail);
                     }
                     is.close();
                     fos.close();

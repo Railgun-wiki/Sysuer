@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.sysu.edu.databinding.ActivitySettingBinding;
 import com.sysu.edu.preference.Language;
+import com.sysu.edu.preference.Theme;
 
 public class SettingActivity extends AppCompatActivity {
 
@@ -16,6 +17,7 @@ public class SettingActivity extends AppCompatActivity {
         ActivitySettingBinding binding = ActivitySettingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         Language.setLanguage(this);
+        Theme.setTheme(this);
         binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
     }
 }

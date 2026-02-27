@@ -9,7 +9,6 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.sysu.edu.R;
 import com.sysu.edu.preference.MenuPreference;
-import com.sysu.edu.preference.Theme;
 
 import java.util.Objects;
 
@@ -18,8 +17,6 @@ public class SettingFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);
-        Theme theme = new Theme(requireActivity());
-        theme.setTheme();
         ((MenuPreference) Objects.requireNonNull(findPreference("theme"))).setOnPreferenceChangeListener((_, _) -> {
             requireActivity().recreate();
             return true;

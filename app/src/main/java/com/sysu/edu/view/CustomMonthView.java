@@ -153,8 +153,8 @@ public class CustomMonthView extends MonthView {
             mSchemeTextPaint.setColor(0xff333333);
             mSchemeLunarTextPaint.setColor(0xffCFCFCF);
 
-            mOtherMonthTextPaint.setColor(0xFFe1e1e1);
-            mOtherMonthLunarTextPaint.setColor(0xFFe1e1e1);
+            mOtherMonthTextPaint.setColor(0xFFEEEEEE);
+            mOtherMonthLunarTextPaint.setColor(0xFFEEEEEE);
         }
 
         if (isSelected) {

@@ -8,7 +8,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
 import com.sysu.edu.preference.Language;
@@ -25,26 +24,21 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        AppCompatDelegate.setDefaultNightMode(new Theme(this).getThemeMode());
+        Theme.setTheme(this);
         Language.setLanguage(this);
         SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
         initCrash();
-        if ((!pm.contains("dashboard")) || Objects.requireNonNull(pm.getStringSet("dashboard", null)).isEmpty()) {
+        if ((!pm.contains("dashboard")) || Objects.requireNonNull(pm.getStringSet("dashboard", null)).isEmpty())
             pm.edit().putStringSet("dashboard", Set.of(getResources().getStringArray(R.array.values_6))).apply();
-        }
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
                 Configuration configuration = activity.getResources().getConfiguration();
                 String fontValue = PreferenceManager.getDefaultSharedPreferences(activity).getString("fontSize", "0");
-                if (defaultFontSize == 0) {
-                    defaultFontSize = configuration.fontScale;
-                }
-                if (!"0".equals(fontValue)) {
+                if (defaultFontSize == 0) defaultFontSize = configuration.fontScale;
+                if (!"0".equals(fontValue))
                     configuration.fontScale = new float[]{0.5f, 0.75f, 1.0f, 1.25f, 1.5f}[Integer.parseInt(fontValue) - 1];
-                } else {
-                    configuration.fontScale = defaultFontSize;
-                }
+                else configuration.fontScale = defaultFontSize;
                 activity.getResources().updateConfiguration(configuration, activity.getResources().getDisplayMetrics());
                 getResources().updateConfiguration(configuration, getResources().getDisplayMetrics());
             }

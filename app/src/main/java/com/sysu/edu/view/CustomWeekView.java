@@ -156,8 +156,8 @@ public class CustomWeekView extends WeekView {
             mSchemeTextPaint.setColor(0xffCFCFCF);
             mSchemeLunarTextPaint.setColor(0xffCFCFCF);
 
-            mOtherMonthTextPaint.setColor(0xFFe1e1e1);
-            mOtherMonthLunarTextPaint.setColor(0xFFe1e1e1);
+            mOtherMonthTextPaint.setColor(0xFFEEEEEE);
+            mOtherMonthLunarTextPaint.setColor(0xFFEEEEEE);
         }
 
         if (isSelected) {
