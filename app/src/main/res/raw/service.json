@@ -77,6 +77,12 @@
         "description": "待办事项管理工具，记录学习任务、作业提醒、重要事项安排"
       },
       {
+        "id": 204,
+        "name": "日程",
+        "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
+        "description": "日程管理系统，包括校历、班级日程、个人日程等"
+      },
+      {
         "id": 202,
         "name": "交叉探索平台",
         "url": "https://explore.sysu.edu.cn/",

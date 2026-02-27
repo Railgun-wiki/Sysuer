@@ -36,8 +36,8 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.sysu.edu.R;
-import com.sysu.edu.academic.AgendaActivity;
 import com.sysu.edu.academic.CourseDetailActivity;
+import com.sysu.edu.academic.CourseScheduleActivity;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
@@ -125,7 +125,7 @@ public class DashboardFragment extends Fragment {
                     //new LaunchMiniProgram(requireActivity()).launchMiniProgram("gh_85575b9f544e");
                 }*/
             });
-            binding.agenda.setOnClickListener(view -> startActivity(new Intent(getContext(), AgendaActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle()));
+            binding.agenda.setOnClickListener(view -> startActivity(new Intent(getContext(), CourseScheduleActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle()));
             binding.courseList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.courseList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.examList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));

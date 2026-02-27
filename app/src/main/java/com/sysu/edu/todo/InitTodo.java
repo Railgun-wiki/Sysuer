@@ -252,7 +252,7 @@ public class InitTodo {
         f.getConcatAdapter().getAdapters().forEach(adp -> f.getConcatAdapter().removeAdapter(adp));
         try {
             TodoAdapter todoAdapter = new TodoAdapter(this);
-            TitleAdapter titleAdapter = new TitleAdapter(activity);
+            TitleAdapter titleAdapter = new TitleAdapter();
             SQLiteDatabase db = todoDB.getWritableDatabase();
             try (Cursor cursor = db.query("todos", null, selection, args, null, null, "due_date")) {
                 count = cursor.getCount();
@@ -278,7 +278,7 @@ public class InitTodo {
                     todoDetail.setFunction(TodoInfo.VIEW);
 
                     if (!titleAdapter.getTitle().equals(dueDate)) {
-                        titleAdapter = new TitleAdapter(activity);
+                        titleAdapter = new TitleAdapter();
                         titleAdapter.setTitle(dueDate);
                         f.getConcatAdapter().addAdapter(titleAdapter);
                         todoAdapter = new TodoAdapter(this);

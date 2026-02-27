@@ -1,6 +1,5 @@
 package com.sysu.edu.todo.info;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -11,18 +10,15 @@ import com.google.android.material.textview.MaterialTextView;
 import com.sysu.edu.databinding.ItemTitleBinding;
 
 public class TitleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    final Context context;
     String title = "";
     int n = 0;
 
-    public TitleAdapter(Context context) {
+    public TitleAdapter() {
         super();
-        this.context = context;
     }
 
-    public TitleAdapter(Context context, String title) {
+    public TitleAdapter(String title) {
         super();
-        this.context = context;
         setTitle(title);
     }
 
@@ -38,8 +34,7 @@ public class TitleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
-        };
+        return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
     }
 
     public void setHeader(int n) {

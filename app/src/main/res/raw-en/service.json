@@ -77,6 +77,12 @@
         "description": "To-do list management tool for recording learning tasks, assignment reminders, and important arrangements"
       },
       {
+        "id": 204,
+        "name": "Schedule",
+        "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
+        "description": "Schedule management system, including school calendar, class schedule, and personal schedule"
+      },
+      {
         "id": 202,
         "name": "Cross-Exploration Platform",
         "url": "https://explore.sysu.edu.cn/",

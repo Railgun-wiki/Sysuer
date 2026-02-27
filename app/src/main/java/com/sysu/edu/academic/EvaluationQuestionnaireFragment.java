@@ -83,7 +83,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                         pjjglist.remove("dtjgList");
                                         pjjglist.put("pjxxlist", new JSONArray());
                                         answers.getJSONArray("pjjglist").add(pjjglist);
-                                        TitleAdapter name = new TitleAdapter(requireContext());
+                                        TitleAdapter name = new TitleAdapter();
                                         String bprmc = ((JSONObject) list).getString("bprmc");
                                         if (bprmc != null && !bprmc.isEmpty()) {
                                             name.setTitle(bprmc);
@@ -102,7 +102,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                             pjxxlist.put("xxdalist", da);
                                             pjjglist.getJSONArray("pjxxlist").add(pjxxlist);
 
-                                            TitleAdapter title = new TitleAdapter(requireContext());
+                                            TitleAdapter title = new TitleAdapter();
                                             title.setTitle(((JSONObject) e).getString("tgmc"));
                                             adp.addAdapter(title); // 题目标题
 

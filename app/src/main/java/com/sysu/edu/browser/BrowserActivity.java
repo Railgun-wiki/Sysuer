@@ -59,7 +59,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -306,7 +305,7 @@ public class BrowserActivity extends AppCompatActivity {
         uaIcons.add(R.drawable.setting);
         uaAction.add(_ -> {
             this.webSettings.setUserAgentString(WebSettings.getDefaultUserAgent(this));
-            preference.setUA(0);
+            preference.setUA(-1);
             web.reload();
         });
         if (cursor.moveToFirst()) {
@@ -326,8 +325,8 @@ public class BrowserActivity extends AppCompatActivity {
         uaDialog.loadMenu(uaNames, uaIcons, uaAction, String.class);
         uaDialog.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
         uaDialog.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
-        uaDialog.selectMenu(preference.getUA());
-
+        uaDialog.selectMenu(preference.getUA() + 1);
+        uaAction.get(preference.getUA() + 1).accept(null);
         /*
          * 主题弹窗
          * */
@@ -557,9 +556,13 @@ public class BrowserActivity extends AppCompatActivity {
     }
 
     String getFileName(String url) {
-        String path = URLDecoder.decode(URI.create(url).getPath(), StandardCharsets.UTF_8);
-        int i = path.lastIndexOf("/");
-        return i >= 0 ? path.substring(i + 1) : path;
+        try {
+            String path = URLDecoder.decode(URI.create(url).getPath(), "UTF-8");
+            int i = path.lastIndexOf("/");
+            return i >= 0 ? path.substring(i + 1) : path;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -567,7 +570,6 @@ public class BrowserActivity extends AppCompatActivity {
         super.onResume();
         js.clear();
         getJSList();
-        System.out.println(js);
     }
 
     static class JSAdapter extends RecyclerAdapter<JSONObject> {

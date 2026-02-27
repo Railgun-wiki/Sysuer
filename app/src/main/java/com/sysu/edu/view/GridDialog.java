@@ -133,6 +133,12 @@ public class GridDialog {
             menu.setChecked(toggle);
     }
 
+    public void clickMenu(int position) {
+        MaterialButton menu = getMenu(position);
+        if (menu != null)
+            menu.performClick();
+    }
+
 
     /*public void multipleSelectMenu(int[] positions) {
         IntStream.of(positions).forEach(this::selectMenu);

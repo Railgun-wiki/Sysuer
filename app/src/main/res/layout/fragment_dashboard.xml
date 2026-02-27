@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:text="@string/agenda"
+                android:text="@string/course_schedule"
                 app:icon="@drawable/book" />
         </com.google.android.material.button.MaterialButtonGroup>
 

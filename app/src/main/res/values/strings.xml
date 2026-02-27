@@ -13,7 +13,7 @@
     <string name="date">日期</string>
     <string name="query">查询</string>
     <string name="classroom_type">教室类型</string>
-    <string name="agenda">课程表</string>
+    <string name="course_schedule">课程表</string>
     <string name="evaluation">评教</string>
     <string name="teacher">教师</string>
     <string name="select_all">反选</string>
@@ -576,5 +576,6 @@
     <string name="privacy_mode">无痕模式</string>
     <string name="third_party_cookie">第三方Cookie</string>
     <string name="author">作者</string>
+    <string name="agenda">日程</string>
 
 </resources>

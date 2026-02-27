@@ -49,7 +49,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
     String startClassTime = "1";
     String endClassTime = "11";
     final MutableLiveData<String> campusLiveData = new MutableLiveData<>();
-    final List<String> classType = List.of("002", "003");
+    final ArrayList<String> classType = new ArrayList<>(List.of("002", "003"));
     RoomAdapter roomAdapter;
     int page = 1;
     int total = 0;
@@ -193,7 +193,7 @@ public class ClassroomQueryActivity extends AppCompatActivity {
     public void getRoom() {
         ArrayList<String> teachingBuildIDs = new ArrayList<>();
         classType.clear();
-        binding.typeGroup.getCheckedChipIds().forEach(e -> classType.add(((Chip) findViewById(e)).getText().toString().equals("自习室") ? "003" : "002"));
+        binding.typeGroup.getCheckedChipIds().forEach(e -> classType.add("自习室".equals(((Chip) findViewById(e)).getText().toString()) ? "003" : "002"));
         binding.officeGroup.getCheckedChipIds().forEach(e -> {
             if (findViewById(e).getVisibility() == View.VISIBLE)
                 teachingBuildIDs.add(office.get(e));

@@ -42,8 +42,7 @@
         <com.sysu.edu.preference.EditPreference
             app:icon="@drawable/qrcode"
             app:key="qrcode"
-            app:title="@string/qrcode"
-            app:useSimpleSummaryProvider="true" />
+            app:title="@string/qrcode" />
 
         <com.sysu.edu.preference.MutiListPreference
             app:defaultValue="@array/values_6"

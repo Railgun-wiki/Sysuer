@@ -98,7 +98,7 @@
         <item>@string/shortcut</item>
         <item>@string/next_class</item>
         <item>@string/time</item>
-        <item>@string/agenda</item>
+        <item>@string/course_schedule</item>
         <item>@string/exam</item>
         <item>@string/todo</item>
     </string-array>

@@ -1,7 +1,8 @@
 package com.sysu.edu.preference;
 
+import static com.sysu.edu.api.CommonUtil.trim;
+
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -33,13 +34,6 @@ public class EditPreference extends Preference {
     public EditPreference(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         setLayoutResource(R.layout.preference_edit);
-        try (TypedArray a = context.obtainStyledAttributes(
-                attrs, R.styleable.editPreferenceStyle, defStyleAttr, defStyleRes)) {
-            setValue(a.getString(R.styleable.editPreferenceStyle_value));
-            a.recycle();
-        } catch (Exception e) {
-//            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -73,5 +67,10 @@ public class EditPreference extends Preference {
     public void setValue(String value) {
         mValue = value;
         persistString(value);
+    }
+
+    @Override
+    protected void onSetInitialValue(@Nullable Object defaultValue) {
+        setValue(getPersistedString(trim((String) defaultValue)));
     }
 }

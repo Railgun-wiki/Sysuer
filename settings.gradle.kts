@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "中大儿"
 include(":app")
+include(":CalendarView")

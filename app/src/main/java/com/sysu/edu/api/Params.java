@@ -273,8 +273,6 @@ public class Params {
                 WebView web = initLoginWebView(activity, model, true);
                 initLoginModel(activity, model, url, () -> {
                     afterLogin.run();
-//                    model.setUrl("about:blank");
-//                    if(!isEmpty(getCookie()))
                     web.destroy();
                     toast(R.string.login_successfully);
                 });

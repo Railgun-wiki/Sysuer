@@ -14,7 +14,7 @@
     <string name="date">Date</string>
     <string name="query">Query</string>
     <string name="classroom_type">Classroom Type</string>
-    <string name="agenda">Agenda</string>
+    <string name="course_schedule">Agenda</string>
     <string name="evaluation">Teaching Evaluation</string>
     <string name="teacher">Teacher</string>
     <string name="select_all">Invert</string>
@@ -578,4 +578,5 @@
     <string name="privacy_mode">Privacy Mode</string>
     <string name="third_party_cookie">Third Party Cookie</string>
     <string name="author">Author</string>
+    <string name="agenda">Agenda</string>
 </resources>

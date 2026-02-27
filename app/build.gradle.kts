@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-//    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
@@ -103,6 +102,7 @@ dependencies {
     implementation(platform(libs.editor.bom))
     implementation(libs.editor)
     implementation(libs.language.textmate)
+    implementation(project(":CalendarView"))
     /*configurations.all {
         exclude("androidx.appcompat", "appcompat")
     }*/

@@ -43,6 +43,7 @@ import com.sysu.edu.academic.CalendarActivity;
 import com.sysu.edu.academic.ClassroomQueryActivity;
 import com.sysu.edu.academic.CourseCompletionActivity;
 import com.sysu.edu.academic.CourseQueryActivity;
+import com.sysu.edu.academic.CourseScheduleActivity;
 import com.sysu.edu.academic.CourseSelectedActivity;
 import com.sysu.edu.academic.CourseSelectionActivity;
 import com.sysu.edu.academic.DormActivity;
@@ -303,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(201, newActivity(TodoActivity.class));         // 待办
         actionMap.put(202, browse("https://explore.sysu.edu.cn/"));         // 交叉探索平台
         actionMap.put(203, browse("https://aic.sysu.edu.cn/"));         // 逸仙智课平台
+        actionMap.put(204, newActivity(AgendaActivity.class));         // 日程
 
 
         // 资讯门户 (id: 3xx)
@@ -360,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         // 教务服务 (id: 7xx)
         actionMap.put(701, newActivity(EvaluationActivity.class));           // 评教
         actionMap.put(702, newActivity(CourseSelectionActivity.class));
-        actionMap.put(703, newActivity(AgendaActivity.class));               // 课程表
+        actionMap.put(703, newActivity(CourseScheduleActivity.class));               // 课程表
         actionMap.put(704, newActivity(ExamActivity.class));                 // 考试
         actionMap.put(705, newActivity(CalendarActivity.class));             // 校历
         actionMap.put(706, newActivity(ClassroomQueryActivity.class));       // 自习室
