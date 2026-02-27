@@ -91,9 +91,7 @@ public class AgendaActivity extends AppCompatActivity {
                 getAgenda();
             }
         });
-        binding.calendarView.setOnMonthChangeListener((year, month) -> {
-            binding.toolbar.setSubtitle(String.format(Locale.getDefault(), "%d年%d月", year, month));
-        });
+        binding.calendarView.setOnMonthChangeListener((year, month) -> binding.toolbar.setSubtitle(String.format(Locale.getDefault(), "%d年%d月", year, month)));
         binding.toolbar.setSubtitle(String.format(Locale.getDefault(), "%d年%d月", binding.calendarView.getCurYear(), binding.calendarView.getCurMonth()));
         binding.calendarView.setSelectSingleMode();
     }
