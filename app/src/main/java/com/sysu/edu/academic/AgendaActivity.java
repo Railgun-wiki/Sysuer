@@ -100,7 +100,8 @@ public class AgendaActivity extends AppCompatActivity {
         http.postRequest("https://mportal.sysu.edu.cn/newClient/api/schedule/newSchedule/getScheduleByTimeZone", getParam().toString(), 0);
     }
 
-    JSONObject getParam(String day) {
+    JSONObject getParam() {
+        String day = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(binding.calendarView.getSelectedCalendar().getTimeInMillis());
         return JSONObject.of(
                 "startTime", day,
                 "endTime", day,
@@ -110,18 +111,12 @@ public class AgendaActivity extends AppCompatActivity {
         );
     }
 
-    JSONObject getParam() {
-        return getParam(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(binding.calendarView.getSelectedCalendar().getTimeInMillis()));
-    }
-
-
     static class AgendaAdapter extends RecyclerAdapter<JSONObject> {
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
-            };
+            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
         }
 
         @Override
