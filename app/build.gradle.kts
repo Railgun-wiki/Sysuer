@@ -13,8 +13,8 @@ android {
         applicationId = "com.sysu.edu"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1932
-        versionName = "1.0.10beta3"
+        versionCode = 1933
+        versionName = "1.0.10"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
     }
