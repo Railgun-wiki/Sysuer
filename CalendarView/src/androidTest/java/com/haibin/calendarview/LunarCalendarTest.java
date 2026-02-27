@@ -10,7 +10,7 @@ import org.junit.Test;
  */
 public class LunarCalendarTest {
     @Test
-    public void getLunarText() throws Exception {
+    public void getLunarText() {
         Calendar calendar = new Calendar();
         calendar.setYear(2017);
         calendar.setMonth(6);
@@ -30,7 +30,7 @@ public class LunarCalendarTest {
      * @throws Exception Exception
      */
     @Test
-    public void getTermsOffset() throws Exception {
+    public void getTermsOffset() {
 
     }
 
@@ -41,7 +41,7 @@ public class LunarCalendarTest {
      * @throws Exception Exception
      */
     @Test
-    public void daysInLunarMonth() throws Exception {
+    public void daysInLunarMonth() {
         int d = LunarCalendar.daysInLunarMonth(2019,12);
         assertEquals(30,d);
     }
@@ -52,8 +52,8 @@ public class LunarCalendarTest {
      * @throws Exception 异常
      */
     @Test
-    public void getWinterSolstice() throws Exception {
-        assertEquals(22, 22);
+    public void getWinterSolstice() {
+        assertEquals(22, LunarCalendar.getWinterSolstice(2019));
     }
 
 }

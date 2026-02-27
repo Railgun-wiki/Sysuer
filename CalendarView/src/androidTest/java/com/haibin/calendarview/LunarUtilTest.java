@@ -8,7 +8,7 @@ import org.junit.Test;
  */
 public class LunarUtilTest {
     @Test
-    public void solarToLunar() throws Exception {
+    public void solarToLunar() {
         LunarUtil.solarToLunar(2017,6,24);
         LunarUtil.solarToLunar(2017,6,25);
         LunarUtil.solarToLunar(2017,7,23);

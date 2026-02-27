@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * 基本的适配器
  */
-abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter {
+abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @SuppressWarnings("all")
     LayoutInflater mInflater;
@@ -84,7 +84,7 @@ abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter {
 
     @SuppressWarnings("unused")
     void addAll(List<T> items) {
-        if (items != null && items.size() > 0) {
+        if (items != null && !items.isEmpty()) {
             mItems.addAll(items);
             notifyItemRangeInserted(mItems.size(), items.size());
         }
@@ -117,7 +117,7 @@ abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter {
         @Override
         public void onClick(View v) {
             RecyclerView.ViewHolder holder = (RecyclerView.ViewHolder) v.getTag();
-            onClick(holder.getAdapterPosition(), holder.getItemId());
+            onClick(holder.getBindingAdapterPosition(), holder.getItemId());
         }
 
         public abstract void onClick(int position, long itemId);

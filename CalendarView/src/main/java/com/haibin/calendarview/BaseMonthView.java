@@ -237,7 +237,6 @@ public abstract class BaseMonthView extends BaseView {
      * 2、绘制矩形选中效果，也可以在这里计算矩形宽和高
      */
     protected void onPreviewHook() {
-        // TODO: 2017/11/16
         super.onPreviewHook();
     }
 
@@ -250,7 +249,6 @@ public abstract class BaseMonthView extends BaseView {
      * @param y 日历Card y起点坐标
      */
     protected void onLoopStart(int x, int y) {
-        // TODO: 2017/11/16  
     }
 
     @Override

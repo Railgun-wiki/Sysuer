@@ -8,7 +8,7 @@ import org.junit.Test;
  */
 public class SolarTermUtilTest {
     @Test
-    public void getSolarTerms() throws Exception {
+    public void getSolarTerms() {
         SolarTermUtil.getSolarTerms(2017);
     }
 

@@ -96,10 +96,9 @@ public class CalendarView extends FrameLayout {
         this.mWeekPager.setup(mDelegate);
 
         try {
-            Constructor constructor = mDelegate.getWeekBarClass().getConstructor(Context.class);
+            Constructor<?> constructor = mDelegate.getWeekBarClass().getConstructor(Context.class);
             mWeekBar = (WeekBar) constructor.newInstance(getContext());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception _) {
         }
 
         frameContent.addView(mWeekBar, 2);
@@ -217,13 +216,10 @@ public class CalendarView extends FrameLayout {
 
         mMonthPager.setup(mDelegate);
         mMonthPager.setCurrentItem(mDelegate.mCurrentMonthViewItem);
-        mYearViewPager.setOnMonthSelectedListener(new YearRecyclerView.OnMonthSelectedListener() {
-            @Override
-            public void onMonthSelected(int year, int month) {
-                int position = 12 * (year - mDelegate.getMinYear()) + month - mDelegate.getMinYearMonth();
-                closeSelectLayout(position);
-                mDelegate.isShowYearSelectedLayout = false;
-            }
+        mYearViewPager.setOnMonthSelectedListener((year, month) -> {
+            int position = 12 * (year - mDelegate.getMinYear()) + month - mDelegate.getMinYearMonth();
+            closeSelectLayout(position);
+            mDelegate.isShowYearSelectedLayout = false;
         });
         mYearViewPager.setup(mDelegate);
         mWeekPager.updateSelected(mDelegate.createCurrentDate(), false);
@@ -710,7 +706,7 @@ public class CalendarView extends FrameLayout {
 
     public final List<Calendar> getMultiSelectCalendars() {
         List<Calendar> calendars = new ArrayList<>();
-        if (mDelegate.mSelectedCalendars.size() == 0) {
+        if (mDelegate.mSelectedCalendars.isEmpty()) {
             return calendars;
         }
         calendars.addAll(mDelegate.mSelectedCalendars.values());
@@ -795,10 +791,9 @@ public class CalendarView extends FrameLayout {
         frameContent.removeView(mWeekBar);
 
         try {
-            Constructor constructor = cls.getConstructor(Context.class);
+            Constructor<?> constructor = cls.getConstructor(Context.class);
             mWeekBar = (WeekBar) constructor.newInstance(getContext());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception _) {
         }
         frameContent.addView(mWeekBar, 2);
         mWeekBar.setup(mDelegate);
@@ -1282,7 +1277,7 @@ public class CalendarView extends FrameLayout {
      * @param mSchemeDates mSchemeDates
      */
     public final void addSchemeDate(Map<String, Calendar> mSchemeDates) {
-        if (this.mDelegate == null || mSchemeDates == null || mSchemeDates.size() == 0) {
+        if (this.mDelegate == null || mSchemeDates == null || mSchemeDates.isEmpty()) {
             return;
         }
         if (this.mDelegate.mSchemeDatesMap == null) {
@@ -1305,7 +1300,7 @@ public class CalendarView extends FrameLayout {
         if (calendar == null) {
             return;
         }
-        if (mDelegate.mSchemeDatesMap == null || mDelegate.mSchemeDatesMap.size() == 0) {
+        if (mDelegate.mSchemeDatesMap == null || mDelegate.mSchemeDatesMap.isEmpty()) {
             return;
         }
         mDelegate.mSchemeDatesMap.remove(calendar.toString());

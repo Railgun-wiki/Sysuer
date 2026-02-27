@@ -285,7 +285,7 @@ public abstract class BaseView extends View implements View.OnClickListener, Vie
      * 添加事件标记，来自Map
      */
     final void addSchemesFromMap() {
-        if (mDelegate.mSchemeDatesMap == null || mDelegate.mSchemeDatesMap.size() == 0) {
+        if (mDelegate.mSchemeDatesMap == null || mDelegate.mSchemeDatesMap.isEmpty()) {
             return;
         }
         for (Calendar a : mItems) {
@@ -340,7 +340,6 @@ public abstract class BaseView extends View implements View.OnClickListener, Vie
      * 2、绘制矩形选中效果，也可以在这里计算矩形宽和高
      */
     protected void onPreviewHook() {
-        // TODO: 2017/11/16
     }
 
     /**
@@ -357,7 +356,7 @@ public abstract class BaseView extends View implements View.OnClickListener, Vie
      * 更新事件
      */
     final void update() {
-        if (mDelegate.mSchemeDatesMap == null || mDelegate.mSchemeDatesMap.size() == 0) {//清空操作
+        if (mDelegate.mSchemeDatesMap == null || mDelegate.mSchemeDatesMap.isEmpty()) {//清空操作
             removeSchemes();
             invalidate();
             return;
