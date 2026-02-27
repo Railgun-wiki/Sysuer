@@ -25,7 +25,7 @@ public class GridDialog {
     private final DialogGridBinding menuBinding;
     private final BottomSheetDialog menuDialog;
     private final FragmentActivity activity;
-    ArrayList<Integer> referenceIds = new ArrayList<>();
+    final ArrayList<Integer> referenceIds = new ArrayList<>();
     private int selected = -1;
     private boolean selectable = false;
     private boolean multipleSelectable = false;

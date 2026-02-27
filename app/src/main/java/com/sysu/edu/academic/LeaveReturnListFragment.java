@@ -64,7 +64,7 @@ public class LeaveReturnListFragment extends StaggeredFragment {
                                         boolean isRegistering = json.getJSONArray("data").getJSONObject(position).getInteger("gzztm") == 1;
                                         String status = json.getJSONArray("data").getJSONObject(position).getString("zt");
                                         MaterialButton button = holder.itemView.findViewById(R.id.button);
-                                        button.setText(isRegistering ? status.equals("registering") ? R.string.start_registration : R.string.modify_registration : R.string.view_detail);
+                                        button.setText(isRegistering ? "registering".equals(status) ? R.string.start_registration : R.string.modify_registration : R.string.view_detail);
                                         button.setOnClickListener(_ -> {
                                             if (isRegistering) {
                                                 Bundle arg = new Bundle();

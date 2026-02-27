@@ -39,59 +39,59 @@ public abstract class YearView extends View {
     /**
      * 当前月份日期的笔
      */
-    protected Paint mCurMonthTextPaint = new Paint();
+    protected final Paint mCurMonthTextPaint = new Paint();
     /**
      * 其它月份日期颜色
      */
-    protected Paint mOtherMonthTextPaint = new Paint();
+    protected final Paint mOtherMonthTextPaint = new Paint();
     /**
      * 当前月份农历文本颜色
      */
-    protected Paint mCurMonthLunarTextPaint = new Paint();
+    protected final Paint mCurMonthLunarTextPaint = new Paint();
     /**
      * 当前月份农历文本颜色
      */
-    protected Paint mSelectedLunarTextPaint = new Paint();
+    protected final Paint mSelectedLunarTextPaint = new Paint();
     /**
      * 其它月份农历文本颜色
      */
-    protected Paint mOtherMonthLunarTextPaint = new Paint();
+    protected final Paint mOtherMonthLunarTextPaint = new Paint();
     /**
      * 其它月份农历文本颜色
      */
-    protected Paint mSchemeLunarTextPaint = new Paint();
+    protected final Paint mSchemeLunarTextPaint = new Paint();
     /**
      * 标记的日期背景颜色画笔
      */
-    protected Paint mSchemePaint = new Paint();
+    protected final Paint mSchemePaint = new Paint();
     /**
      * 被选择的日期背景色
      */
-    protected Paint mSelectedPaint = new Paint();
+    protected final Paint mSelectedPaint = new Paint();
     /**
      * 标记的文本画笔
      */
-    protected Paint mSchemeTextPaint = new Paint();
+    protected final Paint mSchemeTextPaint = new Paint();
     /**
      * 选中的文本画笔
      */
-    protected Paint mSelectTextPaint = new Paint();
+    protected final Paint mSelectTextPaint = new Paint();
     /**
      * 当前日期文本颜色画笔
      */
-    protected Paint mCurDayTextPaint = new Paint();
+    protected final Paint mCurDayTextPaint = new Paint();
     /**
      * 当前日期文本颜色画笔
      */
-    protected Paint mCurDayLunarTextPaint = new Paint();
+    protected final Paint mCurDayLunarTextPaint = new Paint();
     /**
      * 月份画笔
      */
-    protected Paint mMonthTextPaint = new Paint();
+    protected final Paint mMonthTextPaint = new Paint();
     /**
      * 周栏画笔
      */
-    protected Paint mWeekTextPaint = new Paint();
+    protected final Paint mWeekTextPaint = new Paint();
     /**
      * 每一项的高度
      */

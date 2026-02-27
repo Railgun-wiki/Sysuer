@@ -171,7 +171,7 @@ final class CalendarViewDelegate {
     /**
      * 多选日历
      */
-    Map<String, Calendar> mSelectedCalendars = new HashMap<>();
+    final Map<String, Calendar> mSelectedCalendars = new HashMap<>();
     /**
      * 选择范围日历
      */

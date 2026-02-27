@@ -21,7 +21,7 @@ import com.sysu.edu.view.AdapterListener;
 import java.util.ArrayList;
 
 public class NewsFragment extends Fragment {
-    NewsAdp newsAdapter = new NewsAdp();
+    final NewsAdp newsAdapter = new NewsAdp();
     StaggeredGridLayoutManager staggeredGridLayoutManager;
     Params params;
 

@@ -140,7 +140,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                     json.getJSONArray("data").forEach(e -> countryAdapter.add(((JSONObject) e).getString("label")));
                                     countryAdapter.setAction(pos -> {
                                         country = json.getJSONArray("data").getJSONObject(pos).getString("value");
-                                        if (country.equals("中国")) {
+                                        if ("中国".equals(country)) {
                                             getProvince();
                                         } else {
                                             city = "";
@@ -148,7 +148,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                         }
                                     });
                                     countryAdapter.setResult(country);
-                                    if (country.equals("中国")) {
+                                    if ("中国".equals(country)) {
                                         getProvince();
                                     }
                                     // dialogRegionBinding.regionList.setAdapter(new TwoColumnsAdapter(destination));
@@ -193,9 +193,9 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                         PopupMenu menu = new PopupMenu(requireContext(), holder.itemView);
                                         List.of("离校", "留校").forEach(i -> menu.getMenu().add(i).setOnMenuItemClickListener(_ -> {
                                             //value.set(pos, i);
-                                            isStay = i.equals("离校") ? "0" : "1";
-                                            ((TwoColumnsAdapter) adapter).setValue(i.equals("离校") ? leave : stay);
-                                            ((TwoColumnsAdapter) adapter).setKey(i.equals("离校") ? leaveKeys : stayKeys);
+                                            isStay = "离校".equals(i) ? "0" : "1";
+                                            ((TwoColumnsAdapter) adapter).setValue("离校".equals(i) ? leave : stay);
+                                            ((TwoColumnsAdapter) adapter).setKey("离校".equals(i) ? leaveKeys : stayKeys);
                                             return true;
                                         }));
                                         menu.show();
@@ -261,7 +261,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                     lp.setMargins(0, 0, params.dpToPx(16), params.dpToPx(16));
                     button.setLayoutParams(lp);
                     button.setOnClickListener(_ -> {
-                        if (isStay.equals("0")) {
+                        if ("0".equals(isStay)) {
                             save(id, isStay, leaveDate.getValue() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(leaveDate.getValue())), returnDate.getValue() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(returnDate.getValue()), leave.get(3), leave.get(4), country, province, city);
                         } else {
 

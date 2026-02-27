@@ -33,7 +33,7 @@ abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerView.
 
     @SuppressWarnings("all")
     LayoutInflater mInflater;
-    Context mContext;
+    final Context mContext;
     private final List<T> mItems;
     private OnItemClickListener onItemClickListener;
     private final OnClickListener onClickListener;

@@ -40,7 +40,7 @@ public class Application extends android.app.Application {
                 if (defaultFontSize == 0) {
                     defaultFontSize = configuration.fontScale;
                 }
-                if (!fontValue.equals("0")) {
+                if (!"0".equals(fontValue)) {
                     configuration.fontScale = new float[]{0.5f, 0.75f, 1.0f, 1.25f, 1.5f}[Integer.parseInt(fontValue) - 1];
                 } else {
                     configuration.fontScale = defaultFontSize;

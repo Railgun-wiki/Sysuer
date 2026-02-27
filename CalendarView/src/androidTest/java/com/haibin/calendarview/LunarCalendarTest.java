@@ -27,7 +27,6 @@ public class LunarCalendarTest {
     /**
      * 测试当年的清明节偏移日期为0、1、2， 4或5号6号
      *
-     * @throws Exception Exception
      */
     @Test
     public void getTermsOffset() {
@@ -38,7 +37,6 @@ public class LunarCalendarTest {
     /**
      * 测试每个月农历有多少天，也可适用于除夕算法
      *
-     * @throws Exception Exception
      */
     @Test
     public void daysInLunarMonth() {
@@ -49,7 +47,6 @@ public class LunarCalendarTest {
     /**
      * 测试每年冬至是具体几日
      *
-     * @throws Exception 异常
      */
     @Test
     public void getWinterSolstice() {

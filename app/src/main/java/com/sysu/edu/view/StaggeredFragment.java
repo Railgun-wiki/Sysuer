@@ -43,7 +43,7 @@ public class StaggeredFragment extends Fragment {
     final MutableLiveData<Boolean> hideNull = new MutableLiveData<>(false);
     final MutableLiveData<AdapterListener> staggeredListener = new MutableLiveData<>();
     public int position;
-    protected StaggeredAdapter staggeredAdapter = new StaggeredAdapter();
+    protected final StaggeredAdapter staggeredAdapter = new StaggeredAdapter();
     protected Params params;
     StaggeredGridLayoutManager staggeredGridLayoutManager;
 

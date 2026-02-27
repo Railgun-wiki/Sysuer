@@ -70,7 +70,7 @@ final class YearViewAdapter extends BaseRecyclerAdapter<Month> {
     }
 
     private static class YearViewHolder extends RecyclerView.ViewHolder {
-        YearView mYearView;
+        final YearView mYearView;
         YearViewHolder(View itemView, CalendarViewDelegate delegate) {
             super(itemView);
             mYearView = (YearView) itemView;

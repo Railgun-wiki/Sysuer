@@ -114,7 +114,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
                                     ArrayList<String> values = new ArrayList<>();
                                     ((JSONObject) j).forEach((k, v) -> {
                                         keys.add(dict.getOrDefault(k, k));
-                                        if (k.equals("gx") || k.equals("gxrzzmm") || k.equals("qdxl")) {
+                                        if ("gx".equals(k) || "gxrzzmm".equals(k) || "qdxl".equals(k)) {
                                             values.add(((JSONObject) v).getString("label"));
                                         } else {
                                             values.add(v == null ? "" : v.toString());

@@ -75,7 +75,7 @@ public class BrowserActivity extends AppCompatActivity {
     ActivityBrowserBinding binding;
     WebSettings webSettings;
     CookieManager cookie;
-    MutableLiveData<Integer> progress = new MutableLiveData<>();
+    final MutableLiveData<Integer> progress = new MutableLiveData<>();
     MaterialButton refreshButton;
     BrowserHelper db;
     JavaScript js;

@@ -10,7 +10,7 @@ import java.util.Collections;
 
 public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    protected ArrayList<T> data = new ArrayList<>();
+    protected final ArrayList<T> data = new ArrayList<>();
 
     protected AdapterListener listener;
 

@@ -48,7 +48,7 @@ public class CourseScheduleActivity extends AppCompatActivity {
     final ArrayList<Integer> weeks = new ArrayList<>();
     final ArrayList<View> views = new ArrayList<>();
     final MutableLiveData<String> id = new MutableLiveData<>();
-    CommonUtil.Tuple2<String, Integer> realTime = new CommonUtil.Tuple2<>();
+    final CommonUtil.Tuple2<String, Integer> realTime = new CommonUtil.Tuple2<>();
     HttpManager http;
     PopupMenu termPop;
     PopupMenu weekPop;
