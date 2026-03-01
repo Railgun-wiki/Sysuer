@@ -29,8 +29,8 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
             Params params = new Params(this);
             ((Preference) Objects.requireNonNull(findPreference("netId"))).setSummary(params.getUserName());
             ((Preference) Objects.requireNonNull(findPreference("password"))).setOnPreferenceClickListener(_ -> {
-                        params.toast(params.getPassword());
-                        return false;
+                params.toast(params.getPassword());
+                return false;
             });
             params.setCallback(this::getInfo);
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
@@ -40,6 +40,7 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
                         params.toast(R.string.no_wifi_warning);
                     } else {
                         JSONObject response = JSONObject.parseObject((String) msg.obj);
+                        System.out.println("response = " + response);
                         if (response != null && response.getInteger("code").equals(200)) {
                             if (response.get("data") != null) {
                                 if (msg.what == 0) {
@@ -62,16 +63,15 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
                         } else if (response != null && response.getInteger("code").equals(1003)) {
                             params.toast(R.string.login_warning);
                             params.gotoLogin(getView(), TargetUrl.PAY);
-                        } else {
-                            if (response != null) {
-                                params.toast(response.getString("message"));
-                            }
+                        } else if (response != null) {
+                            params.toast(response.getString("message"));
                         }
                     }
                 }
             });
             http.setParams(params);
             http.setTokenRequired(true);
+            http.setReferrer("https://pay.sysu.edu.cn/");
             getInfo();
         }
     }

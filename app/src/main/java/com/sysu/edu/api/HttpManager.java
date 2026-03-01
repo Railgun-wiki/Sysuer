@@ -123,7 +123,7 @@ public class HttpManager {
         this.target = target;
     }
 
-    public void setHeader(Map<String, String> header){
+    public void setHeader(Map<String, String> header) {
         this.header = header;
     }
 
@@ -143,8 +143,6 @@ public class HttpManager {
         } else if (cookieManager.getCookie(url) != null) {
             request.header("Cookie", cookieManager.getCookie(url));
         }
-//        System.out.println(params.getCookie());
-//        System.out.println(cookieManager.getCookie(url));
         if (cookie != null) request.header("Cookie", cookie);
         if (isAuthorizationRequired && params != null)
             request.header("Authorization", params.getAuthorization());

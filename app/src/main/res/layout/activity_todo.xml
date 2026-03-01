@@ -22,7 +22,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_todo"
+        android:id="@+id/fragment"
         android:name="com.sysu.edu.todo.TodoFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

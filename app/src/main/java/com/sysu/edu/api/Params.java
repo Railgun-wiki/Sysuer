@@ -254,11 +254,9 @@ public class Params {
             case "0" ->
                     Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
             case "1" -> {
-                if (activity instanceof MainActivity) {
+                if (activity instanceof MainActivity)
                     Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
-                } else {
-                    gotoLogin(view, intent);
-                }
+                else gotoLogin(view, intent);
             }
             case "3" -> {
                 String account = getUserName();
@@ -273,6 +271,7 @@ public class Params {
                 WebView web = initLoginWebView(activity, model, true);
                 initLoginModel(activity, model, url, () -> {
                     afterLogin.run();
+                    System.out.println("Login Successfully");
                     web.destroy();
                     toast(R.string.login_successfully);
                 });

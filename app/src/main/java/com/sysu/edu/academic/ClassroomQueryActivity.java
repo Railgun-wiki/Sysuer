@@ -43,13 +43,13 @@ import java.util.Objects;
 public class ClassroomQueryActivity extends AppCompatActivity {
 
     final HashMap<Integer, String> office = new HashMap<>();
+    final MutableLiveData<String> campusLiveData = new MutableLiveData<>();
+    final ArrayList<String> classType = new ArrayList<>(List.of("002", "003"));
     Handler handler;
     HttpManager http;
     String dateStr;
     String startClassTime = "1";
     String endClassTime = "11";
-    final MutableLiveData<String> campusLiveData = new MutableLiveData<>();
-    final ArrayList<String> classType = new ArrayList<>(List.of("002", "003"));
     RoomAdapter roomAdapter;
     int page = 1;
     int total = 0;
@@ -210,15 +210,11 @@ public class ClassroomQueryActivity extends AppCompatActivity {
 
     static class RoomAdapter extends RecyclerAdapter<JSONObject> {
 
-        Params params;
-
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemClassroomResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
-        }
-        public void setParams(Params params) {
-            this.params = params;
+            return new RecyclerView.ViewHolder(ItemClassroomResultBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+            };
         }
 
         @Override
@@ -241,7 +237,8 @@ public class ClassroomQueryActivity extends AppCompatActivity {
                     .override((int) (145 * 3.6), (int) (132 * 3.6))
                     .fitCenter()
                     .into(binding.image);
-            binding.getRoot().setOnClickListener(_ -> {});
+            binding.getRoot().setOnClickListener(_ -> {
+            });
             super.onBindViewHolder(holder, position);
         }
     }

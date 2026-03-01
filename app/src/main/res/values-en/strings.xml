@@ -579,4 +579,5 @@
     <string name="third_party_cookie">Third Party Cookie</string>
     <string name="author">Author</string>
     <string name="agenda">Agenda</string>
+    <string name="delete_warning">Are You to Delete?</string>
 </resources>

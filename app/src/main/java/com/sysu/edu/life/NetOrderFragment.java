@@ -62,9 +62,8 @@ public class NetOrderFragment extends StaggeredFragment {
                                 if (item != null) {
                                     boolean isStop = false;
                                     Matcher matcher2 = Pattern.compile("<td .+?>(.+?)</td>", Pattern.DOTALL).matcher(item);
-                                    while (matcher2.find()) {
+                                    while (matcher2.find())
                                         orderDetail.add(Objects.requireNonNull(matcher2.group(1)).replaceAll("<.+?>", "").trim());
-                                    }
                                     if (requireArguments().getInt("code") == 1) {
                                         Matcher action = Pattern.compile("onclick='(.+?)\\((.+?)\\)'>(.+?)</a>").matcher(item);
                                         if (action.find()) {
@@ -92,11 +91,10 @@ public class NetOrderFragment extends StaggeredFragment {
                                                         button.setOnClickListener(v -> {
                                                             if (leftDay != null) {
                                                                 Snackbar.make(v, isStop ? "暂停网络将即时生效，暂停最小时长：7天。是否确定要暂停？" : Integer.parseInt(leftDay) < 7 ? "网络服务已暂停" + leftDay + "天，不足暂停最小时长（7天），提前恢复本次暂停作废，过期日期不顺延！是否仍要提前恢复网络？" : "网络服务已暂停" + leftDay + "天，执行恢复将即时生效，是否确定要恢复？", Snackbar.LENGTH_SHORT).setAction(R.string.confirm, _ -> {
-                                                                    if (isStop) {
+                                                                    if (isStop)
                                                                         stop(actionMatcher.group(1));
-                                                                    } else {
+                                                                    else
                                                                         resume(actionMatcher.group(1));
-                                                                    }
                                                                 }).show();
                                                             }
                                                         });
@@ -107,7 +105,8 @@ public class NetOrderFragment extends StaggeredFragment {
                                             }
                                         }
                                     }
-                                    add(orderDetail.get(msg.what == 0 ? 4 : 0), msg.what == 0 ? List.of("订单号",
+                                    add(orderDetail.get(msg.what == 0 ? 4 : 0), msg.what == 0 ? List.of(
+                                            "订单号",
                                             "所有者",
                                             "金额",
                                             "支付方式",
@@ -131,7 +130,8 @@ public class NetOrderFragment extends StaggeredFragment {
                         try {
                             clear();
                             getInfo();
-                        } catch (JSONException _) {}
+                        } catch (JSONException _) {
+                        }
                     }
                 }
             });
@@ -146,7 +146,7 @@ public class NetOrderFragment extends StaggeredFragment {
     }
 
     void getNet() {
-        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stopAndResumeList", "personal=1", 1);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stopAndResumeList", "personal=1", "application/x-www-form-urlencoded", 1);
     }
 
     void getInfo() {

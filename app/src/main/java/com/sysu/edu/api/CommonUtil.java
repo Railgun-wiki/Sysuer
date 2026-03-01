@@ -157,6 +157,7 @@ public class CommonUtil {
         return bool ? 1 : 0;
     }
 
+
     /**
      * 简单的元组类，用于存储两个值
      *

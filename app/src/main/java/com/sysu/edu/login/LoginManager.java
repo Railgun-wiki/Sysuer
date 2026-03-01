@@ -133,7 +133,8 @@ public class LoginManager {
                             System.out.println("登录成功");
 //                            System.out.println("Cookie：" + cookieManager.getCookie(url));
                             model.setCookie(cookieManager.getCookie(url));
-                            if (Boolean.FALSE.equals(model.getLogin().getValue()))
+                            System.out.println("登录状态：" + model.getLogin().getValue());
+                            if (!Boolean.TRUE.equals(model.getLogin().getValue()))
                                 model.setLogin(true);
                         }, 500);
                 } else {
@@ -141,7 +142,7 @@ public class LoginManager {
                         System.out.println(needLogin);
                         if (!Boolean.parseBoolean(needLogin)) {
                             model.setCookie(cookieManager.getCookie(url));
-                            if (Boolean.FALSE.equals(model.getLogin().getValue()))
+                            if (!Boolean.TRUE.equals(model.getLogin().getValue()))
                                 model.setLogin(true);
                         }
                     }), 500);

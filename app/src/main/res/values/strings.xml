@@ -577,5 +577,6 @@
     <string name="third_party_cookie">第三方Cookie</string>
     <string name="author">作者</string>
     <string name="agenda">日程</string>
+    <string name="delete_warning">确定删除吗？</string>
 
 </resources>

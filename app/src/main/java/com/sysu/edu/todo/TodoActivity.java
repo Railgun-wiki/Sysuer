@@ -8,17 +8,12 @@ import com.sysu.edu.databinding.ActivityTodoBinding;
 
 public class TodoActivity extends AppCompatActivity {
 
-
-    private InitTodo initTodo;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityTodoBinding binding = ActivityTodoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(view -> supportFinishAfterTransition());
-        binding.add.setOnClickListener(view -> initTodo.showTodoAddDialog());
-        initTodo = new InitTodo(this, binding.fragmentTodo.getFragment());
-
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+        binding.add.setOnClickListener(_ -> ((TodoFragment) binding.fragment.getFragment()).getInitTodo().showTodoAddDialog());
     }
 }

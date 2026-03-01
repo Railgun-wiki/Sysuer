@@ -14,7 +14,6 @@ public class PrivacyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ActivityPrivacyBinding binding = ActivityPrivacyBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        binding.toolbar.setNavigationOnClickListener(e -> finishAfterTransition());
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
     }
-
 }

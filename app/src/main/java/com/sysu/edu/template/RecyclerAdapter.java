@@ -3,6 +3,7 @@ package com.sysu.edu.template;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.sysu.edu.api.Params;
 import com.sysu.edu.view.AdapterListener;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
     protected final ArrayList<T> data = new ArrayList<>();
 
     protected AdapterListener listener;
+    protected Params params;
 
     @Override
     public int getItemCount() {
@@ -70,4 +72,9 @@ public abstract class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerVi
         Collections.swap(data, position1, position2);
         notifyItemMoved(position1, position2);
     }
+
+    public void setParams(Params params) {
+        this.params = params;
+    }
+
 }

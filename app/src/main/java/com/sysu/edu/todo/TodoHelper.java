@@ -14,12 +14,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class TodoList extends SQLiteOpenHelper {
+public class TodoHelper extends SQLiteOpenHelper {
 
     private static ContentValues value = new ContentValues();
     private final Context context;
 
-    public TodoList(Context context, int version) {
+    public TodoHelper(Context context, int version) {
         super(context, "todo.db", null, version);
         this.context = context;
     }

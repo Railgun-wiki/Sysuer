@@ -25,6 +25,7 @@ import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -48,8 +49,7 @@ import com.sysu.edu.databinding.FragmentDashboardBinding;
 import com.sysu.edu.databinding.ItemCourseBinding;
 import com.sysu.edu.databinding.ItemExamBinding;
 import com.sysu.edu.template.RecyclerAdapter;
-import com.sysu.edu.todo.InitTodo;
-import com.sysu.edu.todo.TodoFragment;
+import com.sysu.edu.todo.TodoManager;
 import com.sysu.edu.todo.info.TodoInfo;
 
 import org.commonmark.node.Heading;
@@ -64,6 +64,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
@@ -75,8 +76,6 @@ import io.noties.markwon.MarkwonSpansFactory;
 import io.noties.markwon.MarkwonVisitor;
 import io.noties.markwon.core.CoreProps;
 
-
-@SuppressWarnings("ALL")
 public class DashboardFragment extends Fragment {
 
     final ArrayList<JSONObject> todayCourse = new ArrayList<>();
@@ -161,7 +160,7 @@ public class DashboardFragment extends Fragment {
                         binding.nextClass.setText(R.string.no_wifi_warning);
                         return;
                     }
-                    JSONObject response = JSON.parseObject((String) msg.obj);
+                    JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response.get("code").equals(200)) {
                         switch (msg.what) {
                             case 1:
@@ -174,9 +173,9 @@ public class DashboardFragment extends Fragment {
                                     jsonObject.put("time", jsonObject.get("startTime") + "~" + jsonObject.get("endTime"));
                                     jsonObject.put("course", "第" + jsonObject.get("startClassTimes") + "~" + jsonObject.get("endClassTimes") + "节课");
                                     String flag = (String) jsonObject.get("useflag");
-                                    if (flag.equals("TD"))
+                                    if ("TD".equals(flag))
                                         (Objects.equals(status, "before") ? beforeArray : afterArray).add(jsonObject);
-                                    (flag.equals("TD") ? todayCourse : tomorrowCourse).add(jsonObject);
+                                    ("TD".equals(flag) ? todayCourse : tomorrowCourse).add(jsonObject);
 //                                    addCourse(flag.equals("TD") ? todayCourse : tomorrowCourse, (String) ((JSONObject) e).get("courseName"), (String) ((JSONObject) e).get("teachingPlace"), ((JSONObject) e).get("startTime") + "~" + ((JSONObject) e).get("endTime")
 //                                            , "第" + ((JSONObject) e).get("startClassTimes") + "~" + ((JSONObject) e).get("endClassTimes") + "节课", (String) ((JSONObject) e).get("teacherName"), flag);
                                 });
@@ -255,7 +254,7 @@ public class DashboardFragment extends Fragment {
                             case 4:
                                 String week = response.getJSONArray("data").getJSONObject(0).getString("weekTimes");
                                 binding.date.setText(String.format("第%s周\n%s", week, binding.date.getText().toString()));
-                                binding.toggle2.check(week.equals("19") ? R.id.week_19 : R.id.week_18);
+                                binding.toggle2.check("19".equals(week) ? R.id.week_19 : R.id.week_18);
                                 break;
                         }
                     } else {
@@ -266,7 +265,7 @@ public class DashboardFragment extends Fragment {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    binding.time.setText(new SimpleDateFormat("hh:mm:ss", Locale.CHINESE).format(new Date()));
+                    binding.time.setText(new SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(new Date()));
                     handler.postDelayed(this, 500);
                 }
             });
@@ -280,16 +279,21 @@ public class DashboardFragment extends Fragment {
             });
             preferenceViewModel.initLiveData();
 
-            TodoFragment todoFragment = new TodoFragment();
-            getParentFragmentManager().beginTransaction().add(R.id.todo_list, todoFragment).commit();
-            InitTodo initTodo = new InitTodo(requireActivity(), todoFragment);
-            initTodo.filterStatus(todoFragment, TodoInfo.DONE);
-            binding.noTodo.setVisibility(initTodo.getCount() != 0 ? View.GONE : View.VISIBLE);
-            binding.noTodo.setOnClickListener(_ -> initTodo.showTodoAddDialog());
+//            TodoFragment todoFragment = new TodoFragment();
+//            getParentFragmentManager().beginTransaction().add(R.id.todo_list, todoFragment).commit();
+//            TodoFragment todoFragment = (TodoFragment) getChildFragmentManager().findFragmentById(R.id.todo_list);
+            ConcatAdapter todoAdapter = new ConcatAdapter();
+            binding.todoList.setLayoutManager(new LinearLayoutManager(requireActivity()));
+            binding.todoList.setAdapter(todoAdapter);
+            TodoManager todoManager = new TodoManager(requireActivity(), todoAdapter);
+            todoManager.filterByStatus(TodoInfo.DONE);
+            todoManager.setOnRefreshListener(() -> todoManager.filterByStatus(binding.filterTodo.isChecked() ? TodoInfo.TODO : TodoInfo.DONE));
+            binding.noTodo.setVisibility(todoManager.getCount() != 0 ? View.GONE : View.VISIBLE);
+            binding.noTodo.setOnClickListener(_ -> todoManager.showTodoAddDialog());
             binding.toggle3.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
                 if (checkedId == R.id.filter_todo) {
-                    initTodo.filterStatus(todoFragment, isChecked ? TodoInfo.TODO : TodoInfo.DONE);
-                    binding.noTodo.setVisibility(initTodo.getCount() != 0 ? View.GONE : View.VISIBLE);
+                    todoManager.filterByStatus(isChecked ? TodoInfo.TODO : TodoInfo.DONE);
+                    binding.noTodo.setVisibility(todoManager.getCount() != 0 ? View.GONE : View.VISIBLE);
                 }
             });
             binding.toggle3.check(R.id.filter_todo);
@@ -444,12 +448,8 @@ public class DashboardFragment extends Fragment {
 }
 
 class CourseAdapter extends RecyclerAdapter<JSONObject> {
-    Params params;
     BiConsumer<JSONObject, View> onClick;
 
-    public void setParams(Params params) {
-        this.params = params;
-    }
 
     @NonNull
     @Override
@@ -465,20 +465,15 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemCourseBinding binding = ItemCourseBinding.bind(holder.itemView);
-        BiConsumer<Integer, String> a = (id, s) -> {
-            ((TextView) holder.itemView.findViewById(id)).setText(get(position).getString(s));
-            holder.itemView.findViewById(id).setOnLongClickListener(_ -> {
+        holder.itemView.setOnClickListener(v -> onClick.accept(get(position), v));
+        Map.of(binding.courseTitle, "courseName", binding.location, "teachingPlace", binding.time, "time", binding.teacher, "teacherName", binding.course, "course").forEach((v, s) -> {
+            v.setText(get(position).getString(s));
+            v.setOnLongClickListener(_ -> {
                 params.copy(s + "：", get(position).getString(s));
                 params.toast(R.string.copy_successfully);
                 return true;
             });
-        };
-        holder.itemView.setOnClickListener(v -> onClick.accept(get(position), v));
-        a.accept(R.id.course_title, "courseName");
-        a.accept(R.id.location, "teachingPlace");
-        a.accept(R.id.time, "time");
-        a.accept(R.id.teacher, "teacherName");
-        a.accept(R.id.course, "course");
+        });
         TypedValue colorSurfaceDim = new TypedValue();
         TypedValue colorSurface = new TypedValue();
         Resources.Theme theme = holder.itemView.getContext().getTheme();
@@ -493,11 +488,6 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
 }
 
 class ExamAdapter extends RecyclerAdapter<JSONObject> {
-    Params params;
-
-    public void setParams(Params params) {
-        this.params = params;
-    }
 
     @NonNull
     @Override

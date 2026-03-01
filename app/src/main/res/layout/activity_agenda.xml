@@ -80,6 +80,7 @@
             android:id="@+id/list"
             layout="@layout/recycler_view_scroll"
             android:layout_width="match_parent"
+            android:background="?colorSurface"
             android:layout_height="match_parent" />
     </com.haibin.calendarview.CalendarLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

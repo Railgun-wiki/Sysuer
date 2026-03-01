@@ -187,11 +187,7 @@ public class NewsFragment extends Fragment {
     }
 
     static class NewsAdapter extends RecyclerAdapter<HashMap<String, String>> {
-        Params params;
 
-        public void setParams(Params params) {
-            this.params = params;
-        }
 
         @NonNull
         @Override

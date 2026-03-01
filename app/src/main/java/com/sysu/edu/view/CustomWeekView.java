@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.text.TextUtils;
+import android.util.TypedValue;
 
 import com.haibin.calendarview.Calendar;
 import com.haibin.calendarview.WeekView;
@@ -43,10 +44,15 @@ public class CustomWeekView extends WeekView {
      */
     private final Paint mSchemeBasicPaint = new Paint();
     private final float mSchemeBaseLine;
+    private int other = Color.GRAY;
     private int mRadius;
 
     public CustomWeekView(Context context) {
         super(context);
+
+        TypedValue typedValue = new TypedValue();
+        if (getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorTertiary, typedValue, true))
+            other = typedValue.data;
         mTextPaint.setTextSize(dipToPx(context, 8));
         mTextPaint.setColor(0xffffffff);
         mTextPaint.setAntiAlias(true);
@@ -124,7 +130,6 @@ public class CustomWeekView extends WeekView {
         canvas.drawCircle(x + (float) mItemWidth / 2, mItemHeight - 3 * mPadding, mPointRadius, mPointPaint);
     }
 
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     @Override
     protected void onDrawText(Canvas canvas, Calendar calendar, int x, boolean hasScheme, boolean isSelected) {
         int cx = x + mItemWidth / 2;
@@ -151,8 +156,8 @@ public class CustomWeekView extends WeekView {
             mOtherMonthLunarTextPaint.setColor(0xFF489dff);
             mOtherMonthTextPaint.setColor(0xFF489dff);
         } else {
-            mCurMonthTextPaint.setColor(0xffCFCFCF);
-            mCurMonthLunarTextPaint.setColor(0xffCFCFCF);
+            mCurMonthTextPaint.setColor(other);
+            mCurMonthLunarTextPaint.setColor(other);
             mSchemeTextPaint.setColor(0xffCFCFCF);
             mSchemeLunarTextPaint.setColor(0xffCFCFCF);
 
@@ -163,20 +168,20 @@ public class CustomWeekView extends WeekView {
         if (isSelected) {
             canvas.drawText(String.valueOf(calendar.getDay()), cx, mTextBaseLine + top,
                     mSelectTextPaint);
-            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + mItemHeight / 10, mSelectedLunarTextPaint);
+            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + (float) mItemHeight / 10, mSelectedLunarTextPaint);
         } else if (hasScheme) {
 
             canvas.drawText(String.valueOf(calendar.getDay()), cx, mTextBaseLine + top,
                     calendar.isCurrentMonth() ? mSchemeTextPaint : mOtherMonthTextPaint);
 
-            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + mItemHeight / 10,
+            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + (float) mItemHeight / 10,
                     !TextUtils.isEmpty(calendar.getSolarTerm()) ? mSolarTermTextPaint : mSchemeLunarTextPaint);
         } else {
             canvas.drawText(String.valueOf(calendar.getDay()), cx, mTextBaseLine + top,
                     calendar.isCurrentDay() ? mCurDayTextPaint :
                             calendar.isCurrentMonth() ? mCurMonthTextPaint : mOtherMonthTextPaint);
 
-            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + mItemHeight / 10,
+            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + (float) mItemHeight / 10,
                     calendar.isCurrentDay() ? mCurDayLunarTextPaint :
                             !TextUtils.isEmpty(calendar.getSolarTerm()) ? mSolarTermTextPaint :
                                     calendar.isCurrentMonth() ?
