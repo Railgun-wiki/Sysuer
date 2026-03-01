@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -22,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -132,10 +132,12 @@ public class DashboardFragment extends Fragment {
             binding.examList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             params = new Params(this);
             params.setCallback(this::getTerm);
-            CourseAdapter courseAdapter = new CourseAdapter(requireActivity());
+            CourseAdapter courseAdapter = new CourseAdapter();
+            courseAdapter.setParams(params);
             courseAdapter.setOnClick((jsonObject, view) -> startActivity(new Intent(getContext(), CourseDetailActivity.class).putExtra("code", jsonObject.getString("courseNum")).putExtra("class", jsonObject.getString("classesNum")), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle()));
             binding.courseList.setAdapter(courseAdapter);
-            ExamAdapter examAdapter = new ExamAdapter(requireActivity());
+            ExamAdapter examAdapter = new ExamAdapter();
+            examAdapter.setParams(params);
             binding.examList.setAdapter(examAdapter);
             binding.toggle.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
                 if (R.id.today == checkedId) {
@@ -145,7 +147,7 @@ public class DashboardFragment extends Fragment {
             });
             binding.toggle2.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
                 if (R.id.week_18 == checkedId) {
-                    examAdapter.set(isChecked ? thisWeekExams : nextWeekExams);
+                    examAdapter.set(new ArrayList<>(isChecked ? thisWeekExams : nextWeekExams));
                     binding.noExam.setVisibility(examAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
                 }
             });
@@ -181,7 +183,6 @@ public class DashboardFragment extends Fragment {
                                 binding.progress.setMax(todayCourse.size());
                                 binding.progress.setProgress(beforeArray.size());
                                 binding.courseList.scrollToPosition(beforeArray.size());
-                                //noinspection SequencedCollectionMethodCanBeUsed
                                 Markwon.builder(requireContext()).usePlugin(new AbstractMarkwonPlugin() {
                                     @Override
                                     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
@@ -199,31 +200,25 @@ public class DashboardFragment extends Fragment {
                                         builder.blockHandler(new MarkwonVisitor.BlockHandler() {
                                             @Override
                                             public void blockStart(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
-
                                             }
 
                                             @Override
                                             public void blockEnd(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
-                                                if (visitor.hasNext(node)) {
+                                                if (visitor.hasNext(node))
                                                     visitor.ensureNewLine();
-                                                }
                                             }
                                         });
                                     }
                                 }).build().setMarkdown(binding.nextClass, afterArray.isEmpty() ? String.format("### %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
                                         getString(R.string.noClass),
-                                        getString(R.string.next_class),
-                                        tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("courseName"),
+                                        getString(R.string.next_class), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("courseName"),
                                         getString(R.string.location), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("teachingPlace"),
                                         getString(R.string.time), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("time")) :
                                         String.format("## %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
                                                 todayCourse.get(beforeArray.size()).getString("courseName"),
-                                                getString(R.string.location),
-                                                todayCourse.get(beforeArray.size()).getString("teachingPlace"),
-                                                getString(R.string.time),
-                                                todayCourse.get(beforeArray.size()).getString("time"),
-                                                getString(R.string.date),
-                                                todayCourse.get(beforeArray.size()).getString("teachingDate")));
+                                                getString(R.string.location), todayCourse.get(beforeArray.size()).getString("teachingPlace"),
+                                                getString(R.string.time), todayCourse.get(beforeArray.size()).getString("time"),
+                                                getString(R.string.date), todayCourse.get(beforeArray.size()).getString("teachingDate")));
                                 binding.toggle.clearChecked();
                                 binding.toggle.check(R.id.today);
                                 break;
@@ -238,17 +233,17 @@ public class DashboardFragment extends Fragment {
                                                 sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
                                         });
                                         sortedTimetable.forEach((key, value) -> {
-                                            if (key.equals(sortedTimetable.firstKey())) {
+                                            if (key.equals(sortedTimetable.firstKey()))
                                                 value.forEach(c -> exams.addFirst((JSONObject) c));
-                                            } else {
+                                            else
                                                 value.forEach(c -> exams.addLast((JSONObject) c));
-                                            }
+
                                         });
                                     }
                                     binding.toggle2.clearChecked();
                                     binding.toggle2.check(R.id.week_18);
-                                    break;
                                 }
+                                break;
                             case 3:
                                 String term = response.getJSONObject("data").getString("acadYearSemester");
                                 binding.date.setText(String.format("第%s学期\n%s\n星期%s", term, new SimpleDateFormat("M月dd日", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
@@ -311,6 +306,7 @@ public class DashboardFragment extends Fragment {
     }
 
     void getTerm() {
+//        System.out.println("getTerm");
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt//yd/classSchedule/");
         http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/acadyearterm/showNewAcadlist", 3);
     }
@@ -448,20 +444,18 @@ public class DashboardFragment extends Fragment {
 }
 
 class CourseAdapter extends RecyclerAdapter<JSONObject> {
-    final Params params;
-    final Context context;
+    Params params;
     BiConsumer<JSONObject, View> onClick;
 
-    public CourseAdapter(Context context) {
-        super();
-        this.context = context;
-        this.params = new Params((FragmentActivity) context);
+    public void setParams(Params params) {
+        this.params = params;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemCourseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+        return new RecyclerView.ViewHolder(ItemCourseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+        };
     }
 
     public void setOnClick(BiConsumer<JSONObject, View> onClick) {
@@ -487,8 +481,9 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
         a.accept(R.id.course, "course");
         TypedValue colorSurfaceDim = new TypedValue();
         TypedValue colorSurface = new TypedValue();
-        context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurfaceDim, colorSurfaceDim, true);
-        context.getTheme().resolveAttribute(com.google.android.material.R.attr.colorSurface, colorSurface, true);
+        Resources.Theme theme = holder.itemView.getContext().getTheme();
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceDim, colorSurfaceDim, true);
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, colorSurface, true);
         boolean isBefore = Objects.equals(get(position).getString("status"), "before");
         binding.courseTitle.setTextAppearance(isBefore ? com.google.android.material.R.style.TextAppearance_Material3_TitleMedium : com.google.android.material.R.style.TextAppearance_Material3_TitleMedium_Emphasized);
         holder.itemView.getBackground().setTint(Objects.equals(get(position).getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
@@ -497,42 +492,25 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
     }
 }
 
-class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    final Params params;
-    final Context context;
-    final LinkedList<JSONObject> data = new LinkedList<>();
+class ExamAdapter extends RecyclerAdapter<JSONObject> {
+    Params params;
 
-    public ExamAdapter(Context context) {
-        super();
-        this.context = context;
-        this.params = new Params((FragmentActivity) context);
-    }
-
-    public void set(LinkedList<JSONObject> examData) {
-        clear();
-        data.addAll(examData);
-        notifyItemRangeInserted(0, getItemCount());
-    }
-
-    public void clear() {
-        int temp = getItemCount();
-        data.clear();
-        notifyItemRangeRemoved(0, temp);
+    public void setParams(Params params) {
+        this.params = params;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(context)).getRoot()) {
-        };
+        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemExamBinding binding = ItemExamBinding.bind(holder.itemView);
-        holder.itemView.setOnClickListener(_ -> {
-        });
-        JSONObject examData = data.get(position);
+        Context context = holder.itemView.getContext();
+        holder.itemView.setOnClickListener(_ -> {});
+        JSONObject examData = get(position);
         int startClassTimes = examData.getIntValue("startClassTimes");
         int endClassTimes = examData.getIntValue("endClassTimes");
         String[] text = new String[]{examData.getString("examSubjectName"),
@@ -552,10 +530,6 @@ class ExamAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 params.toast(R.string.copy_successfully);
             });
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return data.size();
+        super.onBindViewHolder(holder, position);
     }
 }

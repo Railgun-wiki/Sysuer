@@ -48,7 +48,8 @@ public class LoginManager {
                 Matcher token = Pattern.compile("ibps-1.0.1-token=(.+?);").matcher(cookie + ";");
                 Matcher authorization = Pattern.compile("authorization=(.+?);").matcher(cookie + ";");
                 if (token.find()) edit.putString("token", token.group(1));
-                if (authorization.find()) edit.putString("authorization", Objects.requireNonNull(authorization.group(1)).replace("%20", " "));
+                if (authorization.find())
+                    edit.putString("authorization", Objects.requireNonNull(authorization.group(1)).replace("%20", " "));
                 edit.putString("Cookie", cookie);
                 edit.apply();
                 if (afterLogin != null)
@@ -130,7 +131,7 @@ public class LoginManager {
                     if (Pattern.compile(Objects.requireNonNull(model.getTarget().getValue())).matcher(url).find())
                         handler.postDelayed(() -> {
                             System.out.println("登录成功");
-                            System.out.println("Cookie：" + cookieManager.getCookie(url));
+//                            System.out.println("Cookie：" + cookieManager.getCookie(url));
                             model.setCookie(cookieManager.getCookie(url));
                             if (Boolean.FALSE.equals(model.getLogin().getValue()))
                                 model.setLogin(true);

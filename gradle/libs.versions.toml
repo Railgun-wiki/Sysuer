@@ -9,6 +9,7 @@ editorBom = "0.24.4"
 fastjson2 = "2.0.57"
 firebaseAnalytics = "23.0.0"
 glide = "4.11.0"
+googleServices = "4.4.4"
 html = "4.6.2"
 junit = "4.13.2"
 junitJunit = "4.13.2"
@@ -59,6 +60,7 @@ editor-bom = { module = "io.github.rosemoe:editor-bom", version.ref = "editorBom
 fastjson2 = { module = "com.alibaba.fastjson2:fastjson2", version = "2.0.61.android8" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics", version.ref = "firebaseAnalytics" }
 glide = { module = "com.github.bumptech.glide:glide", version = "5.0.5" }
+google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 html = { module = "io.noties.markwon:html", version.ref = "html" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

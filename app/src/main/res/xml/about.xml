@@ -184,5 +184,14 @@
                 android:targetClass="com.sysu.edu.browser.BrowserActivity"
                 android:targetPackage="com.sysu.edu" />
         </Preference>
+        <Preference
+            app:icon="@drawable/version"
+            app:summary="https://github.com/huanghaibin-dev/CalendarView"
+            app:title="CalendarView">
+            <intent
+                android:data="https://github.com/huanghaibin-dev/CalendarView"
+                android:targetClass="com.sysu.edu.browser.BrowserActivity"
+                android:targetPackage="com.sysu.edu" />
+        </Preference>
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

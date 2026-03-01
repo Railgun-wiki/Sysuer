@@ -1,3 +1,5 @@
+apply(plugin = "com.android.application")
+apply(plugin = "com.google.gms.google-services")
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -14,7 +16,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1933
-        versionName = "1.0.10"
+        versionName = "1.0.11beta1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
     }
@@ -41,7 +43,7 @@ android {
     sourceSets {
         getByName("main") {
             java {
-                 mutableSetOf(
+                mutableSetOf(
                     "src\\main\\java"
                 )
             }
