@@ -1,10 +1,10 @@
 package com.sysu.edu.todo;
 
 import static android.text.TextUtils.isEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.view.Gravity;
 import android.view.Menu;
@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -72,20 +73,17 @@ public class TodoManager {
         todoDetailDialog = new MaterialAlertDialogBuilder(activity)
                 .setView(dialogTodoBinding.getRoot())
                 .setPositiveButton(R.string.confirm, (_, _) -> {
-                    todoInfo.setTitle(Objects.requireNonNull(dialogTodoBinding.title.getText()).toString());
-                    todoInfo.setDescription(Objects.requireNonNull(dialogTodoBinding.description.getText()).toString());
-                    if (todoInfo.getFunction() == TodoInfo.ADD) {
-                        todoDB.addTodo(todoInfo);
-                    } else if (todoInfo.getFunction() == TodoInfo.VIEW) {
-                        todoDB.updateTodo(todoInfo);
-                    }
-                    if (listener != null) listener.onRefresh();
+                    todoInfo.setTitle(toStringOrEmpty(dialogTodoBinding.title.getText()));
+                    todoInfo.setDescription(toStringOrEmpty(dialogTodoBinding.description.getText()));
+                    if (todoInfo.getFunction() == TodoInfo.ADD) todoDB.addTodo(todoInfo);
+                    else if (todoInfo.getFunction() == TodoInfo.VIEW) todoDB.updateTodo(todoInfo);
+                    performRefresh();
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .setNeutralButton(R.string.delete, (_, _) -> {
                     if (todoInfo.getFunction() == TodoInfo.VIEW) {
                         todoDB.deleteTodo(todoInfo);
-                        if (listener != null) listener.onRefresh();
+                        performRefresh();
                     }
                 })
                 .create();
@@ -127,8 +125,7 @@ public class TodoManager {
         MaterialTimePicker timePicker = new MaterialTimePicker.Builder().build();
 
         // 共用对话框外观设置
-        for (AlertDialog dialog : new AlertDialog[]{todoDetailDialog, remindDialog})
-            setupDialogWindow(dialog, dialog != remindDialog);
+        setupDialogWindow(todoDetailDialog);
 
         for (int i = 0; i < 3; i++) {
             int finalI = i;
@@ -239,6 +236,11 @@ public class TodoManager {
         tags.forEach(s -> createFilterChip(s, dialogTodoBinding.tag, 2));
 
         initDialog();
+        performRefresh();
+
+    }
+
+    public void performRefresh() {
         if (listener != null) listener.onRefresh();
     }
 
@@ -274,8 +276,8 @@ public class TodoManager {
         try {
 //            TodoAdapter todoAdapter = new TodoAdapter(this);
 //            TitleAdapter titleAdapter = new TitleAdapter();
-            SQLiteDatabase db = todoDB.getWritableDatabase();
-            try (Cursor cursor = db.query("todos", null, where, args, null, null, "due_date")) {
+            HashMap<String, TodoAdapter> dueMap = new HashMap<>();
+            try (Cursor cursor = todoDB.getWritableDatabase().query("todos", null, where, args, null, null, "due_date")) {
                 count = cursor.getCount();
                 while (cursor.moveToNext()) {
                     TodoInfo todoDetail = new TodoInfo();
@@ -304,22 +306,32 @@ public class TodoManager {
 //                        todoAdapter = new TodoAdapter(this);
 //                        concatAdapter.addAdapter(todoAdapter);
 //                    }
-                    TodoAdapter todoAdapter = new TodoAdapter(this);
+
+                    TodoAdapter todoAdapter = dueMap.getOrDefault(dueDate, null);
+                    if (todoAdapter == null) {
+                        concatAdapter.addAdapter(new TitleAdapter(isEmpty(dueDate) ? "无预定日期" : dueDate));
+                        dueMap.put(dueDate, todoAdapter = new TodoAdapter(this));
+                        concatAdapter.addAdapter(todoAdapter);
+                    }
                     todoAdapter.add(todoDetail);
+                    TodoAdapter finalTodoAdapter = todoAdapter;
                     todoAdapter.setListener(new AdapterListener() {
                         @Override
                         public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
                             ItemTodoBinding binding = ItemTodoBinding.bind(holder.itemView);
                             binding.delete.setOnClickListener(_ -> {
-                                System.out.println(todoDetail.getId().getValue());
                                 todoDB.getWritableDatabase().delete("todos", "id=?", new String[]{String.valueOf(todoDetail.getId().getValue())});
-                                if (listener != null) listener.onRefresh();
+                                performRefresh();
                             });
                             binding.getRoot().setOnClickListener(_ -> {
-                                initDialog(todoAdapter.get(position));
+                                initDialog(finalTodoAdapter.get(position));
                                 showDialog();
                             });
-
+                            binding.copy.setOnClickListener(_ -> {
+                                initDialog(finalTodoAdapter.get(position));
+                                todoInfo.setFunction(TodoInfo.ADD);
+                                showDialog();
+                            });
                         }
 
                         @Override
@@ -327,8 +339,6 @@ public class TodoManager {
 
                         }
                     });
-                    concatAdapter.addAdapter(new TitleAdapter(isEmpty(dueDate) ? "无预定日期" : dueDate));
-                    concatAdapter.addAdapter(todoAdapter);
                 }
             }
         } catch (Exception _) {
@@ -434,18 +444,20 @@ public class TodoManager {
         showDialog();
     }
 
+    public TodoInfo getTodoInfo() {
+        return todoInfo;
+    }
 
-    private void setupDialogWindow(AlertDialog dialog, boolean applyPadding) {
+
+    private void setupDialogWindow(AlertDialog dialog) {
         if (dialog != null) {
             dialog.setCanceledOnTouchOutside(false);
             Window window = Objects.requireNonNull(dialog.getWindow());
-            if (applyPadding) {
-                FrameLayout content = dialog.findViewById(android.R.id.content);
-                if (content != null) content.setPadding(48, 48, 48, 0);
-            }
+            FrameLayout content = dialog.findViewById(android.R.id.content);
+            if (content != null) content.setPadding(48, 48, 48, 0);
 //        window.setGravity(Gravity.BOTTOM);
 //        window.setBackgroundDrawableResource(R.drawable.top_capsule);
-//        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+//            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
             window.setWindowAnimations(com.google.android.material.R.style.Animation_Design_BottomSheetDialog);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -477,4 +489,5 @@ public class TodoManager {
     public interface OnRefreshListener {
         void onRefresh();
     }
+
 }

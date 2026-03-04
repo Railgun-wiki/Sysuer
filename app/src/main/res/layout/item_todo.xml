@@ -52,21 +52,21 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/view"
-            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/view" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/copy"
-            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/copy" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/delete"
-            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:icon="@drawable/delete" />

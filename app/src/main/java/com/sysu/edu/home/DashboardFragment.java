@@ -1,5 +1,7 @@
 package com.sysu.edu.home;
 
+import static com.sysu.edu.api.CommonUtil.isEmpty;
+
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -8,6 +10,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,12 +18,14 @@ import android.os.Message;
 import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
@@ -36,9 +41,11 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.CourseDetailActivity;
 import com.sysu.edu.academic.CourseScheduleActivity;
+import com.sysu.edu.api.CalendarManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
@@ -92,12 +99,17 @@ public class DashboardFragment extends Fragment {
     ServiceFragment.CollectionAdapter collectionAdapter;
     BottomSheetDialog actionDialog;
     DialogServiceActionBinding actionBinding;
+    MutableLiveData<String> todoDate = new MutableLiveData<>("");
+    private TodoManager todoManager;
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (isRefreshRequired) {
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
+            CalendarManager calendar = new CalendarManager();
+
             db = new HomeCollectionHelper(requireContext());
             viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
             viewModel.updateDashboardShortcut.observe(requireActivity(), _ -> getShortcutCollection());
@@ -213,7 +225,7 @@ public class DashboardFragment extends Fragment {
                                         getString(R.string.next_class), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("courseName"),
                                         getString(R.string.location), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("teachingPlace"),
                                         getString(R.string.time), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("time")) :
-                                        String.format("## %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
+                                        String.format("### %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
                                                 todayCourse.get(beforeArray.size()).getString("courseName"),
                                                 getString(R.string.location), todayCourse.get(beforeArray.size()).getString("teachingPlace"),
                                                 getString(R.string.time), todayCourse.get(beforeArray.size()).getString("time"),
@@ -236,7 +248,6 @@ public class DashboardFragment extends Fragment {
                                                 value.forEach(c -> exams.addFirst((JSONObject) c));
                                             else
                                                 value.forEach(c -> exams.addLast((JSONObject) c));
-
                                         });
                                     }
                                     binding.toggle2.clearChecked();
@@ -279,22 +290,49 @@ public class DashboardFragment extends Fragment {
             });
             preferenceViewModel.initLiveData();
 
-//            TodoFragment todoFragment = new TodoFragment();
-//            getParentFragmentManager().beginTransaction().add(R.id.todo_list, todoFragment).commit();
-//            TodoFragment todoFragment = (TodoFragment) getChildFragmentManager().findFragmentById(R.id.todo_list);
             ConcatAdapter todoAdapter = new ConcatAdapter();
             binding.todoList.setLayoutManager(new LinearLayoutManager(requireActivity()));
             binding.todoList.setAdapter(todoAdapter);
-            TodoManager todoManager = new TodoManager(requireActivity(), todoAdapter);
-            todoManager.filterByStatus(TodoInfo.DONE);
-            todoManager.setOnRefreshListener(() -> todoManager.filterByStatus(binding.filterTodo.isChecked() ? TodoInfo.TODO : TodoInfo.DONE));
-            binding.noTodo.setVisibility(todoManager.getCount() != 0 ? View.GONE : View.VISIBLE);
-            binding.noTodo.setOnClickListener(_ -> todoManager.showTodoAddDialog());
-            binding.toggle3.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
-                if (checkedId == R.id.filter_todo) {
-                    todoManager.filterByStatus(isChecked ? TodoInfo.TODO : TodoInfo.DONE);
-                    binding.noTodo.setVisibility(todoManager.getCount() != 0 ? View.GONE : View.VISIBLE);
+            todoManager = new TodoManager(requireActivity(), todoAdapter);
+            todoManager.setOnRefreshListener(this::refresh);
+            binding.add.setOnClickListener(_ -> todoManager.showTodoAddDialog());
+            PopupMenu pop = new PopupMenu(requireActivity(), binding.todoDate, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
+            Menu menu = pop.getMenu();
+            menu.add(0, Menu.NONE, 0, R.string.all).setChecked(true).setOnMenuItemClickListener(_ -> {
+                todoDate.setValue("");
+                return false;
+            });
+            menu.add(0, Menu.NONE, 0, R.string.today).setOnMenuItemClickListener(_ -> {
+                todoDate.setValue(calendar.toDateStringAdd(0));
+                return false;
+            });
+            menu.add(0, Menu.NONE, 0, R.string.tomorrow).setOnMenuItemClickListener(_ -> {
+                todoDate.setValue(calendar.toDateStringAdd(1));
+                return false;
+            });
+            menu.add(1, Menu.NONE, 0, R.string.select).setOnMenuItemClickListener(_ -> {
+//                item.setChecked(true);
+                MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
+                if (isEmpty(todoDate.getValue()))
+                    builder.setSelection(System.currentTimeMillis());
+                else {
+                    try {
+                        builder.setSelection(Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(todoDate.getValue())).getTime()+86400000);
+                    } catch (ParseException _) {
+                    }
                 }
+                MaterialDatePicker<Long> datePicker = builder.build();
+                datePicker.show(requireActivity().getSupportFragmentManager(), "date_picker");
+                datePicker.addOnPositiveButtonClickListener(aLong -> todoDate.setValue(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(aLong)));
+
+                return false;
+            });
+            todoDate.observe(getViewLifecycleOwner(), _ -> refresh());
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) menu.setGroupDividerEnabled(true);
+            binding.todoDate.setOnClickListener(_ -> pop.show());
+            binding.toggle3.addOnButtonCheckedListener((_, checkedId, _) -> {
+                if (checkedId == R.id.filter_todo) todoManager.performRefresh();
             });
             binding.toggle3.check(R.id.filter_todo);
             preferenceViewModel.getDashboardLiveData().observe(getViewLifecycleOwner(), s -> {
@@ -307,6 +345,17 @@ public class DashboardFragment extends Fragment {
             getShortcutCollection();
         }
         return binding.getRoot();
+    }
+
+    void refresh() {
+        String value = todoDate.getValue();
+        boolean isAll = isEmpty(value);
+        if (isAll)
+            todoManager.refresh("status = ?", new String[]{String.valueOf(binding.filterTodo.isChecked() ? TodoInfo.TODO : TodoInfo.DONE)});
+        else todoManager.refresh("due_date = ? AND status = ?", new String[]{
+                value, String.valueOf(binding.filterTodo.isChecked() ? TodoInfo.TODO : TodoInfo.DONE)
+        });
+        binding.todoDate.setText(isAll ? getString(R.string.all) : value);
     }
 
     void getTerm() {
@@ -333,8 +382,9 @@ public class DashboardFragment extends Fragment {
     String getTimePosition(String from, String to) {
         Date now = new Date();
         try {
-            Date fromDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(from);
-            Date toDate = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault()).parse(to);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault());
+            Date fromDate = simpleDateFormat.parse(from);
+            Date toDate = simpleDateFormat.parse(to);
             return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
         } catch (ParseException _) {
         }
@@ -389,7 +439,6 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
             }
         }).attachToRecyclerView(orderBinding.recyclerView);
     }
@@ -492,14 +541,16 @@ class ExamAdapter extends RecyclerAdapter<JSONObject> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+        return new RecyclerView.ViewHolder(ItemExamBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+        };
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemExamBinding binding = ItemExamBinding.bind(holder.itemView);
         Context context = holder.itemView.getContext();
-        holder.itemView.setOnClickListener(_ -> {});
+        holder.itemView.setOnClickListener(_ -> {
+        });
         JSONObject examData = get(position);
         int startClassTimes = examData.getIntValue("startClassTimes");
         int endClassTimes = examData.getIntValue("endClassTimes");

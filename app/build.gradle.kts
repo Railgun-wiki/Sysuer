@@ -105,6 +105,7 @@ dependencies {
     implementation(libs.editor)
     implementation(libs.language.textmate)
     implementation(project(":CalendarView"))
+    implementation(libs.okhttp.java.net.cookiejar)
     /*configurations.all {
         exclude("androidx.appcompat", "appcompat")
     }*/

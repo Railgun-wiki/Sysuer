@@ -234,11 +234,11 @@ public class PayFragment extends StaggeredFragment {
         Date toDate;
 
         public String getFromDateString() {
-            return calendarManager.toDate(fromDate);
+            return calendarManager.toDateString(fromDate);
         }
 
         public String getToDateString() {
-            return calendarManager.toDate(toDate);
+            return calendarManager.toDateString(toDate);
         }
 
         public long getFromDateTimeMillis() {

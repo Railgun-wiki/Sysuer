@@ -199,4 +199,7 @@ public class CommonUtil {
             this.second = second;
         }
     }
+    public static <T> String toStringOrEmpty(T t) {
+        return t == null ? "" : t.toString();
+    }
 }

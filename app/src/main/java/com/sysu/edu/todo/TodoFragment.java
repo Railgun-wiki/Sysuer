@@ -1,5 +1,7 @@
 package com.sysu.edu.todo;
 
+import static com.sysu.edu.api.CommonUtil.isEmpty;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,20 +10,29 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.haibin.calendarview.Calendar;
 import com.haibin.calendarview.CalendarView;
 import com.sysu.edu.R;
 import com.sysu.edu.databinding.FragmentTodoBinding;
+import com.sysu.edu.todo.info.TodoInfo;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class TodoFragment extends Fragment {
 
     final androidx.recyclerview.widget.ConcatAdapter concatAdapter = new androidx.recyclerview.widget.ConcatAdapter(new androidx.recyclerview.widget.ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
     FragmentTodoBinding binding;
+    TodoInfo todoInfo = new TodoInfo();
+    String date;
+    boolean due = true;
+    boolean ddl = false;
     private TodoManager todoManager;
 
     @Override
@@ -29,6 +40,7 @@ public class TodoFragment extends Fragment {
         binding = FragmentTodoBinding.inflate(inflater, container, false);
         binding.recyclerView.setAdapter(concatAdapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         binding.calendarView.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override
             public void onCalendarOutOfRange(Calendar calendar) {
@@ -36,7 +48,8 @@ public class TodoFragment extends Fragment {
 
             @Override
             public void onCalendarSelect(Calendar calendar, boolean isClick) {
-                todoManager.refresh("due_date = ?", new String[]{new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.getTimeInMillis())});
+                date = simpleDateFormat.format(calendar.getTimeInMillis());
+                todoManager.performRefresh();
             }
         });
         Toolbar toolbar = requireActivity().findViewById(R.id.toolbar);
@@ -44,8 +57,29 @@ public class TodoFragment extends Fragment {
         toolbar.setSubtitle(String.format(Locale.getDefault(), "%d年%d月", binding.calendarView.getCurYear(), binding.calendarView.getCurMonth()));
         binding.calendarView.setSelectSingleMode();
         todoManager = new TodoManager(requireActivity(), concatAdapter);
-        todoManager.setOnRefreshListener(() -> todoManager.refresh("due_date = ?", new String[]{new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(binding.calendarView.getSelectedCalendar().getTimeInMillis())}));
+        todoManager.setOnRefreshListener(this::refresh);
+        requireActivity().findViewById(R.id.add).setOnClickListener(_ -> {
+            todoManager.showTodoAddDialog();
+            todoManager.getTodoInfo().setDueDate(getDate(simpleDateFormat));
+        });
+
+        todoInfo.setStatus(null);
+        date = getDate(simpleDateFormat);
+        refresh();
+
+        ((MaterialButtonToggleGroup) requireActivity().findViewById(R.id.todo_date)).addOnButtonCheckedListener((_, checkedId, isChecked) -> {
+            if (checkedId == R.id.due_todo) {
+                due = isChecked;
+            } else if (checkedId == R.id.ddl_todo) {
+                ddl = isChecked;
+            }
+            todoManager.performRefresh();
+        });
         return binding.getRoot();
+    }
+
+    private String getDate(SimpleDateFormat simpleDateFormat) {
+        return simpleDateFormat.format(binding.calendarView.getSelectedCalendar().getTimeInMillis());
     }
 
     @Override
@@ -54,7 +88,49 @@ public class TodoFragment extends Fragment {
         binding = null;
     }
 
-    public TodoManager getInitTodo() {
+    public void refresh() {
+        ArrayList<String> a = new ArrayList<>();
+        ArrayList<String> b = new ArrayList<>();
+        HashMap<String, MutableLiveData<?>> map = new HashMap<>();
+//        map.put("due_date", todoInfo.getDueDate());
+//        map.put("ddl", todoInfo.getDdlDate());
+        map.put("status", todoInfo.getStatus());
+        map.put("title", todoInfo.getTitle());
+        map.put("description", todoInfo.getDescription());
+        map.put("priority", todoInfo.getPriority());
+        map.put("todo_type", todoInfo.getType());
+        map.put("subtask", todoInfo.getSubtask());
+        map.put("attachment", todoInfo.getAttachment());
+        map.put("subject", todoInfo.getSubject());
+        map.put("location", todoInfo.getLocation());
+        map.put("color", todoInfo.getColor());
+        map.put("label", todoInfo.getTag());
+        map.put("due_time", todoInfo.getDueTime());
+        map.put("remind_time", todoInfo.getRemindTime());
+        map.put("done_datetime", todoInfo.getDoneDate());
+        map.forEach((key, value) -> {
+            if (!isEmpty(value.getValue())) {
+                a.add(key + " = ?");
+                b.add(String.valueOf(value.getValue()));
+            }
+        });
+        StringBuilder condition = new StringBuilder(String.join(" AND ", a));
+        if (due && ddl) {
+            condition.append("AND (due_date= ? OR ddl = ?)");
+            b.add(date);
+            b.add(date);
+        } else if (due) {
+            condition.append(" AND due_date= ?");
+            b.add(date);
+        } else if (ddl) {
+            condition.append(" AND ddl= ?");
+            b.add(date);
+        }
+        System.out.println(todoInfo.getStatus().getValue());
+        todoManager.refresh(condition.toString(), b.toArray(new String[0]));
+    }
+
+    public TodoManager getTodoManager() {
         return todoManager;
     }
 }

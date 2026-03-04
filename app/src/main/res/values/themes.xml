@@ -38,6 +38,8 @@
         <item name="android:windowAnimationStyle">@style/fade</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="colorOnContainerChecked">#000000</item>
+        <item name="colorOnContainerUnchecked">#ffffff</item>
     </style>
 
     <style name="fade">

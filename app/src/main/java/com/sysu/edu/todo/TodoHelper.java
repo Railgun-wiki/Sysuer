@@ -43,6 +43,8 @@ public class TodoHelper extends SQLiteOpenHelper {
         value.put("remind_time", todoInfo.getRemindTime().getValue());
         value.put("done_datetime", todoInfo.getDoneDate().getValue());
         value.put("update_datetime", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+        value.put("ddl", todoInfo.getDdlDate().getValue());
+
         return value;
     }
 
@@ -60,9 +62,7 @@ public class TodoHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int i, int i1) {
-        if (i <= 6) {
-            addType(db);
-        }
+        if (i <= 6) addType(db);
     }
 
     public void addType(SQLiteDatabase db) {

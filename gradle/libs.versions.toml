@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.1"
+agp = "9.1.0"
 androidxAppcompat = "1.2.0"
 api = "13.1.5"
 appcompatVersion = "1.6.1"
@@ -29,7 +29,7 @@ annotation = "1.9.1"
 kotlin = "2.3.10"
 lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.12.4"
-composeBom = "2026.02.00"
+composeBom = "2026.02.01"
 preference = "1.2.1"
 recyclerview = "1.4.0"
 workRuntime = "2.11.1"
@@ -48,6 +48,7 @@ googleMaterial = "1.13.0"
 recycler = "4.6.2"
 recyclerTable = "4.6.2"
 inlineParser = "4.6.2"
+okhttpJavaNetCookiejar = "5.3.2"
 
 [libraries]
 api = { module = "dev.rikka.shizuku:api", version.ref = "api" }
@@ -86,7 +87,7 @@ ui = { group = "androidx.compose.ui", name = "ui" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.10.3" }
+ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.10.4" }
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 material3 = { group = "androidx.compose.material3", name = "material3" }
 preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
@@ -104,6 +105,7 @@ google-material = { group = "com.google.android.material", name = "material", ve
 recycler = { group = "io.noties.markwon", name = "recycler", version.ref = "recycler" }
 recycler-table = { group = "io.noties.markwon", name = "recycler-table", version.ref = "recyclerTable" }
 inline-parser = { group = "io.noties.markwon", name = "inline-parser", version.ref = "inlineParser" }
+okhttp-java-net-cookiejar = { group = "com.squareup.okhttp3", name = "okhttp-java-net-cookiejar", version.ref = "okhttpJavaNetCookiejar" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

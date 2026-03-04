@@ -20,7 +20,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HttpManager {
-    final OkHttpClient http = new OkHttpClient(); // 全局 OkHttpClient 实例
     final CookieManager cookieManager = CookieManager.getInstance(); // 全局 CookieManager 实例
     Handler handler; // 处理消息的 Handler 对象
     String referrer; // Referer 头字段值
@@ -32,6 +31,10 @@ public class HttpManager {
     boolean isAuthorizationRequired; // 是否需要 Authorization 头字段
     boolean isTokenRequired; // 是否需要 token 头字段
     Map<String, String> header;
+    final OkHttpClient http = new OkHttpClient.Builder()
+//            .cookieJar(new JavaNetCookieJar(new java.net.CookieManager()))
+//            .authenticator(new JavaNetAuthenticator())
+            .build(); // 全局 OkHttpClient 实例
 
     /**
      * 构造函数
@@ -137,7 +140,8 @@ public class HttpManager {
      */
     private void sendRequest(@NonNull String url, String data, String type, int what) {
         Request.Builder request = new Request.Builder().url(url);
-//        if (params != null) request.header("Cookie", params.getCookie());
+        //(cookieManager);
+        if (params != null) request.header("Cookie", params.getCookie());
         if (target != null && cookieManager.getCookie(target) != null) {
             request.header("Cookie", cookieManager.getCookie(target));
         } else if (cookieManager.getCookie(url) != null) {

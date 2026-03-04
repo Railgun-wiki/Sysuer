@@ -6,7 +6,7 @@
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
-        style="@style/SYSU.AppBarLayout.Solid"
+        style="@style/SYSU.AppBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -18,6 +18,7 @@
             app:layout_scrollFlags="scroll|enterAlways"
             app:navigationIcon="?homeAsUpIndicator"
             app:title="@string/agenda" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
 
@@ -76,11 +77,18 @@
             app:year_view_week_text_color="#666666"
             app:year_view_week_text_size="7sp" />
 
-        <include
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
-            layout="@layout/recycler_view_scroll"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:background="?colorSurface"
-            android:layout_height="match_parent" />
+            android:elevation="2dp"
+            app:fastScrollEnabled="true"
+            app:fastScrollHorizontalThumbDrawable="@drawable/thumb"
+            app:fastScrollHorizontalTrackDrawable="@drawable/track"
+            app:fastScrollVerticalThumbDrawable="@drawable/thumb"
+            app:fastScrollVerticalTrackDrawable="@drawable/track" />
     </com.haibin.calendarview.CalendarLayout>
+
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

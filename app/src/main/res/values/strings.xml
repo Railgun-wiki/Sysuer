@@ -578,5 +578,6 @@
     <string name="author">作者</string>
     <string name="agenda">日程</string>
     <string name="delete_warning">确定删除吗？</string>
+    <string name="due">预定</string>
 
 </resources>

@@ -43,13 +43,14 @@ public class AgendaActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         Params params = new Params(this);
         params.setCallback(this::getAgenda);
-        binding.list.getRoot().setLayoutManager(new LinearLayoutManager(this));
+        binding.list.setLayoutManager(new LinearLayoutManager(this));
         ConcatAdapter concatAdapter = new ConcatAdapter();
-        binding.list.getRoot().setAdapter(concatAdapter);
+        binding.list.setAdapter(concatAdapter);
         binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
+                System.out.println(msg.obj);
                 super.handleMessage(msg);
                 if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
@@ -87,8 +88,7 @@ public class AgendaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCalendarSelect(Calendar calendar, boolean isClick) {
-                getAgenda();
+            public void onCalendarSelect(Calendar calendar, boolean isClick) {getAgenda();
             }
         });
         binding.calendarView.setOnMonthChangeListener((year, month) -> binding.toolbar.setSubtitle(String.format(Locale.getDefault(), "%d年%d月", year, month)));
@@ -116,7 +116,8 @@ public class AgendaActivity extends AppCompatActivity {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+            };
         }
 
         @Override
