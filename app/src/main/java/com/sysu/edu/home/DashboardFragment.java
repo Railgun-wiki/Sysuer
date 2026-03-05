@@ -35,6 +35,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -42,6 +46,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.sysu.edu.ClassNotificationWorker;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.CourseDetailActivity;
 import com.sysu.edu.academic.CourseScheduleActivity;
@@ -74,6 +79,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 
@@ -164,122 +170,7 @@ public class DashboardFragment extends Fragment {
             });
             binding.date.setText(String.format("%s/星期%s", new SimpleDateFormat("M月dd日", Locale.CHINESE).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
 
-            Handler handler = new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(@NonNull Message msg) {
-                    if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
-                        binding.nextClass.setText(R.string.no_wifi_warning);
-                        return;
-                    }
-                    JSONObject response = JSONObject.parseObject((String) msg.obj);
-                    if (response.get("code").equals(200)) {
-                        switch (msg.what) {
-                            case 1:
-                                ArrayList<JSONObject> beforeArray = new ArrayList<>();
-                                ArrayList<JSONObject> afterArray = new ArrayList<>();
-                                response.getJSONArray("data").forEach(e -> {
-                                    JSONObject jsonObject = (JSONObject) e;
-                                    String status = getTimePosition(jsonObject.getString("teachingDate") + " " + jsonObject.getString("startTime"), jsonObject.getString("teachingDate") + " " + jsonObject.getString("endTime"));
-                                    jsonObject.put("status", status);
-                                    jsonObject.put("time", jsonObject.get("startTime") + "~" + jsonObject.get("endTime"));
-                                    jsonObject.put("course", "第" + jsonObject.get("startClassTimes") + "~" + jsonObject.get("endClassTimes") + "节课");
-                                    String flag = (String) jsonObject.get("useflag");
-                                    if ("TD".equals(flag))
-                                        (Objects.equals(status, "before") ? beforeArray : afterArray).add(jsonObject);
-                                    ("TD".equals(flag) ? todayCourse : tomorrowCourse).add(jsonObject);
-//                                    addCourse(flag.equals("TD") ? todayCourse : tomorrowCourse, (String) ((JSONObject) e).get("courseName"), (String) ((JSONObject) e).get("teachingPlace"), ((JSONObject) e).get("startTime") + "~" + ((JSONObject) e).get("endTime")
-//                                            , "第" + ((JSONObject) e).get("startClassTimes") + "~" + ((JSONObject) e).get("endClassTimes") + "节课", (String) ((JSONObject) e).get("teacherName"), flag);
-                                });
-                                binding.progress.setMax(todayCourse.size());
-                                binding.progress.setProgress(beforeArray.size());
-                                binding.courseList.scrollToPosition(beforeArray.size());
-                                Markwon.builder(requireContext()).usePlugin(new AbstractMarkwonPlugin() {
-                                    @Override
-                                    public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
-                                        super.configureSpansFactory(builder);
-                                        builder.appendFactory(Heading.class, (_, configuration) -> {
-                                            if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
-                                                return new ForegroundColorSpan(Color.parseColor("#6750a4"));
-                                            return null;
-                                        });
-                                    }
-
-                                    @Override
-                                    public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {
-                                        super.configureVisitor(builder);
-                                        builder.blockHandler(new MarkwonVisitor.BlockHandler() {
-                                            @Override
-                                            public void blockStart(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
-                                            }
-
-                                            @Override
-                                            public void blockEnd(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
-                                                if (visitor.hasNext(node))
-                                                    visitor.ensureNewLine();
-                                            }
-                                        });
-                                    }
-                                }).build().setMarkdown(binding.nextClass, afterArray.isEmpty() ? String.format("### %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
-                                        getString(R.string.noClass),
-                                        getString(R.string.next_class), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("courseName"),
-                                        getString(R.string.location), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("teachingPlace"),
-                                        getString(R.string.time), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("time")) :
-                                        String.format("### %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
-                                                todayCourse.get(beforeArray.size()).getString("courseName"),
-                                                getString(R.string.location), todayCourse.get(beforeArray.size()).getString("teachingPlace"),
-                                                getString(R.string.time), todayCourse.get(beforeArray.size()).getString("time"),
-                                                getString(R.string.date), todayCourse.get(beforeArray.size()).getString("teachingDate")));
-                                binding.toggle.clearChecked();
-                                binding.toggle.check(R.id.today);
-                                break;
-                            case 2:
-                                JSONArray dataArray = response.getJSONArray("data");
-                                if (!dataArray.isEmpty()) {
-                                    for (int i = 0; i < dataArray.size(); i++) {
-                                        LinkedList<JSONObject> exams = List.of(thisWeekExams, nextWeekExams).get(i);
-                                        TreeMap<Integer, JSONArray> sortedTimetable = new TreeMap<>();
-                                        dataArray.getJSONObject(i).getJSONObject("timetable").forEach((s, t) -> {
-                                            if (t != null)
-                                                sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
-                                        });
-                                        sortedTimetable.forEach((key, value) -> {
-                                            if (key.equals(sortedTimetable.firstKey()))
-                                                value.forEach(c -> exams.addFirst((JSONObject) c));
-                                            else
-                                                value.forEach(c -> exams.addLast((JSONObject) c));
-                                        });
-                                    }
-                                    binding.toggle2.clearChecked();
-                                    binding.toggle2.check(R.id.week_18);
-                                }
-                                break;
-                            case 3:
-                                String term = response.getJSONObject("data").getString("acadYearSemester");
-                                binding.date.setText(String.format("第%s学期\n%s\n星期%s", term, new SimpleDateFormat("M月dd日", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
-                                getTodayCourses(term);
-                                getExams(term);
-                                getWeek(term);
-                                isRefreshRequired = false;
-                                break;
-                            case 4:
-                                String week = response.getJSONArray("data").getJSONObject(0).getString("weekTimes");
-                                binding.date.setText(String.format("第%s周\n%s", week, binding.date.getText().toString()));
-                                binding.toggle2.check("19".equals(week) ? R.id.week_19 : R.id.week_18);
-                                break;
-                        }
-                    } else {
-                        params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
-                    }
-                }
-            };
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    binding.time.setText(new SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(new Date()));
-                    handler.postDelayed(this, 500);
-                }
-            });
+            Handler handler = getHandler();
             http = new HttpManager(handler);
             http.setParams(params);
 
@@ -310,6 +201,7 @@ public class DashboardFragment extends Fragment {
                 todoDate.setValue(calendar.toDateStringAdd(1));
                 return false;
             });
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             menu.add(1, Menu.NONE, 0, R.string.select).setOnMenuItemClickListener(_ -> {
 //                item.setChecked(true);
                 MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
@@ -317,14 +209,13 @@ public class DashboardFragment extends Fragment {
                     builder.setSelection(System.currentTimeMillis());
                 else {
                     try {
-                        builder.setSelection(Objects.requireNonNull(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(todoDate.getValue())).getTime()+86400000);
+                        builder.setSelection(Objects.requireNonNull(dateFormat.parse(todoDate.getValue())).getTime() + 86400000);
                     } catch (ParseException _) {
                     }
                 }
                 MaterialDatePicker<Long> datePicker = builder.build();
                 datePicker.show(requireActivity().getSupportFragmentManager(), "date_picker");
-                datePicker.addOnPositiveButtonClickListener(aLong -> todoDate.setValue(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(aLong)));
-
+                datePicker.addOnPositiveButtonClickListener(aLong -> todoDate.setValue(dateFormat.format(aLong)));
                 return false;
             });
             todoDate.observe(getViewLifecycleOwner(), _ -> refresh());
@@ -345,6 +236,140 @@ public class DashboardFragment extends Fragment {
             getShortcutCollection();
         }
         return binding.getRoot();
+    }
+
+    @NonNull
+    private Handler getHandler() {
+        //        handler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                binding.time.setText(new SimpleDateFormat("hh:mm:ss", Locale.getDefault()).format(new Date()));
+//                handler.postDelayed(this, 500);
+//            }
+//        });
+        return new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (msg.what == -1) {
+                    params.toast(R.string.no_wifi_warning);
+                    binding.nextClass.setText(R.string.no_wifi_warning);
+                    return;
+                }
+                JSONObject response = JSONObject.parseObject((String) msg.obj);
+                if (response.get("code").equals(200)) {
+                    switch (msg.what) {
+                        case 1:
+                            ArrayList<JSONObject> beforeArray = new ArrayList<>();
+                            ArrayList<JSONObject> afterArray = new ArrayList<>();
+                            response.getJSONArray("data").forEach(e -> {
+                                JSONObject jsonObject = (JSONObject) e;
+                                String status = getTimePosition(jsonObject.getString("teachingDate") + " " + jsonObject.getString("startTime"), jsonObject.getString("teachingDate") + " " + jsonObject.getString("endTime"));
+                                jsonObject.put("status", status);
+                                jsonObject.put("time", jsonObject.get("startTime") + "~" + jsonObject.get("endTime"));
+                                jsonObject.put("course", "第" + jsonObject.get("startClassTimes") + "~" + jsonObject.get("endClassTimes") + "节课");
+                                String flag = (String) jsonObject.get("useflag");
+                                if ("TD".equals(flag))
+                                    (Objects.equals(status, "before") ? beforeArray : afterArray).add(jsonObject);
+                                ("TD".equals(flag) ? todayCourse : tomorrowCourse).add(jsonObject);
+//                                    addCourse(flag.equals("TD") ? todayCourse : tomorrowCourse, (String) ((JSONObject) e).get("courseName"), (String) ((JSONObject) e).get("teachingPlace"), ((JSONObject) e).get("startTime") + "~" + ((JSONObject) e).get("endTime")
+//                                            , "第" + ((JSONObject) e).get("startClassTimes") + "~" + ((JSONObject) e).get("endClassTimes") + "节课", (String) ((JSONObject) e).get("teacherName"), flag);
+                            });
+                            binding.progress.setMax(todayCourse.size());
+                            binding.progress.setProgress(beforeArray.size());
+                            binding.courseList.scrollToPosition(beforeArray.size());
+                            Markwon.builder(requireContext()).usePlugin(new AbstractMarkwonPlugin() {
+                                @Override
+                                public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
+                                    super.configureSpansFactory(builder);
+                                    builder.appendFactory(Heading.class, (_, configuration) -> {
+                                        if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
+                                            return new ForegroundColorSpan(Color.parseColor("#6750a4"));
+                                        return null;
+                                    });
+                                }
+
+                                @Override
+                                public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {
+                                    super.configureVisitor(builder);
+                                    builder.blockHandler(new MarkwonVisitor.BlockHandler() {
+                                        @Override
+                                        public void blockStart(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
+                                        }
+
+                                        @Override
+                                        public void blockEnd(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
+                                            if (visitor.hasNext(node))
+                                                visitor.ensureNewLine();
+                                        }
+                                    });
+                                }
+                            }).build().setMarkdown(binding.nextClass, afterArray.isEmpty() ? String.format("### %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
+                                    getString(R.string.noClass),
+                                    getString(R.string.next_class), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("courseName"),
+                                    getString(R.string.location), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("teachingPlace"),
+                                    getString(R.string.time), tomorrowCourse.isEmpty() ? getString(R.string.none) : tomorrowCourse.get(0).getString("time")) :
+                                    String.format("### %s\n\n%s：**%s**\n\n%s：**%s**\n\n%s：**%s**",
+                                            todayCourse.get(beforeArray.size()).getString("courseName"),
+                                            getString(R.string.location), todayCourse.get(beforeArray.size()).getString("teachingPlace"),
+                                            getString(R.string.time), todayCourse.get(beforeArray.size()).getString("time"),
+                                            getString(R.string.date), todayCourse.get(beforeArray.size()).getString("teachingDate")));
+                            binding.toggle.clearChecked();
+                            binding.toggle.check(R.id.today);
+
+                            try {
+                                JSONObject array = afterArray.isEmpty() ? tomorrowCourse.get(0) : todayCourse.get(beforeArray.size());
+                                Date target = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault()).parse(String.format("%s %s",
+                                        array.getString("teachingDate"), array.getString("startTime")));
+                                long delta;
+                                if (target != null && (delta = target.getTime() - System.currentTimeMillis()) > 0) {
+                                    WorkManager.getInstance(requireContext().getApplicationContext())
+                                            .enqueueUniqueWork("next_class_notification_update",
+                                                    ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassNotificationWorker.class).setInputData(new Data.Builder().putString("courseName", array.getString("courseName")).putString("teachingPlace", array.getString("teachingPlace")).putString("time", array.getString("time")).build())
+                                                            .setInitialDelay(target.getTime() - System.currentTimeMillis() < 1000 * 60 * 15 ? 0 : delta - 1000 * 60 * 15, TimeUnit.MILLISECONDS).build());
+                                }
+                            } catch (ParseException _) {
+                            }
+                            break;
+                        case 2:
+                            JSONArray dataArray = response.getJSONArray("data");
+                            if (!dataArray.isEmpty()) {
+                                for (int i = 0; i < dataArray.size(); i++) {
+                                    LinkedList<JSONObject> exams = List.of(thisWeekExams, nextWeekExams).get(i);
+                                    TreeMap<Integer, JSONArray> sortedTimetable = new TreeMap<>();
+                                    dataArray.getJSONObject(i).getJSONObject("timetable").forEach((s, t) -> {
+                                        if (t != null)
+                                            sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
+                                    });
+                                    sortedTimetable.forEach((key, value) -> {
+                                        if (key.equals(sortedTimetable.firstKey()))
+                                            value.forEach(c -> exams.addFirst((JSONObject) c));
+                                        else
+                                            value.forEach(c -> exams.addLast((JSONObject) c));
+                                    });
+                                }
+                                binding.toggle2.clearChecked();
+                                binding.toggle2.check(R.id.week_18);
+                            }
+                            break;
+                        case 3:
+                            String term = response.getJSONObject("data").getString("acadYearSemester");
+                            binding.date.setText(String.format("第%s学期\n%s\n星期%s", term, new SimpleDateFormat("M月dd日", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                            getTodayCourses(term);
+                            getExams(term);
+                            getWeek(term);
+                            isRefreshRequired = false;
+                            break;
+                        case 4:
+                            String week = response.getJSONArray("data").getJSONObject(0).getString("weekTimes");
+                            binding.date.setText(String.format("第%s周\n%s", week, binding.date.getText().toString()));
+                            binding.toggle2.check("19".equals(week) ? R.id.week_19 : R.id.week_18);
+                            break;
+                    }
+                } else {
+                    params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                }
+            }
+        };
     }
 
     void refresh() {

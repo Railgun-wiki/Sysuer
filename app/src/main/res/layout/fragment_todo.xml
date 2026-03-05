@@ -9,7 +9,6 @@
     app:calendar_content_view_id="@id/recycler_view"
     app:default_status="expand">
 
-
     <com.haibin.calendarview.CalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"

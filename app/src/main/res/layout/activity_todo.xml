@@ -19,30 +19,72 @@
             app:navigationIcon="?homeAsUpIndicator"
             app:title="@string/todo" />
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/todo_date"
-            style="@style/Widget.Material3.MaterialButtonToggleGroup"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            app:checkedButton="@id/due_todo"
-            app:singleSelection="false">
+            android:layout_margin="4dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/due_todo"
-                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+            <androidx.constraintlayout.helper.widget.Flow
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:constraint_referenced_ids="todo_date,todo_status"
+                app:flow_horizontalBias="0"
+                app:flow_horizontalGap="4dp"
+                app:flow_horizontalStyle="packed"
+                app:flow_wrapMode="chain2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/todo_date"
+                style="@style/Widget.Material3.MaterialButtonToggleGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/due" />
+                app:checkedButton="@id/due_todo"
+                app:singleSelection="false">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/ddl_todo"
-                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/due_todo"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/due" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ddl_todo"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ddl" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/todo_status"
+                style="@style/Widget.Material3.MaterialButtonToggleGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/ddl" />
+                app:singleSelection="false">
 
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/todo_todo"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/todo" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/done_todo"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/done" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView

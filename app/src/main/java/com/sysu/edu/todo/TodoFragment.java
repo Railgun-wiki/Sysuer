@@ -33,6 +33,8 @@ public class TodoFragment extends Fragment {
     String date;
     boolean due = true;
     boolean ddl = false;
+    boolean todo = true;
+    boolean done = true;
     private TodoManager todoManager;
 
     @Override
@@ -65,16 +67,21 @@ public class TodoFragment extends Fragment {
 
         todoInfo.setStatus(null);
         date = getDate(simpleDateFormat);
-        refresh();
 
         ((MaterialButtonToggleGroup) requireActivity().findViewById(R.id.todo_date)).addOnButtonCheckedListener((_, checkedId, isChecked) -> {
-            if (checkedId == R.id.due_todo) {
-                due = isChecked;
-            } else if (checkedId == R.id.ddl_todo) {
-                ddl = isChecked;
-            }
-            todoManager.performRefresh();
+            if (checkedId == R.id.due_todo) due = isChecked;
+            else if (checkedId == R.id.ddl_todo) ddl = isChecked;
+            refresh();
         });
+        MaterialButtonToggleGroup status = requireActivity().findViewById(R.id.todo_status);
+        status.check(R.id.todo_todo);
+        status.check(R.id.done_todo);
+        status.addOnButtonCheckedListener((_, checkedId, isChecked) -> {
+            if (checkedId == R.id.todo_todo) todo = isChecked;
+            else if (checkedId == R.id.done_todo) done = isChecked;
+            refresh();
+        });
+        refresh();
         return binding.getRoot();
     }
 
@@ -114,20 +121,29 @@ public class TodoFragment extends Fragment {
                 b.add(String.valueOf(value.getValue()));
             }
         });
-        StringBuilder condition = new StringBuilder(String.join(" AND ", a));
         if (due && ddl) {
-            condition.append("AND (due_date= ? OR ddl = ?)");
+            a.add("(due_date= ? OR ddl = ?)");
             b.add(date);
             b.add(date);
         } else if (due) {
-            condition.append(" AND due_date= ?");
+            a.add("due_date= ?");
             b.add(date);
         } else if (ddl) {
-            condition.append(" AND ddl= ?");
+            a.add("ddl= ?");
             b.add(date);
         }
-        System.out.println(todoInfo.getStatus().getValue());
-        todoManager.refresh(condition.toString(), b.toArray(new String[0]));
+        if (todo && done) {
+            a.add("(status = ? OR status = ?)");
+            b.add("0");
+            b.add("1");
+        } else if (todo) {
+            a.add("status = ?");
+            b.add("0");
+        } else if (done) {
+            a.add("status = ?");
+            b.add("1");
+        }
+        todoManager.refresh(String.join(" AND ", a), b.toArray(new String[0]));
     }
 
     public TodoManager getTodoManager() {

@@ -311,6 +311,19 @@
             android:exported="true"
             android:multiprocess="false"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+        <receiver
+            android:name=".ClassWidget"
+            android:exported="false"
+            android:icon="@drawable/widget_next_class"
+            android:label="@string/next_class">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/class_widget" />
+        </receiver>
     </application>
 
 </manifest>

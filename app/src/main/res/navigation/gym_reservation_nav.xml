@@ -9,7 +9,7 @@
         app:startDestination="@id/gym_campus_fragment">
         <fragment
             android:id="@+id/gym_campus_fragment"
-            android:name="com.sysu.edu.life.GymReservationListFragment">
+            android:name="com.sysu.edu.life.GymListFragment">
             <action
                 android:id="@+id/campus_to_field"
                 app:destination="@id/gym_field_fragment" />
@@ -21,7 +21,7 @@
 
         <fragment
             android:id="@+id/gym_field_fragment"
-            android:name="com.sysu.edu.life.GymReservationListFragment">
+            android:name="com.sysu.edu.life.GymListFragment">
             <argument
                 android:name="code"
                 android:defaultValue="1"

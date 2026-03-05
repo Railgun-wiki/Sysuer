@@ -69,7 +69,7 @@
     <string name="home">首页</string>
     <string name="appearance">外观</string>
     <string name="open_source">开源</string>
-    <string name="week_x">第%d周</string>
+    <string name="week_x">第%s周</string>
     <string name="no_wifi_warning">请检查网络！</string>
     <string name="login_warning">请登录！</string>
     <string name="term_x">第%s学期</string>
@@ -146,7 +146,7 @@
     <string name="academic_affair_notice">教务通知</string>
     <string name="day">日</string>
     <string name="from_to">第%s节到第%s节</string>
-    <string name="finished">已完成</string>
+    <string name="done">已完成</string>
     <string name="school_affair_notice">院系通知</string>
     <string name="add_todo">添加待办</string>
     <string name="title">标题</string>

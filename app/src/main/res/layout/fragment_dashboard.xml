@@ -140,12 +140,12 @@
                     android:textColor="?colorPrimary"
                     android:textIsSelectable="true" />
 
-                <com.google.android.material.textview.MaterialTextView
+                <!--<com.google.android.material.textview.MaterialTextView
                     android:id="@+id/time"
                     style="@style/TextAppearance.Material3.BodyMedium"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textIsSelectable="true" />
+                    android:textIsSelectable="true" />-->
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -283,7 +283,7 @@
                 style="@style/Widget.Material3Expressive.Button.OutlinedButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/finished" />
+                android:text="@string/done" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
 

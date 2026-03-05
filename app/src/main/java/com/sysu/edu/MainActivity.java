@@ -4,18 +4,22 @@ import static com.sysu.edu.api.DownloadManager.downloadFile;
 import static com.sysu.edu.api.DownloadManager.openFile;
 
 import android.app.DownloadManager;
+import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.widget.RemoteViews;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,6 +34,9 @@ import androidx.navigation.NavGraph;
 import androidx.navigation.NavInflater;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -75,8 +82,10 @@ import com.sysu.edu.studentAffair.StudentPartTimeActivity;
 import com.sysu.edu.todo.TodoActivity;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import io.noties.markwon.Markwon;
 
@@ -205,12 +214,13 @@ public class MainActivity extends AppCompatActivity {
             manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     System.currentTimeMillis() + 2 * 1000, piMorning);
         }*/
-//        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
-//            }
-//        } else {
-//        }
+        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
+            }
+        } else {
+
+        }
         /*handler.postAtTime(() -> {
             ClassIsland.sendCourseNotification(
                     this,
@@ -249,6 +259,8 @@ public class MainActivity extends AppCompatActivity {
             }*/
         } catch (PackageManager.NameNotFoundException _) {
         }
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+        appWidgetManager.updateAppWidget(new ComponentName(this, ClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_init));
     }
 
     @Override
@@ -256,15 +268,23 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PackageManager.PERMISSION_GRANTED) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                ClassIsland.sendCourseNotification(
-//                        this,
-//                        "高等数学",           // 课程名称
-//                        "10分钟",            // 剩余时间
-//                        "逸夫楼301"          // 教室
-//                );
+                /*ClassIsland.sendCourseNotification(
+                        this,
+                        "高等数学",           // 课程名称
+                        "10分钟",            // 剩余时间
+                        "逸夫楼301"          // 教室
+                );*/
                 params.toast(R.string.permission_granted);
             }
         }
+    }
+
+    void beginClassNotificationWorker(Date target){
+        WorkManager.getInstance(getApplicationContext())
+                .enqueueUniqueWork("next_class_widget_update",
+                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassUpdate.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+
+
     }
 
     void checkUpdate() {
