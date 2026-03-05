@@ -22,5 +22,7 @@ public class NetPayActivity extends AppCompatActivity {
             NavController navController = navHostFragment.getNavController();
             NavigationUI.setupWithNavController(binding.bottomNav, navController);
         }
+        binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
+
     }
 }

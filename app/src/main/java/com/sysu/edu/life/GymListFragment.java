@@ -2,7 +2,6 @@ package com.sysu.edu.life;
 
 import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.trim;
-import static com.sysu.edu.life.GymReservationActivity.encode;
 
 import android.annotation.SuppressLint;
 import android.content.res.Configuration;
@@ -41,10 +40,8 @@ import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.Call;
@@ -53,7 +50,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class GymReservationListFragment extends Fragment {
+public class GymListFragment extends Fragment {
 
     static GymReservationViewModel viewModel;
     final OkHttpClient http = new OkHttpClient.Builder().build();
@@ -88,7 +85,6 @@ public class GymReservationListFragment extends Fragment {
                 Bundle rdata = msg.getData();
                 String json = rdata.getString("data");
                 JSONArray data;
-//                    System.out.println(json);
                 if (rdata.getInt("code") == 401) {
                     viewModel.authorizationManager.setAccessible(false);
                     params.toast(R.string.educational_wifi_warning);
@@ -160,12 +156,14 @@ public class GymReservationListFragment extends Fragment {
             @Override
             public void onPageFinished(WebView view, String url) {
                 if (url.contains(link)) {
+//                    handler.postDelayed(() -> {
                     viewModel.token = cookie.getCookie(url);
-                    web.evaluateJavascript("(function(){return JSON.parse(window.localStorage.get(\"scientia-session-authorization\")).access_token;})()", string -> {
-//                        System.out.println(string);
-                        if (!Objects.equals(string, "null") && !Objects.equals("Bearer " + string.replace("\"", ""), viewModel.authorization.getValue()))
-                            viewModel.authorization.setValue("Bearer " + string.replace("\"", ""));
+                    web.evaluateJavascript("(function(){return JSON.parse(window.localStorage[\"scientia-session-authorization\"]).access_token;})()", string -> {
+                        String authorization;
+                        if (!Objects.equals(string, "null") && !Objects.equals(authorization = ("Bearer " + string.replace("\"", "").replace("'", "")), viewModel.authorization.getValue()))
+                            viewModel.authorization.setValue(authorization);
                     });
+//                    },500);
                 } else if (Pattern.compile("//cas.+?sysu\\.edu\\.cn/esc-sso/login/page").matcher(url).find()) {
                     web.loadUrl(String.format("""
                                     javascript:(function(){
@@ -191,8 +189,6 @@ public class GymReservationListFragment extends Fragment {
     }
 
     void sendRequest(String url, int what) {
-        /*System.out.println(viewModel.authorization);
-        System.out.println(viewModel.token);*/
         http.newCall(new Request.Builder()
                 .url(url)
                 .header("Accept", "application/json, text/plain, */*")
@@ -230,9 +226,7 @@ public class GymReservationListFragment extends Fragment {
         sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/venuetype/all", 2);
     }
 
-    public void send() {/*
-        System.out.println(viewModel.authorization);
-        System.out.println(viewModel.token);*/
+    /*public void send() {
         new OkHttpClient().newCall(new Request.Builder()
                         .header("Cookie", viewModel.token)
                         .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
@@ -271,7 +265,7 @@ public class GymReservationListFragment extends Fragment {
                     }
                 });
 
-    }
+    }*/
 
     private static class FieldAdapter extends RecyclerAdapter<JSONObject> {
 

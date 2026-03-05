@@ -55,7 +55,6 @@ public class GymAccountFragment extends Fragment {
                     if (msg.getData().getBoolean("isJSON")) {
                         if (msg.what == 0) {
                             JSONObject json = JSONObject.parseObject(Objects.requireNonNull((String) msg.obj));
-
                             String[] keys = {"Type", "Name", "HostKey", "UserId"};
                             PreferenceAdapter preferenceAdapter = new PreferenceAdapter(requireContext());
                             for (int i = 0; i < keys.length; i++) {
@@ -88,19 +87,15 @@ public class GymAccountFragment extends Fragment {
         });
         http.setParams(params);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
+        http.setCookie(viewModel.token);
+        http.setUA(viewModel.ua);
+        http.setAuthorization(viewModel.authorization.getValue());
         getAccount();
         return binding.getRoot();
     }
 
-    void sendRequest(String url, int what) {
-        http.setCookie(viewModel.token);
-        http.setUA(viewModel.ua);
-        http.setAuthorization(viewModel.authorization.getValue());
-        http.getRequest(viewModel.authorizationManager.getBaseUrl() + url, what);
-    }
-
     void getAccount() {
-        sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/Credit/Me", 0);
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/Credit/Me", 0);
     }
 
     static
