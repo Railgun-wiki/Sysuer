@@ -40,7 +40,23 @@ public class JavaScript {
         });
         return list;
     }
-   public void clear() {
+    public ArrayList<JSONObject> searchJS(String key, boolean isActive) {
+        ArrayList<JSONObject> list = new ArrayList<>();
+        jsList.forEach(a -> {
+            JSONObject item = (JSONObject) a;
+            if (item.containsKey("state") && item.getInteger("state") == 1 && isActive && item.containsKey("run") && item.getInteger("run")==1) {
+                for (Object e : item.getJSONArray("matches")) {
+                    if (Pattern.compile((String) e).matcher(key).find()) {
+                        list.add(item);
+                        break;
+                    }
+                }
+            }
+        });
+        return list;
+    }
+
+    public void clear() {
         jsList.clear();
     }
 }

@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
     void beginClassNotificationWorker(Date target){
         WorkManager.getInstance(getApplicationContext())
                 .enqueueUniqueWork("next_class_widget_update",
-                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassUpdate.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
 
 
     }
@@ -405,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(804, browse("https://lms.sysu.edu.cn/"));              // 在线教学平台
         actionMap.put(805, browse("https://www.icourse163.org/"));           // 中国大学（慕课）
         actionMap.put(806, browse("https://welearn.sflep.com/index.aspx"));  // WeLearn
+        actionMap.put(807, browse("https://www.pigai.org/"));              // 批改网
 
         // 生活服务 (id: 9xx)
         actionMap.put(902, newActivity(SchoolBusActivity.class));                    // 校车

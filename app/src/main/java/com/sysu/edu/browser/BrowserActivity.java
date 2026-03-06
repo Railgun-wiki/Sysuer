@@ -95,7 +95,6 @@ public class BrowserActivity extends AppCompatActivity {
         js = new JavaScript();
         getJSList();
         Cursor cursor;
-//        JavaScript js = new JavaScript(readAssets(this, "js.json"));
         web = binding.web;
         web.setWebViewClient(new WebViewClient() {
             @Override
@@ -143,6 +142,7 @@ public class BrowserActivity extends AppCompatActivity {
                 } else if (preference.isPC()) {
                     view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
                 }
+                js.searchJS(link, true).forEach(a -> view.evaluateJavascript(a.getString("script"), null));
                 super.onPageFinished(view, link);
             }
         });
@@ -509,6 +509,7 @@ public class BrowserActivity extends AppCompatActivity {
                         .fluentPut("matches", JSONArray.parse(cursor.getString(cursor.getColumnIndexOrThrow("matches"))))
                         .fluentPut("state", cursor.getInt(cursor.getColumnIndexOrThrow("state")))
                         .fluentPut("id", cursor.getInt(cursor.getColumnIndexOrThrow("id")))
+                        .fluentPut("run", cursor.getInt(cursor.getColumnIndexOrThrow("run")))
                         .fluentPut("script", cursor.getString(cursor.getColumnIndexOrThrow("script"))));
                 js.add(item);
             } while (cursor.moveToNext());

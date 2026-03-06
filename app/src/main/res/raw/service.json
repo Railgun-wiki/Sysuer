@@ -389,6 +389,12 @@
         "name": "WeLearn",
         "url": "https://welearn.sflep.com/index.aspx",
         "description": "WeLearn外语学习平台，外语课程、在线练习、学习测评等功能"
+      },
+      {
+        "id": 807,
+        "name": "批改网",
+        "url": "https://www.pigai.org/",
+        "description": "批改网"
       }
     ]
   },

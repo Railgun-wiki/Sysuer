@@ -392,6 +392,12 @@
         "name": "WeLearn",
         "url": "https://welearn.sflep.com/index.aspx",
         "description": "WeLearn foreign language learning platform, with functions such as foreign language courses, online exercises, and learning evaluation"
+      },
+      {
+        "id": 807,
+        "name": "PiGaiWang",
+        "url": "https://www.pigai.org/",
+        "description": "PiGaiWang"
       }
     ]
   },

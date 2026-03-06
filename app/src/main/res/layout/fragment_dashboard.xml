@@ -318,6 +318,12 @@
                         android:layout_height="wrap_content"
                         android:text="@string/all"
                         app:icon="@drawable/calendar" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/todo_view"
+                        style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:icon="@drawable/view" />
 
                 </com.google.android.material.button.MaterialButtonGroup>
 

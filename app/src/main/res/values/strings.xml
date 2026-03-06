@@ -579,5 +579,6 @@
     <string name="agenda">日程</string>
     <string name="delete_warning">确定删除吗？</string>
     <string name="due">预定</string>
+    <string name="view">查看</string>
 
 </resources>

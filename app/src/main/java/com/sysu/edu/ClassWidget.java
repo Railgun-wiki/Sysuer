@@ -48,7 +48,7 @@ public class ClassWidget extends AppWidgetProvider {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_init);
-//                new WorkManager(context).enqueue(new OneTimeWorkRequest.Builder(ClassUpdate.class).build());
+//                new WorkManager(context).enqueue(new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).build());
                 if (msg.what == -1) {
                     remoteViews.setTextViewText(R.id.week, context.getString(R.string.login_warning));
                 } else {
@@ -73,7 +73,6 @@ public class ClassWidget extends AppWidgetProvider {
                                 });
 //                                binding.courseList.scrollToPosition(beforeArray.size());
 
-
                                 try {
                                     JSONObject array = afterArray.isEmpty() ? tomorrowCourse.get(0) : todayCourse.get(beforeArray.size());
                                     Date target = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault()).parse(String.format("%s %s",
@@ -82,7 +81,7 @@ public class ClassWidget extends AppWidgetProvider {
 //                                        System.out.println(target.getTime() - System.currentTimeMillis());
                                         WorkManager.getInstance(context.getApplicationContext())
                                                 .enqueueUniqueWork("next_class_widget_update",
-                                                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassUpdate.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+                                                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
 
                                     }
                                 } catch (ParseException _) {

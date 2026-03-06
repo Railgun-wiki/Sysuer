@@ -73,13 +73,14 @@ public class AcademyNotification extends AppCompatActivity {
                     params.toast(getString(R.string.no_wifi_warning));
                 } else {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
+                    System.out.println(response);
                     if (response != null && response.getInteger("code").equals(200)) {
                         if (response.get("data") != null) {
                             switch (msg.what) {
                                 case 0, 1 ->
                                         response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) pager2Adapter.getItem(msg.what)).add((JSONObject) a));
                                 case 2 ->
-                                        startActivity(new Intent(AcademyNotification.this, BrowserActivity.class).putExtra("data", """
+                                        startActivity(new Intent(AcademyNotification.this, BrowserActivity.class).putExtra("data", ("""
                                                         <!DOCTYPE html><html><head><style>
                                                         body{
                                                         padding: 24px !important;
@@ -97,10 +98,10 @@ public class AcademyNotification extends AppCompatActivity {
                                                         font-size: 1.0rem !important;
                                                         line-height: 1.0 !important;
                                                                 border-collapse: collapse !important;
-                                                                    border: 2px solid windowtext !important;
+                                                                border: 2px solid windowtext !important;
                                                                 }
                                                         </style></head><body>
-                                                        """ + response.getString("data") + "</body></html>"),
+                                                        """ + response.getString("data") + "</body></html>").trim()),
                                                 ActivityOptionsCompat.makeSceneTransitionAnimation(AcademyNotification.this, binding.toolbar, "miniapp").toBundle());
                             }
                         }

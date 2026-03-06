@@ -6,7 +6,9 @@
     android:background="?android:selectableItemBackground"
     android:minHeight="?android:listPreferredItemHeight"
     android:paddingStart="?attr/listPreferredItemPaddingRight"
-    android:paddingEnd="?attr/listPreferredItemPaddingLeft">
+    android:paddingTop="?attr/listPreferredItemPaddingStart"
+    android:paddingEnd="?attr/listPreferredItemPaddingLeft"
+    android:paddingBottom="?attr/listPreferredItemPaddingEnd">
 
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/check"
@@ -55,6 +57,7 @@
             style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             app:icon="@drawable/view" />
 
         <com.google.android.material.button.MaterialButton

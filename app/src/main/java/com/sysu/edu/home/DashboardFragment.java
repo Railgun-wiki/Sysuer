@@ -50,6 +50,7 @@ import com.sysu.edu.ClassNotificationWorker;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.CourseDetailActivity;
 import com.sysu.edu.academic.CourseScheduleActivity;
+import com.sysu.edu.academic.ExamActivity;
 import com.sysu.edu.api.CalendarManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -61,6 +62,7 @@ import com.sysu.edu.databinding.FragmentDashboardBinding;
 import com.sysu.edu.databinding.ItemCourseBinding;
 import com.sysu.edu.databinding.ItemExamBinding;
 import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.todo.TodoActivity;
 import com.sysu.edu.todo.TodoManager;
 import com.sysu.edu.todo.info.TodoInfo;
 
@@ -147,6 +149,8 @@ public class DashboardFragment extends Fragment {
             binding.courseList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.examList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.examList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+            binding.courseTitle.setOnClickListener(_ -> startActivity(new Intent(getContext(), CourseScheduleActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), binding.courseTitle, "miniapp").toBundle()));
+            binding.examTitle.setOnClickListener(_ -> startActivity(new Intent(getContext(), ExamActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), binding.examTitle, "miniapp").toBundle()));
             params = new Params(this);
             params.setCallback(this::getTerm);
             CourseAdapter courseAdapter = new CourseAdapter();
@@ -187,6 +191,7 @@ public class DashboardFragment extends Fragment {
             todoManager = new TodoManager(requireActivity(), todoAdapter);
             todoManager.setOnRefreshListener(this::refresh);
             binding.add.setOnClickListener(_ -> todoManager.showTodoAddDialog());
+            binding.todoView.setOnClickListener(_ -> startActivity(new Intent(getContext(), TodoActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), binding.todoView, "miniapp").toBundle()));
             PopupMenu pop = new PopupMenu(requireActivity(), binding.todoDate, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
             Menu menu = pop.getMenu();
             menu.add(0, Menu.NONE, 0, R.string.all).setChecked(true).setOnMenuItemClickListener(_ -> {
