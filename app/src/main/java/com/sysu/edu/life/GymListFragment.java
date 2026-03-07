@@ -3,7 +3,6 @@ package com.sysu.edu.life;
 import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.trim;
 
-import android.annotation.SuppressLint;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,10 +11,6 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,9 +27,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.sysu.edu.R;
-import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.Params;
-import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemFieldBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.template.RecyclerAdapter;
@@ -42,7 +35,6 @@ import com.sysu.edu.template.RecyclerAdapter;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -62,125 +54,77 @@ public class GymListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        if (savedInstanceState == null) {
-        binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
-        params = new Params(this);
-        params.setCallback(this::getCampus);
-        layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
-        binding.getRoot().setLayoutManager(layoutManager);
-        viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-        FieldAdapter fieldAdapter = new FieldAdapter(viewModel);
-        fieldAdapter.setAction(id -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("id", id);
-            bundle.putInt("code", requireArguments().getInt("code") + 1);
-            Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
-        });
-        viewModel.authorization.observe(getViewLifecycleOwner(), _ -> getInfo());
-        viewModel.authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
-        binding.getRoot().setAdapter(fieldAdapter);
-        handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                Bundle rdata = msg.getData();
-                String json = rdata.getString("data");
-                JSONArray data;
-                if (rdata.getInt("code") == 401) {
-                    viewModel.authorizationManager.setAccessible(false);
-                    params.toast(R.string.educational_wifi_warning);
-                    getInfo();
-                } else if (rdata.getInt("code") == 200) {
-                    if (!rdata.getBoolean("isJson")) {
-                        if (!viewModel.authorizationManager.isAuthorized(json)) {
-                            System.out.println("Unauthorized");
-                            params.toast(R.string.login_warning);
-                            initWeb(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-                            return;
-                        }
-                        if (!viewModel.authorizationManager.isAccessible(json)) {
+        if (binding == null) {
+            binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
+            params = new Params(this);
+            params.setCallback(this::getCampus);
+            layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
+            binding.getRoot().setLayoutManager(layoutManager);
+            viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
+            FieldAdapter fieldAdapter = new FieldAdapter(viewModel);
+            fieldAdapter.setAction(id -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("id", id);
+                bundle.putInt("code", requireArguments().getInt("code") + 1);
+                Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
+            });
+//        viewModel.authorization.observe(getViewLifecycleOwner(), _ -> getInfo());
+            binding.getRoot().setAdapter(fieldAdapter);
+            handler = new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(@NonNull Message msg) {
+                    String response = msg.getData().getString("data");
+                    switch (msg.getData().getInt("code")) {
+                        case 401 -> {
+                            viewModel.authorizationManager.setAccessible(false);
                             params.toast(R.string.educational_wifi_warning);
                             getInfo();
-                            return;
                         }
-                        return;
-                    }
-                    data = JSONArray.parseArray(json);
-                    if (data != null) {
-                        switch (msg.what) {
-                            case 1 -> data.forEach(e -> fieldAdapter.add((JSONObject) e));
-                            case 2 -> data.forEach(e -> {
-                                        if (Objects.equals(((JSONObject) e).getString("Campus"), requireArguments().getString("id")))
-                                            fieldAdapter.add((JSONObject) e);
-                                    }
-                            );
+                        case 200 -> {
+                            if (!msg.getData().getBoolean("isJson")) {
+                                if (!viewModel.authorizationManager.isAuthorized(response)) {
+                                    System.out.println("Unauthorized");
+                                    params.toast(R.string.login_warning);
+                                    viewModel.loginRequired.setValue(true);
+//                            initWeb(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                                    return;
+                                }
+                                if (!viewModel.authorizationManager.isAccessible(response)) {
+                                    params.toast(R.string.educational_wifi_warning);
+                                    getInfo();
+                                    return;
+                                }
+                                return;
+                            }
+                            JSONArray data = JSONArray.parseArray(response);
+                            if (data != null) {
+                                switch (msg.what) {
+                                    case 1 -> data.forEach(e -> fieldAdapter.add((JSONObject) e));
+                                    case 2 -> data.forEach(e -> {
+                                                if (Objects.equals(((JSONObject) e).getString("Campus"), requireArguments().getString("id")))
+                                                    fieldAdapter.add((JSONObject) e);
+                                            }
+                                    );
+                                }
+                            }
                         }
                     }
                 }
-            }
-        };
-        getInfo();
-//        }
+            };
+            getInfo();
+            viewModel.loginRequired.observe(getViewLifecycleOwner(), b -> {
+                if (!b)
+                    getInfo();
+            });
+        }
         return binding.getRoot();
     }
 
     private void getInfo() {
-        if (Objects.equals(requireArguments().getInt("code"), 0)) {
-            getCampus();
-        } else {
-            getVenue();
-        }
+        if (Objects.equals(requireArguments().getInt("code"), 0)) getCampus();
+        else getVenue();
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
-    public void initWeb(String link) {
-        WebView web = new WebView(requireContext());
-        WebSettings webSettings = web.getSettings();
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setDatabaseEnabled(true);
-        webSettings.setLoadWithOverviewMode(true);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setBlockNetworkImage(false);
-        webSettings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)");
-        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.supportZoom();
-        webSettings.setSupportZoom(true);
-        webSettings.setDisplayZoomControls(false);
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        CookieManager cookie = CookieManager.getInstance();
-        cookie.setAcceptCookie(true);
-        cookie.setAcceptThirdPartyCookies(web, true);
-        viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-        web.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                if (url.contains(link)) {
-//                    handler.postDelayed(() -> {
-                    viewModel.token = cookie.getCookie(url);
-                    web.evaluateJavascript("(function(){return JSON.parse(window.localStorage[\"scientia-session-authorization\"]).access_token;})()", string -> {
-                        String authorization;
-                        if (!Objects.equals(string, "null") && !Objects.equals(authorization = ("Bearer " + string.replace("\"", "").replace("'", "")), viewModel.authorization.getValue()))
-                            viewModel.authorization.setValue(authorization);
-                    });
-//                    },500);
-                } else if (Pattern.compile("//cas.+?sysu\\.edu\\.cn/esc-sso/login/page").matcher(url).find()) {
-                    web.loadUrl(String.format("""
-                                    javascript:(function(){
-                                                            function waitElement(selector, callback) {
-                                                            const element = document.querySelector(selector);
-                                                            if (element) {callback();}else{setTimeout(() => {waitElement(selector,callback);}, 100);}}
-                                                            waitElement('.para-widget-account-psw', () => {
-                                                            var component=document.querySelector('.para-widget-account-psw');var data=component[Object.keys(component).filter(k => k.startsWith('jQuery') && k.endsWith('2'))[0]].widget_accountPsw;data.loginModel.dataField.username='%s';data.loginModel.dataField.password='%s';data.passwordInputVal='password';data.$loginBtn.click();});})()"""
-                            , params.getUserName(), params.getPassword()));
-                }
-                super.onPageFinished(view, url);
-            }
-        });
-        web.loadUrl(link);
-//        ((ViewGroup) requireActivity().findViewById(android.R.id.content)).addView(web);
-
-    }
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -192,7 +136,7 @@ public class GymListFragment extends Fragment {
         http.newCall(new Request.Builder()
                 .url(url)
                 .header("Accept", "application/json, text/plain, */*")
-                .header("Cookie", viewModel.token)
+                .header("Cookie", viewModel.cookie)
                 .header("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
                 .header("User-Agent", viewModel.ua)
                 .build()).enqueue(new Callback() {
@@ -298,7 +242,7 @@ public class GymListFragment extends Fragment {
             if (!isEmpty(imageUrl))
                 Glide.with(holder.itemView.getContext()).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", viewModel.ua)
                         .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
-                        .addHeader("Cookie", viewModel.token)
+                        .addHeader("Cookie", viewModel.cookie)
                         .addHeader("Authorization", trim(viewModel.authorization.getValue()))
                         .build())).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(binding.image);
         }

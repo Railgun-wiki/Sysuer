@@ -44,6 +44,7 @@ public class GymAccountFragment extends Fragment {
         ConcatAdapter concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
+        binding.recyclerView.setBackgroundColor(params.getColorFromAttr(com.google.android.material.R.attr.colorSurfaceBright));
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -52,9 +53,10 @@ public class GymAccountFragment extends Fragment {
                     params.toast(R.string.no_wifi_warning);
                     // 处理错误
                 } else {
+                    String response = (String) msg.obj;
                     if (msg.getData().getBoolean("isJSON")) {
                         if (msg.what == 0) {
-                            JSONObject json = JSONObject.parseObject(Objects.requireNonNull((String) msg.obj));
+                            JSONObject json = JSONObject.parseObject(Objects.requireNonNull(response));
                             String[] keys = {"Type", "Name", "HostKey", "UserId"};
                             PreferenceAdapter preferenceAdapter = new PreferenceAdapter(requireContext());
                             for (int i = 0; i < keys.length; i++) {
@@ -80,17 +82,30 @@ public class GymAccountFragment extends Fragment {
                             concatAdapter.addAdapter(idAdapter);
                         }
                     } else {
-                        params.toast(R.string.educational_wifi_warning);
+                        if (!viewModel.authorizationManager.isAuthorized(response)) {
+                            System.out.println("Unauthorized");
+                            params.toast(R.string.login_warning);
+                            viewModel.loginRequired.setValue(true);
+                        } else if (!viewModel.authorizationManager.isAccessible(response)) {
+                            params.toast(R.string.educational_wifi_warning);
+                            getAccount();
+                        }
                     }
                 }
             }
         });
         http.setParams(params);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-        http.setCookie(viewModel.token);
+        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
         http.setAuthorization(viewModel.authorization.getValue());
-        getAccount();
+//        getAccount();
+
+        viewModel.loginRequired.observe(getViewLifecycleOwner(), b -> {
+            System.out.println("loginRequired: " + b);
+            if (!b)
+                getAccount();
+        });
         return binding.getRoot();
     }
 
@@ -98,8 +113,7 @@ public class GymAccountFragment extends Fragment {
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/Credit/Me", 0);
     }
 
-    static
-    class PreferenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public static class PreferenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         final ArrayList<String> titles = new ArrayList<>();
         final ArrayList<String> contents = new ArrayList<>();
@@ -145,6 +159,16 @@ public class GymAccountFragment extends Fragment {
 
         void addItem(String title, String content) {
             addItem(title, content, null);
+        }
+
+        void set(List<String> titles, List<String> contents, List<Integer> icons) {
+            this.titles.clear();
+            this.contents.clear();
+            this.icons.clear();
+            this.titles.addAll(titles);
+            this.contents.addAll(contents);
+            this.icons.addAll(icons);
+            notifyItemRangeInserted(0, getItemCount());
         }
 
         @Override

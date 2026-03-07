@@ -64,9 +64,40 @@
             app:title="@string/login" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/browser">
+        <Preference
+            app:icon="@drawable/js"
+            app:persistent="false"
+            app:title="@string/javascript">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetClass="com.sysu.edu.browser.JSActivity"
+                android:targetPackage="com.sysu.edu" />
+        </Preference>
+        <rikka.material.preference.MaterialSwitchPreference
+            app:defaultValue="true"
+            app:icon="@drawable/image_block"
+            app:key="image_blocked"
+            app:title="@string/image_blocked" />
+        <rikka.material.preference.MaterialSwitchPreference
+            app:defaultValue="true"
+            app:icon="@drawable/refresh"
+            app:key="update"
+            app:title="@string/js" />
+        <rikka.material.preference.MaterialSwitchPreference
+            app:defaultValue="true"
+            app:icon="@drawable/wifi"
+            app:key="save_mobile_data"
+            app:title="@string/save_mobile_data_mode" />
+        <rikka.material.preference.MaterialSwitchPreference
+            app:defaultValue="true"
+            app:icon="@drawable/warning"
+            app:key="@string/privacy_mode"
+            app:title="@string/privacy_mode" />
+    </PreferenceCategory>
     <PreferenceCategory app:title="@string/app">
         <rikka.material.preference.MaterialSwitchPreference
-            android:summary="应用启动时自动检测更新"
+            android:summary="@string/auto_update_when_launched"
             app:defaultValue="true"
             app:icon="@drawable/refresh"
             app:key="update"
@@ -87,5 +118,7 @@
                 android:targetClass="com.sysu.edu.browser.BrowserActivity"
                 android:targetPackage="com.sysu.edu" />
         </Preference>
+
     </PreferenceCategory>
+
 </PreferenceScreen>

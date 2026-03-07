@@ -580,4 +580,10 @@
     <string name="author">Author</string>
     <string name="agenda">Agenda</string>
     <string name="delete_warning">Are You to Delete?</string>
+    <string name="due">Due</string>
+    <string name="view">View</string>
+    <string name="auto_update_when_launched">Auto Update Check when Launching</string>
+    <string name="balance">Balance</string>
+    <string name="money">Amount</string>
+    <string name="gym_reservation">Gym Reservation</string>
 </resources>

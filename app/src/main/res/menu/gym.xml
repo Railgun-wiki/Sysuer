@@ -5,9 +5,9 @@
         android:icon="@drawable/card"
         android:title="@string/field" />
     <item
-        android:id="@+id/gym_reservation_fragment"
-        android:icon="@drawable/book"
-        android:title="@string/reservation" />
+        android:id="@+id/gym_order_fragment"
+        android:icon="@drawable/text"
+        android:title="@string/order" />
     <item
         android:id="@+id/gym_account_fragment"
         android:icon="@drawable/account"

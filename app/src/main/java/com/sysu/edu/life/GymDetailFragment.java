@@ -61,7 +61,6 @@ public class GymDetailFragment extends Fragment {
     HashMap<String, JSONObject> fee;
     String id;
 
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -81,9 +80,7 @@ public class GymDetailFragment extends Fragment {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (!recyclerView.canScrollHorizontally(1) && dx > 0) {
-                    date.offset(7);
-                }
+                if (!recyclerView.canScrollHorizontally(1) && dx > 0) date.offset(7);
             }
         });
         GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 4, GridLayoutManager.HORIZONTAL, false);
@@ -160,6 +157,10 @@ public class GymDetailFragment extends Fragment {
             position.postValue(0);
         }
 
+        /*viewModel.loginRequired.observe(requireActivity(), b -> {
+            if (!b)
+
+        });*/
         return binding.getRoot();
     }
 
@@ -167,7 +168,7 @@ public class GymDetailFragment extends Fragment {
         http.newCall(new Request.Builder()
                 .url(url)
                 .header("Accept", "application/json, text/plain, */*")
-                .header("Cookie", viewModel.token)
+                .header("Cookie", viewModel.cookie)
                 .header("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
                 .header("User-Agent", viewModel.ua)
                 .build()).enqueue(new Callback() {
@@ -240,6 +241,7 @@ public class GymDetailFragment extends Fragment {
 
         //System.out.println(id);
         web.loadUrl("https://gym.sysu.edu.cn/#/booking/" + id);
+
         //((ViewGroup) requireActivity().findViewById(android.R.id.content)).addView(web);
     }
 
@@ -385,11 +387,11 @@ public class GymDetailFragment extends Fragment {
                     action.accept(item);
             });
             switch (item.getInteger("Type")) {
-                case 0->
-                    binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("VenueName")));
-                case 2->
-                    binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("Name")));
-                case 1-> {
+                case 0 ->
+                        binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("VenueName")));
+                case 2 ->
+                        binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("Name")));
+                case 1 -> {
                     if (item.getInteger("AvailableCapacity") == 0) {
                         binding.fieldDetail.setText(context.getString(R.string.reserved));
                         binding.fieldDetail.setAlpha(0.5f);

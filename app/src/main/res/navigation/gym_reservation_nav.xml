@@ -40,8 +40,8 @@
         </fragment>
     </navigation>
     <fragment
-        android:id="@+id/gym_reservation_fragment"
-        android:name="com.sysu.edu.life.GymReservationFragment" />
+        android:id="@+id/gym_order_fragment"
+        android:name="com.sysu.edu.life.GymOrderFragment" />
     <fragment
         android:id="@+id/gym_account_fragment"
         android:name="com.sysu.edu.life.GymAccountFragment" />

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -288,7 +287,7 @@ public class DashboardFragment extends Fragment {
                                     super.configureSpansFactory(builder);
                                     builder.appendFactory(Heading.class, (_, configuration) -> {
                                         if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
-                                            return new ForegroundColorSpan(Color.parseColor("#6750a4"));
+                                            return new ForegroundColorSpan(params.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
                                         return null;
                                     });
                                 }

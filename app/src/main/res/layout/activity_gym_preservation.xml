@@ -16,7 +16,7 @@
             android:transitionName="miniapp"
             app:layout_scrollFlags="scroll|enterAlways"
             app:navigationIcon="?homeAsUpIndicator"
-            app:title="体育场馆与预订系统" />
+            app:title="@string/gym_reservation" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

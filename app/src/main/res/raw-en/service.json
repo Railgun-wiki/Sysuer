@@ -68,8 +68,8 @@
   },
   {
     "id": 2,
-    "name": "Learning",
-    "description": "Learning assistance and personal management tools to help plan learning tasks and time arrangements",
+    "name": "Schedule",
+    "description": "Schedule management and personal plan tools to help plan learning tasks and time arrangements",
     "items": [
       {
         "id": 201,
@@ -77,22 +77,23 @@
         "description": "To-do list management tool for recording learning tasks, assignment reminders, and important arrangements"
       },
       {
-        "id": 204,
+        "id": 202,
         "name": "Schedule",
         "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
         "description": "Schedule management system, including school calendar, class schedule, and personal schedule"
-      },
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Research",
+    "description": "Research and collaboration platform, providing project management, collaboration platform, academic exchange, etc.",
+    "items": [
       {
-        "id": 202,
+        "id": 1201,
         "name": "Cross-Exploration Platform",
         "url": "https://explore.sysu.edu.cn/",
         "description": "Cross-exploration platform for student projects, helping students to collaborate and manage cross-disciplinary projects"
-      },
-      {
-        "id": 203,
-        "name": "EduAI Platform",
-        "url": "https://aic.sysu.edu.cn/",
-        "description": "AI-assisted education platform, integrating AI technologies to provide personalized learning support and course recommendations"
       }
     ]
   },
@@ -398,6 +399,12 @@
         "name": "PiGaiWang",
         "url": "https://www.pigai.org/",
         "description": "PiGaiWang"
+      },
+      {
+        "id": 808,
+        "name": "EduAI Platform",
+        "url": "https://aic.sysu.edu.cn/",
+        "description": "AI-assisted education platform, integrating AI technologies to provide personalized learning support and course recommendations"
       }
     ]
   },
@@ -478,6 +485,37 @@
         "name": "Xue Gong Sir",
         "url": "https://xgxw.sysu.edu.cn/aicounsellor/agents/outlink/sunyatsenuniversity",
         "description": "Xue Gong Sir AI counselor, providing intelligent services such as student affairs consultation, policy interpretation, and problem-solving"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Campus Information",
+    "description": "Campus information and information services, providing the latest campus dynamics, notices and announcements, and market information",
+    "items": [
+      {
+        "id": 1101,
+        "name": "Transference",
+        "url": "https://sysu-remajor.github.io",
+        "description": "Sun Yat-sen University Transference Guide | Computer Science and Engineering Transference Knowledge Base"
+      },
+      {
+        "id": 1102,
+        "name": "EE Self-Recovery Guide",
+        "url": "https://www.survive-sysu.online",
+        "description": "Self-Recovery Guide for EE/CS Students at Sun Yat-sen University"
+      },
+      {
+        "id": 1103,
+        "name": "EE/CS Public Resources",
+        "url": "https://pan.baidu.com/share/init?surl=PvaMG7X4C8gi3NOrDZgmGQ?pwd=nu3m",
+        "description": "Public resources for EE/CS students, including transference guides, self-recovery guides, and common resources"
+      },
+      {
+        "id": 1104,
+        "name": "Public Course Selection Document",
+        "url": "https://docs.qq.com/doc/DU2ROc1JXSnNMRmxj",
+        "description": "Public course selection document for EE/CS students"
       }
     ]
   }

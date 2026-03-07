@@ -218,8 +218,6 @@ public class MainActivity extends AppCompatActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
             }
-        } else {
-
         }
         /*handler.postAtTime(() -> {
             ClassIsland.sendCourseNotification(
@@ -268,18 +266,12 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PackageManager.PERMISSION_GRANTED) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                /*ClassIsland.sendCourseNotification(
-                        this,
-                        "高等数学",           // 课程名称
-                        "10分钟",            // 剩余时间
-                        "逸夫楼301"          // 教室
-                );*/
                 params.toast(R.string.permission_granted);
             }
         }
     }
 
-    void beginClassNotificationWorker(Date target){
+    void beginClassNotificationWorker(Date target) {
         WorkManager.getInstance(getApplicationContext())
                 .enqueueUniqueWork("next_class_widget_update",
                         ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
@@ -322,9 +314,9 @@ public class MainActivity extends AppCompatActivity {
 
         // 学习服务 (id: 2xx)
         actionMap.put(201, newActivity(TodoActivity.class));         // 待办
-        actionMap.put(202, browse("https://explore.sysu.edu.cn/"));         // 交叉探索平台
-        actionMap.put(203, browse("https://aic.sysu.edu.cn/"));         // 逸仙智课平台
-        actionMap.put(204, newActivity(AgendaActivity.class));         // 日程
+//        actionMap.put(202, browse("https://explore.sysu.edu.cn/"));         // 交叉探索平台
+//        actionMap.put(203, browse("https://aic.sysu.edu.cn/"));         // 逸仙智课平台
+        actionMap.put(202, newActivity(AgendaActivity.class));         // 日程
 
 
         // 资讯门户 (id: 3xx)
@@ -339,23 +331,23 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(303, newActivity(AcademyNotification.class));  // 教务通知
 
         // 系统服务 (id: 4xx)
-        actionMap.put(401, browse("https://gym.sysu.edu.cn/#/"));                   // 体育场馆预定系统
-        actionMap.put(402, browse("https://xgxt.sysu.edu.cn/main/#/index"));        // 学工系统
-        actionMap.put(403, browse("https://jwxt.sysu.edu.cn/jwxt/yd/index/#/Home"));           // 本科教务系统
-        actionMap.put(404, browse("https://portal.sysu.edu.cn/newClient/#/newPortal/index"));  // 中山大学统一门户
-        actionMap.put(405, browse("https://usc.sysu.edu.cn/taskcenter-v4/workflow/index"));    // 大学服务中心
-        actionMap.put(406, browse("https://cwxt.webvpn.sysu.edu.cn/#/home/index"));        // 财务信息系统
+//        actionMap.put(401, browse("https://gym.sysu.edu.cn/#/"));                   // 体育场馆预定系统
+//        actionMap.put(402, browse("https://xgxt.sysu.edu.cn/main/#/index"));        // 学工系统
+//        actionMap.put(403, browse("https://jwxt.sysu.edu.cn/jwxt/yd/index/#/Home"));           // 本科教务系统
+//        actionMap.put(404, browse("https://portal.sysu.edu.cn/newClient/#/newPortal/index"));  // 中山大学统一门户
+//        actionMap.put(405, browse("https://usc.sysu.edu.cn/taskcenter-v4/workflow/index"));    // 大学服务中心
+//        actionMap.put(406, browse("https://cwxt.webvpn.sysu.edu.cn/#/home/index"));        // 财务信息系统
 
         // 官网服务 (id: 5xx)
-        actionMap.put(501, browse("https://www.sysu.edu.cn/"));              // 中山大学官网
-        actionMap.put(502, browse("https://admission.sysu.edu.cn/"));        // 本科招生
-        actionMap.put(503, browse("https://graduate.sysu.edu.cn/zsw/"));     // 研究生招生
-        actionMap.put(504, browse("https://rcb.sysu.edu.cn/"));              // 人才招聘
-        actionMap.put(505, browse("https://sysu100.sysu.edu.cn/"));          // 百年校庆
-        actionMap.put(506, browse("https://bwgxsg.sysu.edu.cn/"));           // 博物馆
-        actionMap.put(507, browse("https://library.sysu.edu.cn/"));          // 图书馆
-        actionMap.put(508, browse("https://alumni.sysu.edu.cn/"));           // 校友会
-        actionMap.put(509, browse("https://mail.sysu.edu.cn/"));             // 公务电子邮件系统
+//        actionMap.put(501, browse("https://www.sysu.edu.cn/"));              // 中山大学官网
+//        actionMap.put(502, browse("https://admission.sysu.edu.cn/"));        // 本科招生
+//        actionMap.put(503, browse("https://graduate.sysu.edu.cn/zsw/"));     // 研究生招生
+//        actionMap.put(504, browse("https://rcb.sysu.edu.cn/"));              // 人才招聘
+//        actionMap.put(505, browse("https://sysu100.sysu.edu.cn/"));          // 百年校庆
+//        actionMap.put(506, browse("https://bwgxsg.sysu.edu.cn/"));           // 博物馆
+//        actionMap.put(507, browse("https://library.sysu.edu.cn/"));          // 图书馆
+//        actionMap.put(508, browse("https://alumni.sysu.edu.cn/"));           // 校友会
+//        actionMap.put(509, browse("https://mail.sysu.edu.cn/"));             // 公务电子邮件系统
 
         // 官方服务 (id: 6xx)
         actionMap.put(601, _ -> {    // 二维码
@@ -388,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
         actionMap.put(706, newActivity(ClassroomQueryActivity.class));       // 自习室
         actionMap.put(707, newActivity(GradeActivity.class));                        // 成绩
         actionMap.put(708, newActivity(CourseQueryActivity.class));                  // 课程
-        actionMap.put(709, browse("https://jwxt.sysu.edu.cn/jwxt/mk/#/personalTrainingProgramView")); // 个人培养方案
+//        actionMap.put(709, browse("https://jwxt.sysu.edu.cn/jwxt/mk/#/personalTrainingProgramView")); // 个人培养方案
         actionMap.put(710, newActivity(TrainingProgramActivity.class));             // 培养方案
         actionMap.put(711, newActivity(MajorInfo.class));                    // 专业
         actionMap.put(712, newActivity(CourseSelectedActivity.class));                  // 已选课程
@@ -399,27 +391,27 @@ public class MainActivity extends AppCompatActivity {
 
 
         // 学习平台 (id: 8xx)
-        actionMap.put(801, browse("http://seelight.net/html/homePage/homePagePhone.html"));             // SeeLight
-        actionMap.put(802, browse("https://www.yuketang.cn/web"));           // 雨课堂
-        actionMap.put(803, browse("https://www.ketangpai.com/"));            // 课堂派
-        actionMap.put(804, browse("https://lms.sysu.edu.cn/"));              // 在线教学平台
-        actionMap.put(805, browse("https://www.icourse163.org/"));           // 中国大学（慕课）
-        actionMap.put(806, browse("https://welearn.sflep.com/index.aspx"));  // WeLearn
-        actionMap.put(807, browse("https://www.pigai.org/"));              // 批改网
+//        actionMap.put(801, browse("http://seelight.net/html/homePage/homePagePhone.html"));             // SeeLight
+//        actionMap.put(802, browse("https://www.yuketang.cn/web"));           // 雨课堂
+//        actionMap.put(803, browse("https://www.ketangpai.com/"));            // 课堂派
+//        actionMap.put(804, browse("https://lms.sysu.edu.cn/"));              // 在线教学平台
+//        actionMap.put(805, browse("https://www.icourse163.org/"));           // 中国大学（慕课）
+//        actionMap.put(806, browse("https://welearn.sflep.com/index.aspx"));  // WeLearn
+//        actionMap.put(807, browse("https://www.pigai.org/"));              // 批改网
 
         // 生活服务 (id: 9xx)
         actionMap.put(902, newActivity(SchoolBusActivity.class));                    // 校车
-        actionMap.put(903, browse("https://visitor.sysu.edu.cn/"));                 // 逸仙通行
-        actionMap.put(905, browse("https://gongfang.sysu.edu.cn/h5_separation/repair_apply/index.html#/applyDetail/20251231162524362223"));                 // 报修
-        actionMap.put(906, browse("https://zhny.sysu.edu.cn/h5/#/"));        // 水电费
+//        actionMap.put(903, browse("https://visitor.sysu.edu.cn/"));                 // 逸仙通行
+//        actionMap.put(905, browse("https://gongfang.sysu.edu.cn/h5_separation/repair_apply/index.html#/applyDetail/20251231162524362223"));                 // 报修
+//        actionMap.put(906, browse("https://zhny.sysu.edu.cn/h5/#/"));        // 水电费
         actionMap.put(907, newActivity(Pay.class));                          // 缴费大厅
         actionMap.put(908, newActivity(GymReservationActivity.class));     // 体育馆预约
         actionMap.put(909, newActivity(NetPayActivity.class));              // 校园网
 
 
         // 人工智能服务 (id: 10xx)
-        actionMap.put(1001, browse("https://chat.sysu.edu.cn/zntgc/agent"));     // Deepseek
-        actionMap.put(1002, browse("https://chat.sysu.edu.cn/znt/chat/empty"));  // 逸闻
-        actionMap.put(1003, browse("https://xgxw.sysu.edu.cn/aicounsellor/agents/outlink/sunyatsenuniversity")); // 学工君
+//        actionMap.put(1001, browse("https://chat.sysu.edu.cn/zntgc/agent"));     // Deepseek
+//        actionMap.put(1002, browse("https://chat.sysu.edu.cn/znt/chat/empty"));  // 逸闻
+//        actionMap.put(1003, browse("https://xgxw.sysu.edu.cn/aicounsellor/agents/outlink/sunyatsenuniversity")); // 学工君
     }
 }

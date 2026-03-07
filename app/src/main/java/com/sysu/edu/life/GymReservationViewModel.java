@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel;
 import com.sysu.edu.api.AuthorizationManager;
 
 public class GymReservationViewModel extends ViewModel {
-    //    String authorization = "";
     final String ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0";
     final MutableLiveData<String> authorization = new MutableLiveData<>("");
-    String token = "";
+    String cookie = "";
     AuthorizationManager authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
+    MutableLiveData<Boolean> loginRequired = new MutableLiveData<>();
 }

@@ -1,12 +1,14 @@
 package com.sysu.edu.home;
 
 import static android.text.TextUtils.isEmpty;
+import static com.sysu.edu.api.CommonUtil.trim;
 
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
@@ -35,10 +38,18 @@ import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemServiceBoxBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 
+import org.commonmark.node.Heading;
+import org.commonmark.node.Node;
+
 import java.nio.charset.StandardCharsets;
 import java.util.stream.IntStream;
 
+import io.noties.markwon.AbstractMarkwonPlugin;
 import io.noties.markwon.Markwon;
+import io.noties.markwon.MarkwonSpansFactory;
+import io.noties.markwon.MarkwonVisitor;
+import io.noties.markwon.core.CoreProps;
+import io.noties.markwon.core.spans.LastLineSpacingSpan;
 
 public class ServiceFragment extends Fragment {
 
@@ -163,7 +174,8 @@ public class ServiceFragment extends Fragment {
             int itemId = item.getIntValue("id");
             ItemActionChipBinding chip = ItemActionChipBinding.inflate(inflater, binding.serviceBoxItems, false);
             View.OnClickListener action = viewModel.actionMap.get(itemId);
-            chip.getRoot().setOnClickListener(action != null ? action : _ -> params.toast(R.string.undeveloped));
+            String url = item.getString("url");
+            chip.getRoot().setOnClickListener(action != null ? action : isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()));
             chip.getRoot().setOnLongClickListener(_ -> showActionDialog(item));
             chip.getRoot().setText(item.getString("name"));
             binding.serviceBoxItems.addView(chip.getRoot());
@@ -208,7 +220,36 @@ public class ServiceFragment extends Fragment {
             if (!isEmpty(url))
                 startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)));
         });
-        Markwon.create(requireContext()).setMarkdown(actionBinding.description, String.format("### %s\n%s\n\n%s", item.getString("name"), item.getString("description"), item.getString("url")));
+        Markwon.builder(requireContext()).usePlugin(new AbstractMarkwonPlugin() {
+            @Override
+            public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
+                super.configureSpansFactory(builder);
+                builder.appendFactory(Heading.class, (_, configuration) -> {
+                    if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
+                        return new ForegroundColorSpan(params.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
+                    return null;
+                });
+                builder.appendFactory(Heading.class, (_, configuration) -> new LastLineSpacingSpan(24));
+            }
+
+
+
+            @Override
+            public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {
+                super.configureVisitor(builder);
+                builder.blockHandler(new MarkwonVisitor.BlockHandler() {
+                    @Override
+                    public void blockStart(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
+                    }
+
+                    @Override
+                    public void blockEnd(@NonNull MarkwonVisitor visitor, @NonNull Node node) {
+                        if (visitor.hasNext(node))
+                            visitor.ensureNewLine();
+                    }
+                });
+            }
+        }).build().setMarkdown(actionBinding.description, String.format("### %s\n%s\n\n%s", item.getString("name"), item.getString("description"), trim(item.getString("url"))));
         actionDialog.show();
         return true;
     }

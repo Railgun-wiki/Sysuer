@@ -580,5 +580,9 @@
     <string name="delete_warning">确定删除吗？</string>
     <string name="due">预定</string>
     <string name="view">查看</string>
+    <string name="auto_update_when_launched">应用启动时自动检测更新</string>
+    <string name="balance">余额</string>
+    <string name="money">金额</string>
+    <string name="gym_reservation">体育场馆预订系统</string>
 
 </resources>

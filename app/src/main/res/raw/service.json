@@ -68,8 +68,8 @@
   },
   {
     "id": 2,
-    "name": "学习",
-    "description": "学习辅助与个人管理工具，帮助规划学习任务和时间安排",
+    "name": "日历",
+    "description": "日程管理与个人计划工具，帮助规划学习任务和时间安排",
     "items": [
       {
         "id": 201,
@@ -77,22 +77,23 @@
         "description": "待办事项管理工具，记录学习任务、作业提醒、重要事项安排"
       },
       {
-        "id": 204,
+        "id": 202,
         "name": "日程",
         "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
         "description": "日程管理系统，包括校历、班级日程、个人日程等"
-      },
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "科研",
+    "description": "科研与合作平台，提供项目管理、合作平台、学术交流等服务",
+    "items": [
       {
-        "id": 202,
+        "id": 1201,
         "name": "交叉探索平台",
         "url": "https://explore.sysu.edu.cn/",
         "description": "大创项目管理平台，帮助学生进行跨专业、跨领域的项目合作和管理"
-      },
-      {
-        "id": 203,
-        "name": "逸仙智课平台",
-        "url": "https://aic.sysu.edu.cn/",
-        "description": "AI与教学结合"
       }
     ]
   },
@@ -103,7 +104,7 @@
     "items": [
       {
         "id": 301,
-        "name": "资讯门户",
+        "name": "资讯",
         "url": "https://gongfang.sysu.edu.cn/h5_separation/news/index.html#/newsList",
         "description": "中山大学资讯门户网站，汇集校园新闻、学术活动、重要通知等各类信息"
       },
@@ -395,6 +396,12 @@
         "name": "批改网",
         "url": "https://www.pigai.org/",
         "description": "批改网"
+      },
+      {
+        "id": 808,
+        "name": "逸仙智课平台",
+        "url": "https://aic.sysu.edu.cn/",
+        "description": "AI与教学结合"
       }
     ]
   },
@@ -475,6 +482,37 @@
         "name": "学工君",
         "url": "https://xgxw.sysu.edu.cn/aicounsellor/agents/outlink/sunyatsenuniversity",
         "description": "学工君AI辅导员，学生事务咨询、政策解读、问题解决等智能服务"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "资料",
+    "description": "收集非官方的各种资料和指南，涵盖学习、生活、工作等方面的支持",
+    "items": [
+      {
+        "id": 1101,
+        "name": "转专业",
+        "url": "https://sysu-remajor.github.io",
+        "description": "中山大学转专业指南 | 计算机类转专业知识库"
+      },
+      {
+        "id": 1102,
+        "name": "电通院自救指南",
+        "url": "https://www.survive-sysu.online",
+        "description": "中大EE/CS学生自救指南，包含校园生活、学业、工作等指南"
+      },
+      {
+        "id": 1103,
+        "name": "中大公共资料",
+        "url": "https://pan.baidu.com/share/init?surl=PvaMG7X4C8gi3NOrDZgmGQ?pwd=nu3m",
+        "description": "中大公共资料，包含转专业指南、自救指南、公共资源等"
+      },
+      {
+        "id": 1104,
+        "name": "公共选课文档",
+        "url": "https://docs.qq.com/doc/DU2ROc1JXSnNMRmxj",
+        "description": "中大公共选课文档"
       }
     ]
   }
