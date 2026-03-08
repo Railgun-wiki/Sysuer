@@ -4,6 +4,6 @@
     <corners android:radius="40px" />
     <solid
         android:alpha="0.4"
-        android:color="@color/primary_dark" />
+        android:color="@color/widget_background" />
 
 </shape>

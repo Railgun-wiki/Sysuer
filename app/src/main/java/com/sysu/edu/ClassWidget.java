@@ -81,18 +81,19 @@ public class ClassWidget extends AppWidgetProvider {
                                     try {
                                         Date target = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault()).parse(String.format("%s %s",
                                                 array.getString("teachingDate"), array.getString("endTime")));
-                                        if (target != null) {
+                                        if (target != null)
                                             WorkManager.getInstance(context.getApplicationContext())
                                                     .enqueueUniqueWork("next_class_widget_update",
                                                             ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
-                                        }
                                     } catch (ParseException _) {
                                     }
                                 }
-                                remoteViews.setTextViewText(R.id.content, String.format("%s:%s\n%s:%s %s",
-                                                context.getString(R.string.location), isAvailable ? context.getString(R.string.none) : array.getString("teachingPlace"),
-                                                context.getString(R.string.time), isAvailable ? context.getString(R.string.none) : array.getString("teachingDate"),
-                                                isAvailable ? context.getString(R.string.none) : array.getString("time"))
+//                                ContextUtil contextUtil = new ContextUtil(context);
+//                                remoteViews.setTextColor(R.id.title, contextUtil.getColorFromAttr(com.google.android.material.R.attr.colorSurface));
+                                remoteViews.setTextViewText(R.id.content, String.format("%s：%s\n%s：%s %s",
+                                                context.getString(R.string.location), isAvailable ? array.getString("teachingPlace") : context.getString(R.string.none),
+                                                context.getString(R.string.time), isAvailable ? array.getString("teachingDate") : context.getString(R.string.none),
+                                                isAvailable ? array.getString("time") : context.getString(R.string.none))
                                         /*Markwon.builder(context).usePlugin(new AbstractMarkwonPlugin() {
                                     @Override
                                     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
@@ -120,8 +121,7 @@ public class ClassWidget extends AppWidgetProvider {
                                         });
                                     }
                                 }).build().toMarkdown()*/);
-                                remoteViews.setTextViewText(R.id.title, afterArray.isEmpty() ? tomorrowCourse.isEmpty() ? context.getString(R.string.none) : tomorrowCourse.get(0).getString("courseName") :
-                                        todayCourse.get(beforeArray.size()).getString("courseName"));
+                                remoteViews.setTextViewText(R.id.title, isAvailable ? array.getString("courseName") : context.getString(R.string.none));
                                 break;
                             /*case 2:
                                 JSONArray dataArray = response.getJSONArray("data");

@@ -25,6 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textview.MaterialTextView;
 import com.sysu.edu.R;
 import com.sysu.edu.api.CommonUtil;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -144,6 +145,7 @@ public class CourseScheduleActivity extends AppCompatActivity {
         detailBinding = ItemDetailBinding.inflate(getLayoutInflater());
         detailBinding.open.setOnClickListener(v -> startActivity(new Intent(this, CourseDetailActivity.class).putExtra("id", id.getValue()), ActivityOptionsCompat.makeSceneTransitionAnimation(this, v, "miniapp").toBundle())); // 初始化打开链接
         detailDialog.setContentView(detailBinding.getRoot());
+        ContextUtil contextUtil = new ContextUtil(this);
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -173,7 +175,7 @@ public class CourseScheduleActivity extends AppCompatActivity {
                                     View item = itemAgendaBinding.getRoot();
                                     if (isStop != null && !"0".equals(isStop)) {
                                         item.setEnabled(false);
-                                        item.setBackgroundColor(getColor(R.color.teal_700));
+                                        item.setBackgroundColor(contextUtil.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
                                     }
                                     views.add(item);
                                     item.setOnClickListener(_ -> {

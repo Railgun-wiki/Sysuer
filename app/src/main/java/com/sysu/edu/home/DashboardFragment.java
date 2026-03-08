@@ -47,10 +47,12 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.ClassNotificationWorker;
 import com.sysu.edu.R;
+import com.sysu.edu.academic.AgendaActivity;
 import com.sysu.edu.academic.CourseDetailActivity;
 import com.sysu.edu.academic.CourseScheduleActivity;
 import com.sysu.edu.academic.ExamActivity;
 import com.sysu.edu.api.CalendarManager;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
@@ -143,13 +145,18 @@ public class DashboardFragment extends Fragment {
                     //new LaunchMiniProgram(requireActivity()).launchMiniProgram("gh_85575b9f544e");
                 }*/
             });
-            binding.agenda.setOnClickListener(view -> startActivity(new Intent(getContext(), CourseScheduleActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), view, "miniapp").toBundle()));
+            binding.agenda.setOnClickListener(gotoActivity(CourseScheduleActivity.class));
             binding.courseList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.courseList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
             binding.examList.addItemDecoration(new DividerItemDecoration(requireContext(), 0));
             binding.examList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-            binding.courseTitle.setOnClickListener(_ -> startActivity(new Intent(getContext(), CourseScheduleActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), binding.courseTitle, "miniapp").toBundle()));
-            binding.examTitle.setOnClickListener(_ -> startActivity(new Intent(getContext(), ExamActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), binding.examTitle, "miniapp").toBundle()));
+            binding.courseTitle.setOnClickListener(gotoActivity(CourseScheduleActivity.class));
+            binding.examTitle.setOnClickListener(gotoActivity(ExamActivity.class));
+            binding.todoTitle.setOnClickListener(gotoActivity(TodoActivity.class));
+            binding.nextClass.setOnClickListener(gotoActivity(CourseScheduleActivity.class));
+            binding.nextClassCard.setOnClickListener(gotoActivity(CourseScheduleActivity.class));
+            binding.timeCard.setOnClickListener(gotoActivity(AgendaActivity.class));
+
             params = new Params(this);
             params.setCallback(this::getTerm);
             CourseAdapter courseAdapter = new CourseAdapter();
@@ -190,7 +197,7 @@ public class DashboardFragment extends Fragment {
             todoManager = new TodoManager(requireActivity(), todoAdapter);
             todoManager.setOnRefreshListener(this::refresh);
             binding.add.setOnClickListener(_ -> todoManager.showTodoAddDialog());
-            binding.todoView.setOnClickListener(_ -> startActivity(new Intent(getContext(), TodoActivity.class), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), binding.todoView, "miniapp").toBundle()));
+            binding.todoView.setOnClickListener(gotoActivity(TodoActivity.class));
             PopupMenu pop = new PopupMenu(requireActivity(), binding.todoDate, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
             Menu menu = pop.getMenu();
             menu.add(0, Menu.NONE, 0, R.string.all).setChecked(true).setOnMenuItemClickListener(_ -> {
@@ -207,7 +214,6 @@ public class DashboardFragment extends Fragment {
             });
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             menu.add(1, Menu.NONE, 0, R.string.select).setOnMenuItemClickListener(_ -> {
-//                item.setChecked(true);
                 MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
                 if (isEmpty(todoDate.getValue()))
                     builder.setSelection(System.currentTimeMillis());
@@ -240,6 +246,10 @@ public class DashboardFragment extends Fragment {
             getShortcutCollection();
         }
         return binding.getRoot();
+    }
+
+    private View.OnClickListener gotoActivity(Class<?> cls) {
+        return v -> startActivity(new Intent(getContext(), cls), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle());
     }
 
     @NonNull
@@ -278,6 +288,7 @@ public class DashboardFragment extends Fragment {
 //                                    addCourse(flag.equals("TD") ? todayCourse : tomorrowCourse, (String) ((JSONObject) e).get("courseName"), (String) ((JSONObject) e).get("teachingPlace"), ((JSONObject) e).get("startTime") + "~" + ((JSONObject) e).get("endTime")
 //                                            , "第" + ((JSONObject) e).get("startClassTimes") + "~" + ((JSONObject) e).get("endClassTimes") + "节课", (String) ((JSONObject) e).get("teacherName"), flag);
                             });
+                            ContextUtil contextUtil = new ContextUtil(requireContext());
                             binding.progress.setMax(todayCourse.size());
                             binding.progress.setProgress(beforeArray.size());
                             binding.courseList.scrollToPosition(beforeArray.size());
@@ -287,7 +298,7 @@ public class DashboardFragment extends Fragment {
                                     super.configureSpansFactory(builder);
                                     builder.appendFactory(Heading.class, (_, configuration) -> {
                                         if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
-                                            return new ForegroundColorSpan(params.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
+                                            return new ForegroundColorSpan(contextUtil.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
                                         return null;
                                     });
                                 }

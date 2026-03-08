@@ -32,6 +32,7 @@ import com.sysu.edu.todo.info.TitleAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class GymOrderFragment extends Fragment {
@@ -41,7 +42,7 @@ public class GymOrderFragment extends Fragment {
     GymReservationViewModel viewModel;
     long from = System.currentTimeMillis();
     long to = System.currentTimeMillis();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private int total = -1;
     private int page = 0;
     private ConcatAdapter concatAdapter;
@@ -81,8 +82,10 @@ public class GymOrderFragment extends Fragment {
                             if (msg.what == 0) {
                                 json.getJSONArray("Transactions").forEach((i) -> {
                                     JSONObject item = (JSONObject) i;
-                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter(requireContext());
-                                    concatAdapter.addAdapter(new TitleAdapter(item.getString("Description")));
+                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                    TitleAdapter titleAdapter = new TitleAdapter(item.getString("Description"));
+                                    titleAdapter.setHeader(1);
+                                    concatAdapter.addAdapter(titleAdapter);
                                     concatAdapter.addAdapter(preferenceAdapter);
                                     preferenceAdapter.set(List.of(getString(R.string.date), getString(R.string.type), getString(R.string.money), getString(R.string.balance)),
                                             extractValue(item, new String[]{"Date", "TransactionType", "Amount", "Balance"}),
@@ -130,7 +133,7 @@ public class GymOrderFragment extends Fragment {
             });
             binding.from.setText(dateFormat.format(from));
             binding.to.setText(dateFormat.format(to));
-            binding.to.setOnClickListener(v -> {
+            binding.to.setOnClickListener(_ -> {
                 MaterialDatePicker<Long> datePicker = picker
                         .setSelection(to)
                         .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(from)))).build())

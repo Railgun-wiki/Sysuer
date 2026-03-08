@@ -1,5 +1,7 @@
 package com.sysu.edu.life;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
@@ -28,7 +31,6 @@ import com.sysu.edu.todo.info.TitleAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class GymAccountFragment extends Fragment {
 
@@ -53,39 +55,45 @@ public class GymAccountFragment extends Fragment {
                     params.toast(R.string.no_wifi_warning);
                     // 处理错误
                 } else {
-                    String response = (String) msg.obj;
                     if (msg.getData().getBoolean("isJSON")) {
-                        if (msg.what == 0) {
-                            JSONObject json = JSONObject.parseObject(Objects.requireNonNull(response));
-                            String[] keys = {"Type", "Name", "HostKey", "UserId"};
-                            PreferenceAdapter preferenceAdapter = new PreferenceAdapter(requireContext());
-                            for (int i = 0; i < keys.length; i++)
-                                preferenceAdapter.addItem(getString(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id, R.string.sport_credit, R.string.wallet).get(i)), json.getString(keys[i]));
-                            concatAdapter.addAdapter(new TitleAdapter(getString(R.string.account)));
-                            concatAdapter.addAdapter(preferenceAdapter);
+                        switch (msg.what) {
+                            case 0 -> {
+                                JSONObject json = JSONObject.parseObject((String) msg.obj);
+                                PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
+                                preferenceAdapter.set(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id, R.string.sport_credit, R.string.wallet), extractValue(json, new String[]{"Type", "Name", "HostKey", "UserId", "Credits", "CashWallet"}), List.of(R.drawable.help), requireContext());
+                                concatAdapter.addAdapter(new TitleAdapter(getString(R.string.account)));
+                                concatAdapter.addAdapter(preferenceAdapter);
 
-                            String[] cash_keys = {"Credits", "CashWallet"};
-                            PreferenceAdapter cashAdapter = new PreferenceAdapter(requireContext());
-                            for (int i = 0; i < cash_keys.length; i++) {
-                                cashAdapter.addItem(getString(List.of(R.string.sport_credit, R.string.wallet).get(i)), json.getString(cash_keys[i]), R.drawable.money);
-                            }
-                            concatAdapter.addAdapter(new TitleAdapter(getString(R.string.wallet)));
-                            concatAdapter.addAdapter(cashAdapter);
+                                PreferenceAdapter cashAdapter = new PreferenceAdapter();
+                                cashAdapter.set(List.of(R.string.sport_credit, R.string.wallet), extractValue(json, new String[]{"Credits", "CashWallet"}), List.of(R.drawable.money, R.drawable.money), requireContext());
+                                concatAdapter.addAdapter(new TitleAdapter(getString(R.string.wallet)));
+                                concatAdapter.addAdapter(cashAdapter);
 
-                            String[] id_keys = {"validSwimmer", "IsAdmin"};
-                            PreferenceAdapter idAdapter = new PreferenceAdapter(requireContext());
-                            for (int i = 0; i < id_keys.length; i++) {
-                                idAdapter.addItem(getString(List.of(R.string.is_swimmer_valid, R.string.admin).get(i)), json.getBoolean(id_keys[i]) ? getString(R.string.yes) : getString(R.string.no), R.drawable.help);
+                                String[] id_keys = {"validSwimmer", "IsAdmin"};
+                                PreferenceAdapter idAdapter = new PreferenceAdapter();
+                                for (int i = 0; i < id_keys.length; i++)
+                                    idAdapter.add(getString(List.of(R.string.is_swimmer_valid, R.string.admin).get(i)), json.getBoolean(id_keys[i]) ? getString(R.string.yes) : getString(R.string.no), R.drawable.help);
+                                concatAdapter.addAdapter(new TitleAdapter(getString(R.string.other)));
+                                concatAdapter.addAdapter(idAdapter);
+
+                                getSwimmer();
                             }
-                            concatAdapter.addAdapter(new TitleAdapter(getString(R.string.other)));
-                            concatAdapter.addAdapter(idAdapter);
+                            case 1 -> JSONArray.parseArray((String) msg.obj).forEach(i -> {
+                                JSONObject item = (JSONObject) i;
+                                PreferenceAdapter certAdapter = new PreferenceAdapter();
+                                ArrayList<String> list = extractValue(item, new String[]{"Status", "ValidUntil", "PhysicalExamDate"});
+                                list.set(0, "approved".equals(list.get(0)) ? getString(R.string.approved) : getString(R.string.disapproved));
+                                certAdapter.set(List.of(R.string.status, R.string.valid_date, R.string.physical_exam_date), list, List.of("approved".equals(list.get(0)) ? R.drawable.uncheck : R.drawable.check, R.drawable.calendar, R.drawable.calendar), requireContext());
+                                concatAdapter.addAdapter(new TitleAdapter(getString(R.string.health_proof)));
+                                concatAdapter.addAdapter(certAdapter);
+                            });
                         }
                     } else {
-                        if (!viewModel.authorizationManager.isAuthorized(response)) {
+                        if (!viewModel.authorizationManager.isAuthorized((String) msg.obj)) {
                             System.out.println("Unauthorized");
                             params.toast(R.string.login_warning);
                             viewModel.loginRequired.setValue(true);
-                        } else if (!viewModel.authorizationManager.isAccessible(response)) {
+                        } else if (!viewModel.authorizationManager.isAccessible((String) msg.obj)) {
                             params.toast(R.string.educational_wifi_warning);
                             getAccount();
                         }
@@ -112,23 +120,26 @@ public class GymAccountFragment extends Fragment {
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/Credit/Me", 0);
     }
 
+    void getSwimmer() {
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/swimmer/me", 1);
+    }
+
     public static class PreferenceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         final ArrayList<String> titles = new ArrayList<>();
         final ArrayList<String> contents = new ArrayList<>();
         final ArrayList<Integer> icons = new ArrayList<>();
 
-        final Context context;
+//        final Context context;
 
-        public PreferenceAdapter(Context context) {
+        public PreferenceAdapter() {
             super();
-            this.context = context;
         }
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+            return new RecyclerView.ViewHolder(ItemPreferenceBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
             };
         }
 
@@ -149,15 +160,25 @@ public class GymAccountFragment extends Fragment {
             binding.getRoot().updateAppearance(pos, getItemCount());
         }
 
-        void addItem(String title, String content, Integer icon) {
+        void add(String title, String content, Integer icon) {
             titles.add(title);
             contents.add(content);
             icons.add(icon);
             notifyItemInserted(titles.size() - 1);
         }
 
-        void addItem(String title, String content) {
-            addItem(title, content, null);
+        /*void add(String title, String content) {
+            add(title, content, null);
+        }*/
+
+        void set(List<Integer> titles, List<String> contents, List<Integer> icons, Context context) {
+            this.titles.clear();
+            this.contents.clear();
+            this.icons.clear();
+            titles.forEach(title -> this.titles.add(context.getString(title)));
+            this.contents.addAll(contents);
+            this.icons.addAll(icons);
+            notifyItemRangeInserted(0, getItemCount());
         }
 
         void set(List<String> titles, List<String> contents, List<Integer> icons) {

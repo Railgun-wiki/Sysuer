@@ -15,6 +15,7 @@
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|enterAlways"
             app:navigationIcon="?homeAsUpIndicator"
+            android:transitionName="miniapp"
             app:title="@string/course_schedule" />
 
         <LinearLayout
@@ -36,7 +37,6 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
                 android:text="@string/term"
-                android:transitionName="miniapp"
                 app:icon="@drawable/calendar" />
 
             <com.google.android.material.button.MaterialButton
@@ -46,7 +46,6 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
                 android:text="@string/week1"
-                android:transitionName="miniapp"
                 app:icon="@drawable/time" />
 
             <com.google.android.material.button.MaterialButton

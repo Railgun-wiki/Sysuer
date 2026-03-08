@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,8 +17,10 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityPagerBinding;
 import com.sysu.edu.view.Pager2Adapter;
+import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MajorInfo extends AppCompatActivity {
 
@@ -33,8 +36,13 @@ public class MajorInfo extends AppCompatActivity {
         binding.toolbar.setNavigationOnClickListener(_ -> supportFinishAfterTransition());
         Params params = new Params(this);
         params.setCallback(this::getCategory);
-        Pager2Adapter adp = new Pager2Adapter(this);
-        binding.pager.setAdapter(adp);
+        Pager2Adapter pager2Adapter = new Pager2Adapter(this);
+        binding.pager.setAdapter(pager2Adapter);
+        binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
+            int currentItem = binding.pager.getCurrentItem();
+            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            return true;
+        });
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(categories.get(position))).attach();
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
@@ -51,7 +59,7 @@ public class MajorInfo extends AppCompatActivity {
                                     categories.add(((JSONObject) a).getString("dataName"));
                                     Bundle args = new Bundle();
                                     args.putString("code", ((JSONObject) a).getString("dataNumber"));
-                                    adp.add(MajorInfoFragment.newInstance(args));
+                                    pager2Adapter.add(MajorInfoFragment.newInstance(args));
                                 });
                             }
                         }

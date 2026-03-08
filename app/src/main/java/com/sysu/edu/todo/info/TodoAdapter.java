@@ -30,7 +30,8 @@ public class TodoAdapter extends RecyclerAdapter<TodoInfo> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemTodoBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+        return new RecyclerView.ViewHolder(ItemTodoBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+        };
     }
 
     @Override
@@ -40,7 +41,7 @@ public class TodoAdapter extends RecyclerAdapter<TodoInfo> {
         TodoInfo item = get(position);
         binding.title.setText(item.getTitle().getValue());
         String description = item.getDescription().getValue();
-        if(isEmpty(description))binding.description.setVisibility(View.GONE);
+        if (isEmpty(description)) binding.description.setVisibility(View.GONE);
         else binding.description.setText(description);
         binding.check.setOnCheckedChangeListener((_, isChecked) -> {
             item.setStatus(isChecked ? TodoInfo.DONE : TodoInfo.TODO);

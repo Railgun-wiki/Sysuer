@@ -586,4 +586,9 @@
     <string name="balance">Balance</string>
     <string name="money">Amount</string>
     <string name="gym_reservation">Gym Reservation System</string>
+    <string name="health_proof">Healthy Proof</string>
+    <string name="valid_date">Valid Date</string>
+    <string name="physical_exam_date">Physical Examination Date</string>
+    <string name="approved">Approved</string>
+    <string name="disapproved">Disapproved</string>
 </resources>

@@ -12,7 +12,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -292,9 +291,4 @@ public class Params {
         launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
     }
 
-    public int getColorFromAttr(int attr) {
-        TypedValue typedValue = new TypedValue();
-        activity.getTheme().resolveAttribute(attr, typedValue, true);
-        return typedValue.data;
-    }
 }

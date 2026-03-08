@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:text="第一周"
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="@color/primary_light" />
+            android:textColor="@color/widget_on_background" />
 
     </LinearLayout>
 
@@ -44,7 +44,6 @@
             <TextView
                 android:layout_width="3dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:background="@drawable/widget_divider_background" />
 
@@ -59,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/course_name"
-                    android:textColor="@color/m3_light_text_color_primary" />
+                    android:textColor="@color/sysu_color" />
 
                 <TextView
                     android:id="@+id/content"
@@ -68,7 +67,8 @@
                     android:layout_marginTop="2dp"
                     android:lineSpacingExtra="2sp"
                     android:text="@string/course_detail"
-                    android:textColor="#ffffff" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                    android:textColor="@color/widget_on_background" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

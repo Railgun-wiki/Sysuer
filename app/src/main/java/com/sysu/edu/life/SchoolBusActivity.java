@@ -5,6 +5,7 @@ import static com.sysu.edu.api.CommonUtil.extractValue;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -25,6 +26,7 @@ import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -54,6 +56,11 @@ public class SchoolBusActivity extends AppCompatActivity {
             b = Boolean.TRUE.equals(b);
             loadRoute(b ? "workDay" : "holiday", header, notice, pager2Adapter);
             header.day.setText(b ? R.string.workday : R.string.holiday);
+        });
+        binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
+            int currentItem = binding.pager.getCurrentItem();
+            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            return true;
         });
         binding.appBarLayout.addView(header.getRoot());
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(routes.get(position))).attach();

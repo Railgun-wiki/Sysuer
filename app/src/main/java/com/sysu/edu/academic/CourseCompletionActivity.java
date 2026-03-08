@@ -5,6 +5,7 @@ import static com.sysu.edu.api.CommonUtil.extractValue;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import com.sysu.edu.view.Pager2Adapter;
 import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.List;
+import java.util.Objects;
 
 public class CourseCompletionActivity extends AppCompatActivity {
 
@@ -43,6 +45,11 @@ public class CourseCompletionActivity extends AppCompatActivity {
         StaggeredFragment page1 = StaggeredFragment.newInstance(0);
         Pager2Adapter pager2Adapter = new Pager2Adapter(this).add(page1).add(new CourseCompletionFragment());
         binding.pager.setAdapter(pager2Adapter);
+        binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
+            int currentItem = binding.pager.getCurrentItem();
+            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            return true;
+        });
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(List.of("学分学时情况", "课程完成情况").get(position))).attach();
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override

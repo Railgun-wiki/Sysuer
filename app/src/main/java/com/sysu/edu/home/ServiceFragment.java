@@ -29,6 +29,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.DialogServiceActionBinding;
@@ -220,18 +221,18 @@ public class ServiceFragment extends Fragment {
             if (!isEmpty(url))
                 startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)));
         });
+        ContextUtil contextUtil = new ContextUtil(requireContext());
         Markwon.builder(requireContext()).usePlugin(new AbstractMarkwonPlugin() {
             @Override
             public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
                 super.configureSpansFactory(builder);
                 builder.appendFactory(Heading.class, (_, configuration) -> {
                     if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
-                        return new ForegroundColorSpan(params.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
+                        return new ForegroundColorSpan(contextUtil.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
                     return null;
                 });
-                builder.appendFactory(Heading.class, (_, configuration) -> new LastLineSpacingSpan(24));
+                builder.appendFactory(Heading.class, (_, _) -> new LastLineSpacingSpan(24));
             }
-
 
 
             @Override

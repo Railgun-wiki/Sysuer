@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.MarkdownViewActivity;
+import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.databinding.RecyclerViewBinding;
@@ -31,19 +32,21 @@ import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.databinding.TwoColumnBinding;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 public class StaggeredFragment extends Fragment {
 
-    protected RecyclerViewScrollBinding binding;
+    protected final StaggeredAdapter staggeredAdapter = new StaggeredAdapter();
     final MutableLiveData<Integer> orientation = new MutableLiveData<>(StaggeredGridLayoutManager.VERTICAL);
     final MutableLiveData<Runnable> scrollBottom = new MutableLiveData<>();
     final MutableLiveData<Boolean> nestedScrollingEnabled = new MutableLiveData<>(true);
     final MutableLiveData<Boolean> hideNull = new MutableLiveData<>(false);
     final MutableLiveData<AdapterListener> staggeredListener = new MutableLiveData<>();
     public int position;
-    protected final StaggeredAdapter staggeredAdapter = new StaggeredAdapter();
+    protected RecyclerViewScrollBinding binding;
     protected Params params;
     StaggeredGridLayoutManager staggeredGridLayoutManager;
 
@@ -71,7 +74,7 @@ public class StaggeredFragment extends Fragment {
                     }
                 });
         });
-        staggeredListener.observe(getViewLifecycleOwner(), v -> staggeredAdapter.setListener(v));
+        staggeredListener.observe(getViewLifecycleOwner(), staggeredAdapter::setListener);
         hideNull.observe(getViewLifecycleOwner(), b -> {
             if (b != null) staggeredAdapter.setHideNull(b);
         });
@@ -124,13 +127,16 @@ public class StaggeredFragment extends Fragment {
     }
 
     public String toTable() {
-        int itemCount = staggeredAdapter.getItemCount();
         StringBuilder markdown = new StringBuilder();
-        if (itemCount > 0) {
-            markdown.append("序号|").append(String.join("|", staggeredAdapter.getKeys(0))).append("\n")
-                    .append(":---:|".repeat(staggeredAdapter.getKeys(0).size() + 1)).append("\n");
-            IntStream.range(0, itemCount).forEach(i -> markdown.append(i + 1).append("|").append(String.join("|", staggeredAdapter.getValues(i))).append("\n"));
-        }
+        AtomicReference<List<String>> keys = new AtomicReference<>();
+        IntStream.range(0, staggeredAdapter.getItemCount()).forEach(i -> {
+            if (keys.get() == null || !new HashSet<>(staggeredAdapter.getKeys(i)).containsAll(keys.get())) {
+                keys.set(staggeredAdapter.getKeys(i));
+                markdown.append("\n").append("序号|").append(String.join("|", keys.get().stream().map(CommonUtil::trim).toArray(String[]::new))).append("\n")
+                        .append(":---:|".repeat(keys.get().size() + 1)).append("\n"); // 表头
+            }
+            markdown.append(i + 1).append("|").append(String.join("|", staggeredAdapter.getValues(i).stream().map(CommonUtil::trim).toArray(String[]::new))).append("\n");
+        });
         return markdown.toString();
     }
 
