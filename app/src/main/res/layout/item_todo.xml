@@ -5,10 +5,10 @@
     android:layout_height="wrap_content"
     android:background="?android:selectableItemBackground"
     android:minHeight="?android:listPreferredItemHeight"
-    android:paddingStart="?attr/listPreferredItemPaddingRight"
-    android:paddingTop="?attr/listPreferredItemPaddingStart"
-    android:paddingEnd="?attr/listPreferredItemPaddingLeft"
-    android:paddingBottom="?attr/listPreferredItemPaddingEnd">
+    android:paddingStart="4dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="?attr/listPreferredItemPaddingEnd"
+    android:paddingBottom="4dp">
 
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/check"
@@ -22,9 +22,9 @@
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="4dp"
         android:text="@string/todo"
-        android:textAppearance="@style/TextAppearance.Material3.ActionBar.Title"
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
         app:layout_constraintBottom_toTopOf="@id/description"
         app:layout_constraintLeft_toRightOf="@id/check"
         app:layout_constraintRight_toLeftOf="@id/menu"
@@ -32,12 +32,14 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/description"
+        style="@style/Widget.Material3.TextView.ListItem.SupportingText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="2"
         android:text="@string/todo"
-        android:textAppearance="@style/TextAppearance.Material3.ActionBar.Subtitle"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/menu"
+        app:layout_constraintEnd_toEndOf="@id/title"
         app:layout_constraintStart_toStartOf="@+id/title"
         app:layout_constraintTop_toBottomOf="@id/title" />
 

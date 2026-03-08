@@ -34,7 +34,7 @@ public class ClassWidget extends AppWidgetProvider {
     final ArrayList<JSONObject> tomorrowCourse = new ArrayList<>();
     HttpManager http;
 
-    private static void update(AppWidgetManager appWidgetManager, int[] appWidgetIds, RemoteViews remoteViews, Context context) {
+    private static void update(AppWidgetManager appWidgetManager, int[] appWidgetIds, RemoteViews remoteViews) {
         for (int appWidgetId : appWidgetIds) {
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
         }
@@ -73,29 +73,26 @@ public class ClassWidget extends AppWidgetProvider {
                                 });
 //                                binding.courseList.scrollToPosition(beforeArray.size());
 
-                                try {
-                                    JSONObject array = afterArray.isEmpty() ? tomorrowCourse.get(0) : todayCourse.get(beforeArray.size());
-                                    Date target = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault()).parse(String.format("%s %s",
-                                            array.getString("teachingDate"), array.getString("endTime")));
-                                    if (target != null) {
-//                                        System.out.println(target.getTime() - System.currentTimeMillis());
-                                        WorkManager.getInstance(context.getApplicationContext())
-                                                .enqueueUniqueWork("next_class_widget_update",
-                                                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+                                boolean isAvailable = !afterArray.isEmpty() || !tomorrowCourse.isEmpty();
 
+                                JSONObject array = new JSONObject();
+                                if (isAvailable) {
+                                    array = afterArray.isEmpty() ? tomorrowCourse.get(0) : todayCourse.get(beforeArray.size());
+                                    try {
+                                        Date target = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.getDefault()).parse(String.format("%s %s",
+                                                array.getString("teachingDate"), array.getString("endTime")));
+                                        if (target != null) {
+                                            WorkManager.getInstance(context.getApplicationContext())
+                                                    .enqueueUniqueWork("next_class_widget_update",
+                                                            ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+                                        }
+                                    } catch (ParseException _) {
                                     }
-                                } catch (ParseException _) {
                                 }
-
-                                remoteViews.setTextViewText(R.id.content,
-                                        afterArray.isEmpty() ? String.format("%s:%s\n%s:%s %s",
-                                                context.getString(R.string.location), tomorrowCourse.isEmpty() ? context.getString(R.string.none) : tomorrowCourse.get(0).getString("teachingPlace"),
-                                                context.getString(R.string.time),
-                                                tomorrowCourse.get(0).getString("teachingDate"), tomorrowCourse.isEmpty() ? context.getString(R.string.none) : tomorrowCourse.get(0).getString("time")) :
-                                                String.format("%s:%s\n%s:%s %s",
-                                                        context.getString(R.string.location), todayCourse.get(beforeArray.size()).getString("teachingPlace"),
-                                                        context.getString(R.string.time),
-                                                        todayCourse.get(beforeArray.size()).getString("teachingDate"), todayCourse.get(beforeArray.size()).getString("time"))
+                                remoteViews.setTextViewText(R.id.content, String.format("%s:%s\n%s:%s %s",
+                                                context.getString(R.string.location), isAvailable ? context.getString(R.string.none) : array.getString("teachingPlace"),
+                                                context.getString(R.string.time), isAvailable ? context.getString(R.string.none) : array.getString("teachingDate"),
+                                                isAvailable ? context.getString(R.string.none) : array.getString("time"))
                                         /*Markwon.builder(context).usePlugin(new AbstractMarkwonPlugin() {
                                     @Override
                                     public void configureSpansFactory(@NonNull MarkwonSpansFactory.Builder builder) {
@@ -160,7 +157,7 @@ public class ClassWidget extends AppWidgetProvider {
                         }
 
                         remoteViews.setOnClickPendingIntent(android.R.id.background, PendingIntent.getActivity(context, 0, new Intent(context, AgendaActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-                        update(appWidgetManager, appWidgetIds, remoteViews, context);
+                        update(appWidgetManager, appWidgetIds, remoteViews);
 
                     }
                 }

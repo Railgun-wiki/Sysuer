@@ -40,22 +40,21 @@ public class TodoAdapter extends RecyclerAdapter<TodoInfo> {
         TodoInfo item = get(position);
         binding.title.setText(item.getTitle().getValue());
         String description = item.getDescription().getValue();
-        if(isEmpty(description))binding.description.setVisibility(View.GONE);else binding.description.setText(description);
-        //binding.dueDate.setText(item.getDueDate());
-        //boolean isCheck = item.getStatus().getValue() != null && item.getStatus().getValue() == 1;
-
-        //System.out.println(isCheck ? 0.5f : 1.0f);
+        if(isEmpty(description))binding.description.setVisibility(View.GONE);
+        else binding.description.setText(description);
         binding.check.setOnCheckedChangeListener((_, isChecked) -> {
             item.setStatus(isChecked ? TodoInfo.DONE : TodoInfo.TODO);
-            //notifyItemChanged(position);
         });
+        binding.title.setAlpha(TodoInfo.DONE.equals(item.getStatus().getValue()) ? 0.5f : 1.0f);
+        binding.description.setAlpha(TodoInfo.DONE.equals(item.getStatus().getValue()) ? 0.5f : 1.0f);
         item.getStatus().observe((FragmentActivity) context, status -> {
-            boolean isCheck = status != null && status.equals(TodoInfo.DONE);
-            binding.getRoot().setAlpha(isCheck ? 0.5f : 1.0f);
+            boolean isCheck = TodoInfo.DONE.equals(status);
+            binding.title.setAlpha(isCheck ? 0.5f : 1.0f);
+            binding.description.setAlpha(isCheck ? 0.5f : 1.0f);
             binding.check.setChecked(isCheck);
             binding.title.setPaintFlags(isCheck ? binding.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG : binding.title.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
             binding.description.setPaintFlags(isCheck ? binding.description.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG : binding.description.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
-            binding.menu.setEnabled(!isCheck);
+//            binding.menu.setEnabled(!isCheck);
             //binding.check.setChecked(isChecked);
 //            binding.title.setPaintFlags(isChecked ? binding.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG : binding.title.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
 //            binding.description.setPaintFlags(isChecked ? binding.description.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG : binding.description.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
