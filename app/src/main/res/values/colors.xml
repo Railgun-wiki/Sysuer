@@ -4,4 +4,5 @@
     <color name="black">#FF000000</color>
     <color name="logo_background">?colorSurfaceBright</color>
     <color name="colorOnBackground">?attr/colorOnBackground</color>
+    <color name="sysu_color">#005826</color>
 </resources>

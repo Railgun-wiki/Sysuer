@@ -44,7 +44,7 @@ public class GymAccountFragment extends Fragment {
         ConcatAdapter concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
-        binding.recyclerView.setBackgroundColor(params.getColorFromAttr(com.google.android.material.R.attr.colorSurfaceBright));
+//        binding.recyclerView.setBackground(new ColorDrawable(params.getColorFromAttr(com.google.android.material.R.attr.colorSurfaceBright)));
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -59,9 +59,8 @@ public class GymAccountFragment extends Fragment {
                             JSONObject json = JSONObject.parseObject(Objects.requireNonNull(response));
                             String[] keys = {"Type", "Name", "HostKey", "UserId"};
                             PreferenceAdapter preferenceAdapter = new PreferenceAdapter(requireContext());
-                            for (int i = 0; i < keys.length; i++) {
+                            for (int i = 0; i < keys.length; i++)
                                 preferenceAdapter.addItem(getString(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id, R.string.sport_credit, R.string.wallet).get(i)), json.getString(keys[i]));
-                            }
                             concatAdapter.addAdapter(new TitleAdapter(getString(R.string.account)));
                             concatAdapter.addAdapter(preferenceAdapter);
 

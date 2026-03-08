@@ -82,18 +82,23 @@
         <rikka.material.preference.MaterialSwitchPreference
             app:defaultValue="true"
             app:icon="@drawable/refresh"
-            app:key="update"
+            app:key="js_enabled"
             app:title="@string/js" />
         <rikka.material.preference.MaterialSwitchPreference
             app:defaultValue="true"
             app:icon="@drawable/wifi"
-            app:key="save_mobile_data"
+            app:key="save_mobile_data_mode"
             app:title="@string/save_mobile_data_mode" />
         <rikka.material.preference.MaterialSwitchPreference
             app:defaultValue="true"
             app:icon="@drawable/warning"
-            app:key="@string/privacy_mode"
+            app:key="privacy_mode"
             app:title="@string/privacy_mode" />
+        <rikka.material.preference.MaterialSwitchPreference
+            app:defaultValue="true"
+            app:icon="@drawable/warning"
+            app:key="mobile_mode"
+            app:title="@string/mobile_mode" />
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/app">
         <rikka.material.preference.MaterialSwitchPreference
