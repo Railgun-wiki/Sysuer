@@ -228,8 +228,8 @@
   },
   {
     "id": 6,
-    "name": "Official",
-    "description": "Official media and social platforms, providing channels for official campus information release and interactive communication",
+    "name": "Official Mini-Programs",
+    "description": "Official mini-programs of Sun Yat-sen University, providing convenient services and features",
     "items": [
       {
         "id": 601,

@@ -75,28 +75,23 @@
                 android:targetPackage="com.sysu.edu" />
         </Preference>
         <rikka.material.preference.MaterialSwitchPreference
-            app:defaultValue="true"
             app:icon="@drawable/image_block"
             app:key="image_blocked"
             app:title="@string/image_blocked" />
         <rikka.material.preference.MaterialSwitchPreference
-            app:defaultValue="true"
             app:icon="@drawable/refresh"
             app:key="js_enabled"
             app:title="@string/js" />
         <rikka.material.preference.MaterialSwitchPreference
-            app:defaultValue="true"
             app:icon="@drawable/wifi"
             app:key="save_mobile_data_mode"
             app:title="@string/save_mobile_data_mode" />
         <rikka.material.preference.MaterialSwitchPreference
-            app:defaultValue="true"
-            app:icon="@drawable/warning"
+            app:icon="@drawable/privacy"
             app:key="privacy_mode"
             app:title="@string/privacy_mode" />
         <rikka.material.preference.MaterialSwitchPreference
-            app:defaultValue="true"
-            app:icon="@drawable/warning"
+            app:icon="@drawable/phone"
             app:key="mobile_mode"
             app:title="@string/mobile_mode" />
     </PreferenceCategory>

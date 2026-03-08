@@ -585,5 +585,5 @@
     <string name="auto_update_when_launched">Auto Update Check when Launching</string>
     <string name="balance">Balance</string>
     <string name="money">Amount</string>
-    <string name="gym_reservation">Gym Reservation</string>
+    <string name="gym_reservation">Gym Reservation System</string>
 </resources>
