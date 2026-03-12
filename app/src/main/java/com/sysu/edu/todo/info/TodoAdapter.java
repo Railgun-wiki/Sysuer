@@ -43,9 +43,7 @@ public class TodoAdapter extends RecyclerAdapter<TodoInfo> {
         String description = item.getDescription().getValue();
         if (isEmpty(description)) binding.description.setVisibility(View.GONE);
         else binding.description.setText(description);
-        binding.check.setOnCheckedChangeListener((_, isChecked) -> {
-            item.setStatus(isChecked ? TodoInfo.DONE : TodoInfo.TODO);
-        });
+        binding.check.setOnCheckedChangeListener((_, isChecked) -> item.setStatus(isChecked ? TodoInfo.DONE : TodoInfo.TODO));
         binding.title.setAlpha(TodoInfo.DONE.equals(item.getStatus().getValue()) ? 0.5f : 1.0f);
         binding.description.setAlpha(TodoInfo.DONE.equals(item.getStatus().getValue()) ? 0.5f : 1.0f);
         item.getStatus().observe((FragmentActivity) context, status -> {

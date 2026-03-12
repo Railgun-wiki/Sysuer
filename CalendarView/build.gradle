@@ -47,5 +47,5 @@ dependencies {
 
     implementation libs.appcompat
     implementation libs.recyclerview
-    testImplementation libs.junit.v412
+//    testImplementation libs.junit.v412
 }

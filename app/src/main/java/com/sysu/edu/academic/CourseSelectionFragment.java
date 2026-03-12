@@ -209,15 +209,12 @@ public class CourseSelectionFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             binding.head.addFilter.setOnClickListener(v ->
-                    {
-                        Navigation.findNavController(view).navigate(R.id.selection_to_filter1, null, new NavOptions.Builder()
+                    Navigation.findNavController(view).navigate(R.id.selection_to_filter1, null, new NavOptions.Builder()
 //                                            .setExitAnim(androidx.navigation.ui.R.anim.nav_default_pop_enter_anim)
 //                            .setEnterAnim()
 //                            .setExitAnim(android.R.animator.fade_out)
 
-                                .build(), new FragmentNavigator.Extras.Builder().addSharedElement(v, "miniapp").build());
-
-                    }
+                            .build(), new FragmentNavigator.Extras.Builder().addSharedElement(v, "miniapp").build())
             );
         }
         MaterialContainerTransform transition = new MaterialContainerTransform();

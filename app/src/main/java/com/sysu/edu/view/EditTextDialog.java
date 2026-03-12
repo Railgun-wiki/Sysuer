@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.sysu.edu.databinding.DialogEditTextBinding;
 
 import java.util.Objects;
@@ -77,6 +79,16 @@ public class EditTextDialog {
 
     public AlertDialog getDialog() {
         return dialog;
+    }
+
+    public TextInputEditText getEditText(){
+        return binding.edit;
+    }
+
+
+    public void setPasswordMode() {
+        binding.edit.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        binding.getRoot().setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
     }
 
     public interface ValueChangeListener {

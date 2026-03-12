@@ -7,6 +7,7 @@ import static com.sysu.edu.login.LoginManager.initLoginWebView;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -18,7 +19,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -31,6 +31,10 @@ import com.sysu.edu.R;
 import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.login.LoginActivity;
 import com.sysu.edu.login.LoginViewModel;
+import com.sysu.edu.view.EditTextDialog;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class Params {
 
@@ -247,7 +251,12 @@ public class Params {
      * @param view 触发跳转的视图
      * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
      */
-    public void gotoLogin(View view, @Nullable String url) {
+    public void gotoLogin(View view, String url) {
+        System.out.println(url);
+        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN).contains(url)) {
+            login(url);
+            return;
+        }
         Intent intent = new Intent(activity, LoginActivity.class);
         if (url != null) intent.putExtra("url", url);
         switch (getLoginMode()) {
@@ -278,6 +287,39 @@ public class Params {
 //                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
             }
             default -> gotoLogin(view, intent);
+        }
+    }
+
+    private void login(String url) {
+        if (getUserName().isEmpty()) {
+            EditTextDialog username = new EditTextDialog(activity);
+            username.setHint(R.string.username);
+            username.setTitle(R.string.username);
+            username.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, activity.getString(R.string.confirm), (_, _) -> {
+                setUserName(username.getText());
+                System.out.println("Login with " + username.getText());
+                login(url);
+            });
+            username.show();
+            return;
+        }
+        if (getPassword().isEmpty()) {
+            EditTextDialog password = new EditTextDialog(activity);
+            password.setHint(R.string.password);
+            password.setTitle(R.string.password);
+            password.setPasswordMode();
+            password.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, activity.getString(R.string.confirm), (_, _) -> {
+                setPassword(password.getText());
+                password.getDialog().dismiss();
+                login(url);
+            });
+            password.show();
+            return;
+        }
+        try {
+            if (new LoginManager().login(getUserName(), getPassword(), url))
+                afterLogin.run();
+        } catch (ExecutionException | InterruptedException _) {
         }
     }
 

@@ -142,8 +142,11 @@ public class HttpManager {
         Request.Builder request = new Request.Builder().url(url);
         //(cookieManager);
         if (params != null) request.header("Cookie", params.getCookie());
+//        System.out.println("target: " + target);
+        cookieManager.flush();
         if (target != null && cookieManager.getCookie(target) != null) {
             request.header("Cookie", cookieManager.getCookie(target));
+            System.out.println("sendRequest: " + cookieManager.getCookie(target));
         } else if (cookieManager.getCookie(url) != null) {
             request.header("Cookie", cookieManager.getCookie(url));
         }

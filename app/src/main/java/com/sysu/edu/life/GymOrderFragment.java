@@ -40,8 +40,6 @@ public class GymOrderFragment extends Fragment {
 
     HttpManager http;
     GymReservationViewModel viewModel;
-    long from = System.currentTimeMillis();
-    long to = System.currentTimeMillis();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private int total = -1;
     private int page = 0;
@@ -51,101 +49,97 @@ public class GymOrderFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        if (binding == null) {
-            binding = FragmentGymOrderBinding.inflate(inflater, container, false);
-            binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-            viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
+        binding = FragmentGymOrderBinding.inflate(inflater, container, false);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
 
-            concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
-            binding.recyclerView.setAdapter(concatAdapter);
-            binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    if (dy > 0 && total > 0 && page * 10 < total)
-                        getOrder();
-                }
-            });
-            Params params = new Params(this);
-            params.setCallback(this::reset);
-            http = new HttpManager(new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(@NonNull Message msg) {
-                    super.handleMessage(msg);
-                    if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
-                        // 处理错误
+        concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
+        binding.recyclerView.setAdapter(concatAdapter);
+        binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0 && total > 0 && page * 10 < total)
+                    getOrder();
+            }
+        });
+        Params params = new Params(this);
+        params.setCallback(this::reset);
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                if (msg.what == -1) {
+                    params.toast(R.string.no_wifi_warning);
+                    // 处理错误
+                } else {
+                    String response = (String) msg.obj;
+                    if (msg.getData().getBoolean("isJSON")) {
+                        JSONObject json = JSONObject.parseObject(response);
+                        if (msg.what == 0) {
+                            json.getJSONArray("Transactions").forEach((i) -> {
+                                JSONObject item = (JSONObject) i;
+                                GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                TitleAdapter titleAdapter = new TitleAdapter(item.getString("Description"));
+                                titleAdapter.setHeader(1);
+                                concatAdapter.addAdapter(titleAdapter);
+                                concatAdapter.addAdapter(preferenceAdapter);
+                                preferenceAdapter.set(List.of(getString(R.string.date), getString(R.string.type), getString(R.string.money), getString(R.string.balance)),
+                                        extractValue(item, new String[]{"Date", "TransactionType", "Amount", "Balance"}),
+                                        List.of(R.drawable.calendar, R.drawable.text, R.drawable.money, R.drawable.money));
+                            });
+                            total = json.getInteger("TotalCount");
+                        }
                     } else {
-                        String response = (String) msg.obj;
-                        if (msg.getData().getBoolean("isJSON")) {
-                            JSONObject json = JSONObject.parseObject(response);
-                            if (msg.what == 0) {
-                                json.getJSONArray("Transactions").forEach((i) -> {
-                                    JSONObject item = (JSONObject) i;
-                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
-                                    TitleAdapter titleAdapter = new TitleAdapter(item.getString("Description"));
-                                    titleAdapter.setHeader(1);
-                                    concatAdapter.addAdapter(titleAdapter);
-                                    concatAdapter.addAdapter(preferenceAdapter);
-                                    preferenceAdapter.set(List.of(getString(R.string.date), getString(R.string.type), getString(R.string.money), getString(R.string.balance)),
-                                            extractValue(item, new String[]{"Date", "TransactionType", "Amount", "Balance"}),
-                                            List.of(R.drawable.calendar, R.drawable.text, R.drawable.money, R.drawable.money));
-                                });
-                                total = json.getInteger("TotalCount");
-                            }
-                        } else {
-                            if (!viewModel.authorizationManager.isAuthorized(response)) {
-                                System.out.println("Unauthorized");
-                                params.toast(R.string.login_warning);
-                                viewModel.loginRequired.setValue(true);
-                            } else if (!viewModel.authorizationManager.isAccessible(response)) {
-                                params.toast(R.string.educational_wifi_warning);
-                                getOrder();
-                            }
+                        if (!viewModel.authorizationManager.isAuthorized(response)) {
+                            System.out.println("Unauthorized");
+                            params.toast(R.string.login_warning);
+                            viewModel.loginRequired.setValue(true);
+                        } else if (!viewModel.authorizationManager.isAccessible(response)) {
+                            params.toast(R.string.educational_wifi_warning);
+                            getOrder();
                         }
                     }
                 }
-            });
-            http.setParams(params);
-            http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-            http.setCookie(viewModel.cookie);
-            http.setUA(viewModel.ua);
-            http.setAuthorization(viewModel.authorization.getValue());
-//        getOrder();
+            }
+        });
+        http.setParams(params);
+        http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
+        http.setCookie(viewModel.cookie);
+        http.setUA(viewModel.ua);
+        http.setAuthorization(viewModel.authorization.getValue());
+        viewModel.loginRequired.observe(requireActivity(), b -> {
+            if (!b)
+                regetOrder();
+        });
 
-            viewModel.loginRequired.observe(requireActivity(), b -> {
-                if (!b)
-                    getOrder();
+        MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
+        binding.from.setOnClickListener(_ -> {
+            MaterialDatePicker<Long> datePicker = picker
+                    .setSelection(viewModel.from)
+                    .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(viewModel.to)))).build())
+                    .build();
+            datePicker.show(getParentFragmentManager(), "datePicker");
+            datePicker.addOnPositiveButtonClickListener(selection -> {
+                viewModel.from = selection;
+                binding.from.setText(datePicker.getHeaderText());
+                regetOrder();
             });
-
-            MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
-            binding.from.setOnClickListener(_ -> {
-                MaterialDatePicker<Long> datePicker = picker
-                        .setSelection(from)
-                        .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(to)))).build())
-                        .build();
-                datePicker.show(getParentFragmentManager(), "datePicker");
-                datePicker.addOnPositiveButtonClickListener(selection -> {
-                    from = selection;
-                    binding.from.setText(datePicker.getHeaderText());
-                    regetOrder();
-                });
+        });
+        binding.from.setText(dateFormat.format(viewModel.from));
+        binding.to.setText(dateFormat.format(viewModel.to));
+        binding.to.setOnClickListener(_ -> {
+            MaterialDatePicker<Long> datePicker = picker
+                    .setSelection(viewModel.to)
+                    .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(viewModel.from)))).build())
+                    .build();
+            datePicker.show(getParentFragmentManager(), "datePicker");
+            datePicker.addOnPositiveButtonClickListener(selection -> {
+                viewModel.to = selection;
+                binding.to.setText(datePicker.getHeaderText());
+                regetOrder();
             });
-            binding.from.setText(dateFormat.format(from));
-            binding.to.setText(dateFormat.format(to));
-            binding.to.setOnClickListener(_ -> {
-                MaterialDatePicker<Long> datePicker = picker
-                        .setSelection(to)
-                        .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(from)))).build())
-                        .build();
-                datePicker.show(getParentFragmentManager(), "datePicker");
-                datePicker.addOnPositiveButtonClickListener(selection -> {
-                    to = selection;
-                    binding.to.setText(datePicker.getHeaderText());
-                    regetOrder();
-                });
-            });
-        }
+        });
         return binding.getRoot();
     }
 
@@ -161,8 +155,7 @@ public class GymOrderFragment extends Fragment {
     }
 
     void getOrder() {
-
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/transaction/Me?StartDate=%s&EndDate=%s&Page=%s&PageSize=10",
-                dateFormat.format(from), dateFormat.format(to), ++page), 0);
+                dateFormat.format(viewModel.from), dateFormat.format(viewModel.to), ++page), 0);
     }
 }

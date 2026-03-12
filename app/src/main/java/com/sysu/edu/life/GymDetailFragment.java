@@ -25,6 +25,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.DialogGymReservationBinding;
 import com.sysu.edu.databinding.FragmentGymDetailBinding;
@@ -32,33 +33,25 @@ import com.sysu.edu.databinding.ItemDateBinding;
 import com.sysu.edu.databinding.ItemFieldDetailBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 public class GymDetailFragment extends Fragment {
 
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    //int position = 0;
     final MutableLiveData<Integer> position = new MutableLiveData<>();
+    HttpManager http;
     GymReservationViewModel viewModel;
-    Handler handler;
-    int availableCapacity = 0;
-    HashMap<String, JSONObject> fee;
+    HashMap<String, JSONObject> fee = new HashMap<>();
     String id;
 
     @Override
@@ -98,61 +91,56 @@ public class GymDetailFragment extends Fragment {
             if (p != null) getInfo(id, date.getFormattedDate(p), date.getFormattedDate(p));
         });
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-        handler = new Handler(Looper.getMainLooper()) {
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
-                if (!msg.getData().getBoolean("isJson")) {
-                    params.toast(R.string.educational_wifi_warning);
-                    return;
-                }
-                switch (msg.what) {
-                    case 0:
-                        field.clear();
-                        availableCapacity = 0;
-                        MutableLiveData<Boolean> name = new MutableLiveData<>(false);
-                        Objects.requireNonNull(JSONArray.parse(msg.getData().getString("data"))).forEach(e -> {
-                            JSONObject response = (JSONObject) e;
-                            JSONArray timeslots = response.getJSONArray("Timeslots");
-                            if (timeslots != null) {
-                                gridLayoutManager.setSpanCount(timeslots.size() + 1);
-                                if (Boolean.FALSE.equals(name.getValue())) {
-                                    field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
-                                    timeslots.forEach(o -> field.add(new JSONObject().fluentPut("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End"))).fluentPut("Type", 2)));
-                                    //binding.field.setText(String.format("%d/%d", availableCapacity, timeslots.size()));
-                                    name.setValue(true);
+                if (msg.what == -1) {
+                    params.toast(R.string.no_wifi_warning);
+                } else if (msg.getData().getBoolean("isJSON")) {
+//                    System.out.println(msg.getData().getString("data"));
+                    switch (msg.what) {
+                        case 0:
+                            field.clear();
+                            AtomicInteger availableCapacity = new AtomicInteger();
+                            MutableLiveData<Boolean> name = new MutableLiveData<>(false);
+                            Objects.requireNonNull(JSONArray.parse((String) msg.obj)).forEach(e -> {
+                                JSONObject item = (JSONObject) e;
+                                JSONArray timeslots = item.getJSONArray("Timeslots");
+                                if (timeslots != null) {
+                                    gridLayoutManager.setSpanCount(timeslots.size() + 1);
+                                    if (Boolean.FALSE.equals(name.getValue())) {
+                                        field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
+                                        timeslots.forEach(o -> field.add(new JSONObject().fluentPut("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End"))).fluentPut("Type", 2)));
+                                        name.setValue(true);
+                                    }
+                                    String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll("");
+                                    field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
+                                    timeslots.forEach(o -> {
+                                        JSONObject jsonObject = (JSONObject) o;
+                                        field.add(jsonObject.fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
+                                        int capacity = Integer.parseInt(jsonObject.getString("AvailableCapacity"));
+                                        if (capacity > 0)
+                                            availableCapacity.addAndGet(capacity);
+                                    });
+                                    if (position.getValue() != null)
+                                        date.setAvailableCapacity(position.getValue(), availableCapacity.get());
                                 }
-                                String fieldName = Pattern.compile("(.+)-").matcher(response.getString("VenueName")).replaceAll("");
-                                field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
-                                timeslots.forEach(o -> {
-                                    JSONObject jsonObject = (JSONObject) o;
-                                    field.add(jsonObject.fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
-                                    int capacity = Integer.parseInt(jsonObject.getString("AvailableCapacity"));
-                                    if (capacity > 0)
-                                        availableCapacity++;
-                                });
-                                if (position.getValue() != null)
-                                    date.setAvailableCapacity(position.getValue(), availableCapacity);
-                            }
-                        });
-                        getFee(id);
-                        break;
-                    case 1:
-                        fee = new HashMap<>();
-                        JSONArray feeTemplates = JSONArray.parse(msg.getData().getString("data"));
-                        if (feeTemplates != null) {
-                            feeTemplates.forEach(e -> {
-                                JSONObject feeTemplate = (JSONObject) e;
-                                fee.put(feeTemplate.getString("UserRole"), feeTemplate);
                             });
-                        }
-                        break;
-                    case -1:
-                        params.toast(R.string.no_wifi_warning);
-                        break;
+                            getFee(id);
+                            break;
+                        case 1:
+                            fee.clear();
+                            JSONArray feeTemplates = JSONArray.parse(msg.getData().getString("data"));
+                            if (feeTemplates != null)
+                                feeTemplates.forEach(e -> fee.put(((JSONObject) e).getString("UserRole"), (JSONObject) e));
+                            break;
+                    }
+                } else {
+                    params.toast(R.string.educational_wifi_warning);
                 }
             }
-        };
+        });
         if (position.getValue() == null) {
             position.postValue(0);
         }
@@ -161,33 +149,16 @@ public class GymDetailFragment extends Fragment {
             if (!b)
 
         });*/
+        http.setParams(params);
+        http.setUA(viewModel.ua);
+        http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
         return binding.getRoot();
     }
 
     void sendRequest(String url, int what) {
-        http.newCall(new Request.Builder()
-                .url(url)
-                .header("Accept", "application/json, text/plain, */*")
-                .header("Cookie", viewModel.cookie)
-                .header("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
-                .header("User-Agent", viewModel.ua)
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                handler.sendEmptyMessage(-1);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message message = new Message();
-                message.what = what;
-                Bundle data = new Bundle();
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json"));
-                data.putString("data", response.body().string());
-                message.setData(data);
-                handler.sendMessage(message);
-            }
-        });
+        http.setAuthorization(viewModel.authorization.getValue());
+        http.setCookie(viewModel.cookie);
+        http.getRequest(url, what);
     }
 
     void getInfo(String id, String from, String to) {
@@ -226,8 +197,7 @@ public class GymDetailFragment extends Fragment {
                     if (!Objects.equals(string, "null")) {
                         JSONArray tokenArray = JSONArray.parse(string);
                         if (tokenArray != null && tokenArray.size() == 2) {
-
-                            //System.out.println(tokenArray);
+                            System.out.println(tokenArray);
 //                                viewModel.token = tokenArray.getString(0);
 //                                viewModel.authorization = tokenArray.getString(1);
                         }

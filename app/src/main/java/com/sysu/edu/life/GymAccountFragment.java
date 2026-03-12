@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
@@ -36,17 +37,19 @@ public class GymAccountFragment extends Fragment {
 
     HttpManager http;
     GymReservationViewModel viewModel;
+    RecyclerViewScrollBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
+        binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
         ConcatAdapter concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
-//        binding.recyclerView.setBackground(new ColorDrawable(params.getColorFromAttr(com.google.android.material.R.attr.colorSurfaceBright)));
+        ContextUtil contextUtils = new ContextUtil(requireContext());
+        binding.recyclerView.setBackgroundColor(contextUtils.getColorFromAttr(com.google.android.material.R.attr.colorSurfaceContainer));
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -60,12 +63,12 @@ public class GymAccountFragment extends Fragment {
                             case 0 -> {
                                 JSONObject json = JSONObject.parseObject((String) msg.obj);
                                 PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
-                                preferenceAdapter.set(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id, R.string.sport_credit, R.string.wallet), extractValue(json, new String[]{"Type", "Name", "HostKey", "UserId", "Credits", "CashWallet"}), List.of(R.drawable.help), requireContext());
+                                preferenceAdapter.set(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id), extractValue(json, new String[]{"Type", "Name", "HostKey", "UserId"}), List.of(R.drawable.help,R.drawable.text,R.drawable.school,R.drawable.id), requireContext());
                                 concatAdapter.addAdapter(new TitleAdapter(getString(R.string.account)));
                                 concatAdapter.addAdapter(preferenceAdapter);
 
                                 PreferenceAdapter cashAdapter = new PreferenceAdapter();
-                                cashAdapter.set(List.of(R.string.sport_credit, R.string.wallet), extractValue(json, new String[]{"Credits", "CashWallet"}), List.of(R.drawable.money, R.drawable.money), requireContext());
+                                cashAdapter.set(List.of(R.string.sport_credit, R.string.wallet), extractValue(json, new String[]{"Credits", "CashWallet"}), List.of(R.drawable.dashboard, R.drawable.money), requireContext());
                                 concatAdapter.addAdapter(new TitleAdapter(getString(R.string.wallet)));
                                 concatAdapter.addAdapter(cashAdapter);
 
@@ -106,7 +109,6 @@ public class GymAccountFragment extends Fragment {
         http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
         http.setAuthorization(viewModel.authorization.getValue());
-//        getAccount();
 
         viewModel.loginRequired.observe(getViewLifecycleOwner(), b -> {
             System.out.println("loginRequired: " + b);

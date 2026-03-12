@@ -95,7 +95,7 @@ public class GridDialog {
     }
 
     public MaterialButton getMenu(int position) {
-        if (referenceIds == null || position >= referenceIds.size() || position < 0)
+        if (position >= referenceIds.size() || position < 0)
             return null;
         return menuBinding.grid.findViewById(referenceIds.get(position));
     }

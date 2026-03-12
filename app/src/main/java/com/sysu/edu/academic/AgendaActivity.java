@@ -50,7 +50,7 @@ public class AgendaActivity extends AppCompatActivity {
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                System.out.println(msg.obj);
+//                System.out.println(msg.obj);
                 super.handleMessage(msg);
                 if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
@@ -80,7 +80,7 @@ public class AgendaActivity extends AppCompatActivity {
             }
         });
         http.setParams(params);
-        http.setTarget(TargetUrl.PORTAL);
+        http.setTarget("https://mportal.sysu.edu.cn");
         getAgenda();
         binding.calendarView.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override

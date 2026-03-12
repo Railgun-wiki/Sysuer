@@ -117,11 +117,11 @@ public class GymReservationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ActivityGymPreservationBinding binding = ActivityGymPreservationBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        NavHostFragment fragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.content);
+        NavHostFragment fragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         NavController navController = Objects.requireNonNull(fragment).getNavController();
         NavigationUI.setupWithNavController(binding.toolbar, navController, new AppBarConfiguration.Builder().setFallbackOnNavigateUpListener(() -> {
             supportFinishAfterTransition();
-            return true;
+            return false;
         }).build());
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
         viewModel = new ViewModelProvider(this).get(GymReservationViewModel.class);

@@ -2,12 +2,15 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:background="?colorSurfaceContainer"
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.helper.widget.Flow
         android:id="@+id/top"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         app:constraint_referenced_ids="from,between,to"
         app:flow_wrapMode="chain2"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -24,7 +27,7 @@
         android:id="@+id/between"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="~" />
+        android:text="@string/between" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/to"
@@ -32,18 +35,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider"
+        style="@style/Widget.Material3.MaterialDivider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?colorSurfaceBright"
+        android:layout_height="0dp"
         app:fastScrollEnabled="true"
         app:fastScrollHorizontalThumbDrawable="@drawable/thumb"
         app:fastScrollHorizontalTrackDrawable="@drawable/track"
         app:fastScrollVerticalThumbDrawable="@drawable/thumb"
         app:fastScrollVerticalTrackDrawable="@drawable/track"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top" />
+        app:layout_constraintTop_toBottomOf="@id/divider" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
