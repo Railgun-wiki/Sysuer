@@ -40,6 +40,7 @@ import com.sysu.edu.template.RecyclerAdapter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 public class NewsFragment extends Fragment {
 
@@ -95,11 +96,19 @@ public class NewsFragment extends Fragment {
                         }
                         return;
                     }
-//                    System.out.println(json);
-                    JSONObject data = JSONObject.parseObject(json);
+//                    System.out.println(json.replace("\\\"", ""));
+//                    JSONObject data = JSONObject.parseObject(json, JSONObject.class, JSONReader.Feature.NullOnError);
                     if (msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
                     } else {
+//                        JSONObject data;// = JSONReader.of(json).readJSONObject();
+//                        JSONReader.Context context = new JSONReader.Context();
+//                        context.setBufferSize(1024 * 1024);       // 输入缓冲区 1MB
+//                        context.set // 允许任意长度字符串
+//                        new JSONReader.Context().setBufferSize(1024 * 1024);
+//                        try (JSONReader reader = JSONReader.of(json)) {
+//                            data = reader.readJSONObject();
+                        JSONObject data = JSONObject.parseObject(json.replaceAll(Matcher.quoteReplacement("\"summary\":\".+?[^\\]\""), "\"summary\":\"\"").replaceAll(Matcher.quoteReplacement("\"html\":\".+?[^\\]\""), "\"html\":\"\""));
                         Integer code = data.getInteger("code");
                         JSONObject response = null;
                         if (msg.what != 3) response = data.getJSONObject("data");
@@ -127,7 +136,6 @@ public class NewsFragment extends Fragment {
                                             image = cover.getJSONObject(0).getString("outLink");
                                         newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
                                     });
-                                    //
                                     break;
                                 case 4:
                                     response.getJSONArray("records").forEach(e -> {
@@ -158,8 +166,8 @@ public class NewsFragment extends Fragment {
                             params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                         }
                     } //今日中大
-
                 }
+//                }
             });
             http.setAuthorizationRequired(true);
             http.setParams(params);
@@ -192,7 +200,8 @@ public class NewsFragment extends Fragment {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+            return new RecyclerView.ViewHolder(ItemNewsBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+            };
         }
 
         @Override

@@ -114,7 +114,6 @@ public class LoginManager {
                     cookieJar.saveFromResponse(HttpUrl.get(service), webvpn);
                     cookieJar.saveFromResponse(HttpUrl.get("https://cas-443.webvpn.sysu.edu.cn"), webvpn);
                     login("/esc-sso/login?service=" + service);
-
                     if (Objects.equals(service, TargetUrl.XGXT_WEBVPN))
                         client.newCall(new Request.Builder().url("https://xgxt-443.webvpn.sysu.edu.cn/sso/login?realm=sysuRealm&ticket=" + ticket + "&service=" + service)
                                 .post(RequestBody.create("", MediaType.parse("application/x-www-form-urlencoded")))
@@ -180,10 +179,10 @@ public class LoginManager {
                 requestCookies = cookies.stream().filter(currentCookie -> !currentCookie.value().isEmpty()).collect(Collectors.toList());
             return requestCookies;
         }
-
-        public CookieManager getCookieManager() {
-            return cookieManager;
-        }
+//
+//        public CookieManager getCookieManager() {
+//            return cookieManager;
+//        }
     }
 }
 
