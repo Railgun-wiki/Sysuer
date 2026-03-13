@@ -146,7 +146,7 @@ public class HttpManager {
         cookieManager.flush();
         if (target != null && cookieManager.getCookie(target) != null) {
             request.header("Cookie", cookieManager.getCookie(target));
-            System.out.println("sendRequest: " + cookieManager.getCookie(target));
+//            System.out.println("sendRequest: " + cookieManager.getCookie(target));
         } else if (cookieManager.getCookie(url) != null) {
             request.header("Cookie", cookieManager.getCookie(url));
         }

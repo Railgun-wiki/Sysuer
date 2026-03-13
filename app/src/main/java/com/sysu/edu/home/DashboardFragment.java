@@ -108,7 +108,7 @@ public class DashboardFragment extends Fragment {
     ServiceFragment.CollectionAdapter collectionAdapter;
     BottomSheetDialog actionDialog;
     DialogServiceActionBinding actionBinding;
-    MutableLiveData<String> todoDate = new MutableLiveData<>("");
+    final MutableLiveData<String> todoDate = new MutableLiveData<>("");
     private TodoManager todoManager;
 
 

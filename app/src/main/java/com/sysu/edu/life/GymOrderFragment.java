@@ -40,7 +40,7 @@ public class GymOrderFragment extends Fragment {
 
     HttpManager http;
     GymReservationViewModel viewModel;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private int total = -1;
     private int page = 0;
     private ConcatAdapter concatAdapter;

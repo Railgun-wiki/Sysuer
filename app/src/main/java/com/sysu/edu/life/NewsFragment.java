@@ -49,7 +49,7 @@ public class NewsFragment extends Fragment {
     RecyclerViewScrollBinding binding;
     int page = 1;
     Runnable run;
-    AuthorizationManager authorizationManager;
+    final AuthorizationManager authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
 
     public NewsFragment(int pos) {
         this.position = pos;
@@ -61,7 +61,6 @@ public class NewsFragment extends Fragment {
         if (savedInstanceState == null) {
             binding = RecyclerViewScrollBinding.inflate(inflater);
             Params params = new Params(this);
-            authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
             params.setCallback(() -> run.run());
             binding.recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), params.getColumn()));
             binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -78,7 +77,7 @@ public class NewsFragment extends Fragment {
                 public void handleMessage(@NonNull Message msg) {
                     boolean isJSON = msg.getData().getBoolean("isJSON");
                     String json = (String) msg.obj;
-                    if (json == null) {
+                    if (json == null || msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
                         return;
                     }
@@ -96,82 +95,80 @@ public class NewsFragment extends Fragment {
                         }
                         return;
                     }
-//                    System.out.println(json.replace("\\\"", ""));
-//                    JSONObject data = JSONObject.parseObject(json, JSONObject.class, JSONReader.Feature.NullOnError);
-                    if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
-                    } else {
-//                        JSONObject data;// = JSONReader.of(json).readJSONObject();
-//                        JSONReader.Context context = new JSONReader.Context();
-//                        context.setBufferSize(1024 * 1024);       // 输入缓冲区 1MB
-//                        context.set // 允许任意长度字符串
-//                        new JSONReader.Context().setBufferSize(1024 * 1024);
-//                        try (JSONReader reader = JSONReader.of(json)) {
-//                            data = reader.readJSONObject();
-                        JSONObject data = JSONObject.parseObject(json.replaceAll(Matcher.quoteReplacement("\"summary\":\".+?[^\\]\""), "\"summary\":\"\"").replaceAll(Matcher.quoteReplacement("\"html\":\".+?[^\\]\""), "\"html\":\"\""));
-                        Integer code = data.getInteger("code");
-                        JSONObject response = null;
-                        if (msg.what != 3) response = data.getJSONObject("data");
-                        if (code == 10000) {
-                            switch (msg.what) {
-                                case 2:
-                                    response.getJSONArray("records").forEach(e -> {
-                                        JSONObject item = (JSONObject) e;
-                                        JSONArray cover = item.getJSONArray("coversPicList");
-                                        String image = "";
-                                        if (cover != null && !cover.isEmpty()) {
-                                            if (cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
-                                                image = cover.getJSONObject(0).getString("outLink");
-                                        }
-                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
-                                    });
-                                    //
-                                    break;
-                                case 3:
-                                    data.getJSONArray("data").forEach(e -> {
-                                        JSONObject item = (JSONObject) e;
-                                        JSONArray cover = item.getJSONArray("coversPicList");
-                                        String image = "";
-                                        if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
+                    JSONObject data = JSONObject.parseObject(json.replaceAll(Matcher.quoteReplacement("\"summary\":\".+?[^\\]\""), "\"summary\":\"\"").replaceAll(Matcher.quoteReplacement("\"html\":\".+?[^\\]\""), "\"html\":\"\""));
+                    Integer code = data.getInteger("code");
+                    JSONObject response = null;
+                    if (msg.what != 3) response = data.getJSONObject("data");
+                    if (code == 10000) {
+                        switch (msg.what) {
+                            case 2:
+                                response.getJSONArray("records").forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    JSONArray cover = item.getJSONArray("coversPicList");
+                                    String image = "";
+                                    if (cover != null && !cover.isEmpty()) {
+                                        if (cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
                                             image = cover.getJSONObject(0).getString("outLink");
-                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
-                                    });
-                                    break;
-                                case 4:
-                                    response.getJSONArray("records").forEach(e -> {
-                                        JSONObject item = (JSONObject) e;
-                                        JSONArray cover = item.getJSONArray("coversPicList");
-                                        String image = "";
-                                        if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
-                                            image = cover.getJSONObject(0).getString("outLink");
-                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
-                                    });
-                                    //通知
-                                    break;
-                                case 5:
-                                    response.getJSONArray("records").forEach(e -> {
-                                        JSONObject item = (JSONObject) e;
-                                        JSONArray cover = item.getJSONArray("coversPicList");
-                                        String image = "";
-                                        if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
-                                            image = cover.getJSONObject(0).getString("outLink");
-                                        newsAdapter.add(item.getString("title"), image, item.getString("url"), item.getString("createTime"), item.getJSONObject("source").getString("seedName"));
-                                    });
-                                    break;
-                            }
-                        } else if (code == 10003) {
-                            params.toast(code + " " + data.getString("message"));
-                        } else if (code == 496 || code == 497) {
-                            params.toast(data.getString("message"));
-                            params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                                    }
+                                    String title = item.getString("title");
+                                    String url = item.getString("url");
+                                    String time = item.getString("createTime");
+                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
+                                });
+                                //
+                                break;
+                            case 3:
+                                data.getJSONArray("data").forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    JSONArray cover = item.getJSONArray("coversPicList");
+                                    String image = "";
+                                    if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
+                                        image = cover.getJSONObject(0).getString("outLink");
+                                    String title = item.getString("title");
+                                    String url = item.getString("url");
+                                    String time = item.getString("createTime");
+                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
+                                });
+                                break;
+                            case 4:
+                                response.getJSONArray("records").forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    JSONArray cover = item.getJSONArray("coversPicList");
+                                    String image = "";
+                                    if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
+                                        image = cover.getJSONObject(0).getString("outLink");
+                                    String title = item.getString("title");
+                                    String url = item.getString("url");
+                                    String time = item.getString("createTime");
+                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
+                                });
+                                //通知
+                                break;
+                            case 5:
+                                response.getJSONArray("records").forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    JSONArray cover = item.getJSONArray("coversPicList");
+                                    String image = "";
+                                    if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
+                                        image = cover.getJSONObject(0).getString("outLink");
+                                    String title = item.getString("title");
+                                    String url = item.getString("url");
+                                    String time = item.getString("createTime");
+                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
+                                });
+                                break;
                         }
-                    } //今日中大
-                }
-//                }
+                    } else if (code == 10003) {
+                        params.toast(code + " " + data.getString("message"));
+                        params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                    } else if (code == 496 || code == 497) {
+                        params.toast(data.getString("message"));
+                        params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                    }
+                } //今日中大
             });
             http.setAuthorizationRequired(true);
             http.setParams(params);
-            http.setTarget(TargetUrl.NEWS);
         }
         run = List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position);
         run.run();
@@ -221,10 +218,8 @@ public class NewsFragment extends Fragment {
                         .timeout(30000)
                         .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))
                         .into(binding.image);
+            super.onBindViewHolder(holder, position);
         }
 
-        void add(String title, String image, String url, String time, String source) {
-            add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", source)));
-        }
     }
 }

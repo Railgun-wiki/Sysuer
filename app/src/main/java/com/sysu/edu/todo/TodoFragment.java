@@ -29,7 +29,7 @@ public class TodoFragment extends Fragment {
 
     final androidx.recyclerview.widget.ConcatAdapter concatAdapter = new androidx.recyclerview.widget.ConcatAdapter(new androidx.recyclerview.widget.ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
     FragmentTodoBinding binding;
-    TodoInfo todoInfo = new TodoInfo();
+    final TodoInfo todoInfo = new TodoInfo();
     String date;
     boolean due = true;
     boolean ddl = false;

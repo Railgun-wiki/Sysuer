@@ -3,6 +3,22 @@
   <component name="JsonSchemaMappingsProjectConfiguration">
     <state>
       <map>
+        <entry key="Language configuration">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="Language configuration" />
+              <option name="relativePathToSchema" value="https://www.schemastore.org/language-configuration.json" />
+              <option name="applicationDefined" value="true" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value="app/src/main/assets/textmate/javascript/language-configuration.json" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
         <entry key="无 JSON 架构">
           <value>
             <SchemaInfo>

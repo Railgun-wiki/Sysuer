@@ -51,7 +51,7 @@ public class GymDetailFragment extends Fragment {
     final MutableLiveData<Integer> position = new MutableLiveData<>();
     HttpManager http;
     GymReservationViewModel viewModel;
-    HashMap<String, JSONObject> fee = new HashMap<>();
+    final HashMap<String, JSONObject> fee = new HashMap<>();
     String id;
 
     @Override

@@ -125,6 +125,10 @@ public class Params {
         return sharedPreferences.getString("authorization", "");
     }
 
+    public void setAuthorization(String auth) {
+        sharedPreferences.edit().putString("authorization", auth).apply();
+    }
+
     /**
      * 获取用户名
      *
@@ -253,7 +257,7 @@ public class Params {
      */
     public void gotoLogin(View view, String url) {
         System.out.println(url);
-        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN).contains(url)) {
+        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN, TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS).contains(url)) {
             login(url);
             return;
         }
@@ -317,7 +321,9 @@ public class Params {
             return;
         }
         try {
-            if (new LoginManager().login(getUserName(), getPassword(), url))
+            LoginManager loginManager = new LoginManager();
+            loginManager.setParams(this);
+            if (loginManager.login(getUserName(), getPassword(), url))
                 afterLogin.run();
         } catch (ExecutionException | InterruptedException _) {
         }
@@ -332,5 +338,4 @@ public class Params {
     private void gotoLogin(View view, Intent intent) {
         launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
     }
-
 }

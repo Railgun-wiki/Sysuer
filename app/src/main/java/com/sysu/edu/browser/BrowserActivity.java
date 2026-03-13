@@ -518,7 +518,7 @@ public class BrowserActivity extends AppCompatActivity {
     }
 
     void setPrivacyMode(boolean enabled) {
-        webSettings.setSaveFormData(!enabled);
+//        webSettings.setSaveFormData(!enabled);
         webSettings.setDomStorageEnabled(!enabled);
         webSettings.setDatabaseEnabled(!enabled);
         webSettings.setAllowFileAccess(!enabled);
