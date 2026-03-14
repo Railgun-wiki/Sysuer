@@ -41,6 +41,7 @@ import androidx.work.WorkManager;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationBarView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.sysu.edu.academic.AcademyNotification;
 import com.sysu.edu.academic.AgendaActivity;
 import com.sysu.edu.academic.AssistantEvaluationActivity;
@@ -80,6 +81,9 @@ import com.sysu.edu.life.Pay;
 import com.sysu.edu.life.SchoolBusActivity;
 import com.sysu.edu.studentAffair.StudentPartTimeActivity;
 import com.sysu.edu.todo.TodoActivity;
+import com.sysu.edu.widget.NextClassWidget;
+import com.sysu.edu.widget.NextClassWidgetWorker;
+import com.sysu.edu.widget.TodayClassWidget;
 
 import java.io.File;
 import java.util.Date;
@@ -102,10 +106,12 @@ public class MainActivity extends AppCompatActivity {
     Params params;
     HttpManager http;
     String path;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
@@ -258,7 +264,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException _) {
         }
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        appWidgetManager.updateAppWidget(new ComponentName(this, ClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_init));
+        appWidgetManager.updateAppWidget(new ComponentName(this, NextClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_next_class));
+        appWidgetManager.updateAppWidget(new ComponentName(this, TodayClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
     }
 
     @Override
@@ -274,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
     void beginClassNotificationWorker(Date target) {
         WorkManager.getInstance(getApplicationContext())
                 .enqueueUniqueWork("next_class_widget_update",
-                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(NextClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
 
 
     }

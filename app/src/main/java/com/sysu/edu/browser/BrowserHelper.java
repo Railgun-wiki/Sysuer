@@ -14,7 +14,7 @@ public class BrowserHelper extends SQLiteOpenHelper {
     private final Context context;
 
     public BrowserHelper(Context context) {
-        super(context, "browser.db", null, 9);
+        super(context, "browser.db", null, 10);
         this.context = context;
     }
 
@@ -55,17 +55,21 @@ public class BrowserHelper extends SQLiteOpenHelper {
             value.put("script", "['.sys-header','.sys-footer','.ant-breadcrumb'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelectorAll('col').forEach(element=>{element.style.minWidth = \"0px\";});document.querySelector('.stu-con').style.padding='0px';");
             db.insert("js", null, value);
         }
-        if (oldVersion < 6) {
+        if (oldVersion < 10) {
             ContentValues value = new ContentValues();
+            value.put("title", "美化");
             value.put("description", "教务系统主页去除无用元素，包括头部、底部、调查问卷");
-            value.put("script", "['.sys-header','.sys-footer','.invest2'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelectorAll('col').forEach(element=>{element.style.minWidth = \"0px\";});document.querySelector('.ant-layout-content').style.paddingTop='0px';");
-            db.update("js", value, "matches LIKE  ?", new String[]{"%://jwxt.sysu.edu.cn/jwxt/#/student%"});
+            value.put("author", "SYSU-Tang");
+            value.put("matches", "[\"://jwxt.sysu.edu.cn/jwxt/#/student\"]");
+            value.put("script", "['.sys-header','.sys-footer','.invest2'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelectorAll('.noPaddingTd col').forEach(element=>{element.style.minWidth = \"0px\";});document.querySelector('.ant-layout-content').style.paddingTop='0px';");
+            db.insert("js", null, value);
         }
         if (oldVersion < 9) {
             ContentValues value = new ContentValues();
             value.put("script", "['.sys-header','.sys-footer','.ant-breadcrumb','.ant-tabs-bar'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelectorAll('col').forEach(element=>{element.style.minWidth = \"0px\";});document.querySelector('.stu-con').style.padding='0px';");
             db.update("js", value, "matches LIKE  ?", new String[]{"%personalTrainingProgramView%"});
         }
+
     }
 
     public Context getContext() {

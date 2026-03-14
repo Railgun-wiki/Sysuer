@@ -3,8 +3,10 @@ package com.sysu.edu.home;
 import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.trim;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ShortcutManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +19,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.pm.ShortcutInfoCompat;
+import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.core.graphics.drawable.IconCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
@@ -188,7 +193,34 @@ public class ServiceFragment extends Fragment {
         MutableLiveData<Boolean> isServiceCollected = new MutableLiveData<>(db.isServiceCollected(itemId));
         MutableLiveData<Boolean> isShortcutCollected = new MutableLiveData<>(db.isDashboardShortcutCollected(itemId));
         actionBinding.collect.setText(Boolean.TRUE.equals(isServiceCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
-        actionBinding.addShortcut.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_shortcut);
+        actionBinding.addToDashboard.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_to_dashboard);
+        actionBinding.addToLauncher.setOnClickListener(_->{
+            ShortcutManager shortcutManager = requireContext().getSystemService(ShortcutManager.class);
+//            ShortcutManagerCompat shortcutManagerCompat = ShortcutManagerCompat.(requireContext());
+            if (ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext())) {
+                // Enable the existing shortcut with the ID "my-shortcut".
+                ShortcutInfoCompat pinShortcutInfo = new ShortcutInfoCompat.Builder(requireContext(), String.valueOf(itemId))
+                        .setShortLabel(item.getString("name"))
+                        .setLongLabel(item.getString("name"))
+                        .setIcon(IconCompat.createWithResource(requireContext(), R.mipmap.icon))
+//                        .setActivity(new ComponentName(requireContext(), MainActivity.class))
+                        .setIntent(new Intent(requireContext(), BrowserActivity.class).setAction(Intent.ACTION_VIEW).setData(Uri.parse(trim(item.getString("url")))))
+                        .build();
+
+                // Create the PendingIntent object only if your app needs to be notified
+                // that the user let the shortcut be pinned. If the pinning operation fails,
+                // your app isn't notified. Assume here that the app implements a method
+                // called createShortcutResultIntent() that returns a broadcast intent.
+                Intent pinnedShortcutCallbackIntent = ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo);
+
+                // Configure the intent so that your app's broadcast receiver gets the
+                // callback successfully. For details, see PendingIntent.getBroadcast().
+                PendingIntent successCallback = PendingIntent.getBroadcast(requireContext(), /* request code */ 0, pinnedShortcutCallbackIntent, /* flags */ PendingIntent.FLAG_IMMUTABLE);
+                ShortcutManagerCompat.requestPinShortcut(requireContext(), pinShortcutInfo, successCallback.getIntentSender());
+            }else{
+
+            }
+        });
         actionBinding.collect.setOnClickListener(_ -> {
             boolean isServiceCollect = Boolean.TRUE.equals(isServiceCollected.getValue());
             if (isServiceCollect) {
@@ -202,7 +234,7 @@ public class ServiceFragment extends Fragment {
             actionBinding.collect.setText(isServiceCollect ? R.string.collect : R.string.cancel_collect);
             isServiceCollected.setValue(!isServiceCollect);
         });
-        actionBinding.addShortcut.setOnClickListener(_ -> {
+        actionBinding.addToDashboard.setOnClickListener(_ -> {
             boolean isShortcutCollect = Boolean.TRUE.equals(isShortcutCollected.getValue());
             if (isShortcutCollect) {
                 db.deleteDashboardShortcut(itemId);
@@ -212,7 +244,7 @@ public class ServiceFragment extends Fragment {
                 params.toast(R.string.add_shortcut_success);
             }
             viewModel.updateDashboardShortcut.setValue(true);
-            actionBinding.addShortcut.setText(isShortcutCollect ? R.string.add_shortcut : R.string.cancel_add_shortcut);
+            actionBinding.addToDashboard.setText(isShortcutCollect ? R.string.add_to_dashboard : R.string.cancel_add_shortcut);
             isShortcutCollected.setValue(!isShortcutCollect);
         });
         actionBinding.feedback.setOnClickListener(_ -> startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(String.format("https://github.com/%s/%s/issues/new?title=反馈：服务->%s&labels=bug,crash-report", "SYSU-Tang", "Sysuer", item.getString("name")))).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
@@ -228,12 +260,11 @@ public class ServiceFragment extends Fragment {
                 super.configureSpansFactory(builder);
                 builder.appendFactory(Heading.class, (_, configuration) -> {
                     if (CoreProps.HEADING_LEVEL.require(configuration) == 3)
-                        return new ForegroundColorSpan(contextUtil.getColorFromAttr(com.google.android.material.R.attr.colorPrimaryContainer));
+                        return new ForegroundColorSpan(contextUtil.getColorFromAttr(androidx.appcompat.R.attr.colorPrimary));
                     return null;
                 });
                 builder.appendFactory(Heading.class, (_, _) -> new LastLineSpacingSpan(24));
             }
-
 
             @Override
             public void configureVisitor(@NonNull MarkwonVisitor.Builder builder) {

@@ -42,6 +42,8 @@ inlineParser = "4.6.2"
 okhttpJavaNetCookiejar = "5.3.2"
 uiManifest = "1.10.4"
 languageTextmate = "0.24.4"
+coreRemoteviews = "1.0.0-beta03"
+coreRemoteviewsVersion = "1.1.0"
 
 [libraries]
 api = { module = "dev.rikka.shizuku:api", version.ref = "api" }
@@ -99,6 +101,8 @@ recycler = { group = "io.noties.markwon", name = "recycler", version.ref = "recy
 recycler-table = { group = "io.noties.markwon", name = "recycler-table", version.ref = "recyclerTable" }
 inline-parser = { group = "io.noties.markwon", name = "inline-parser", version.ref = "inlineParser" }
 okhttp-java-net-cookiejar = { group = "com.squareup.okhttp3", name = "okhttp-java-net-cookiejar", version.ref = "okhttpJavaNetCookiejar" }
+core-remoteviews = { group = "androidx.core", name = "core-remoteviews", version.ref = "coreRemoteviews" }
+androidx-core-remoteviews = { group = "androidx.core", name = "core-remoteviews", version.ref = "coreRemoteviewsVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

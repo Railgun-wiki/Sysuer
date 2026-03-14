@@ -91,6 +91,8 @@ dependencies {
     implementation(libs.recycler)
     implementation(libs.recycler.table)
     implementation(libs.inline.parser)
+//    implementation(libs.core.remoteviews)
+    implementation(libs.androidx.core.remoteviews)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

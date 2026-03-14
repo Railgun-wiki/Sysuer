@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.BIND_SHORTCUT"/>
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> <!-- <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> -->
     <queries>
         <package android:name="com.tencent.wework" />
@@ -222,7 +225,8 @@
             android:name=".academic.CourseScheduleActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize">
+        </activity>
         <activity
             android:name=".browser.BrowserActivity"
             android:configChanges="orientation|screenSize"
@@ -248,9 +252,10 @@
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
 
         <activity-alias
@@ -262,9 +267,10 @@
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".MainActivityLight"
@@ -275,9 +281,10 @@
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".MainActivityDefault"
@@ -288,9 +295,10 @@
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity-alias>
 
         <receiver android:name=".AlarmReceiver" />
@@ -313,17 +321,37 @@
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
         <receiver
-            android:name=".ClassWidget"
+            android:name=".widget.NextClassWidget"
             android:exported="false"
-            android:icon="@drawable/widget_next_class"
             android:label="@string/next_class">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/class_widget" />
+                android:resource="@xml/widget_next_class" />
+        </receiver>
+        <receiver
+            android:name=".widget.TodayClassWidget"
+            android:exported="false"
+            android:label="@string/today_class">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_today_class" />
+        </receiver>
+        <receiver
+            android:name=".widget.RecentClassWidget"
+            android:exported="false"
+            android:label="@string/recent_class">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_recent_class" />
         </receiver>
     </application>
-
 </manifest>

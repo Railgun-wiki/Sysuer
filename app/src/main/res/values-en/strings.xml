@@ -481,7 +481,7 @@
     <string name="cancel_collect">Uncollected</string>
     <string name="cancel_collect_success">Succeed Being Uncollected</string>
     <string name="service_order">Order</string>
-    <string name="add_shortcut">Add to Dashboard</string>
+    <string name="add_to_dashboard">Add to Dashboard</string>
     <string name="cancel_add_shortcut_success">Succeed Removing from Dashboard</string>
     <string name="add_shortcut_success">Succeed Adding to Dashboard</string>
     <string name="cancel_add_shortcut">Remove from Dashboard</string>
