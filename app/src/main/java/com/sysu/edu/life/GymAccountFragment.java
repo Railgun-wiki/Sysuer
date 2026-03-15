@@ -25,6 +25,7 @@ import com.sysu.edu.R;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
@@ -32,6 +33,7 @@ import com.sysu.edu.todo.info.TitleAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class GymAccountFragment extends Fragment {
 
@@ -48,6 +50,7 @@ public class GymAccountFragment extends Fragment {
         ConcatAdapter concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
+        params.setCallback(this::getAccount);
         ContextUtil contextUtils = new ContextUtil(requireContext());
         binding.recyclerView.setBackgroundColor(contextUtils.getColorFromAttr(com.google.android.material.R.attr.colorSurfaceContainer));
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
@@ -58,12 +61,13 @@ public class GymAccountFragment extends Fragment {
                     params.toast(R.string.no_wifi_warning);
                     // 处理错误
                 } else {
+                    String response = (String) msg.obj;
                     if (msg.getData().getBoolean("isJSON")) {
                         switch (msg.what) {
                             case 0 -> {
-                                JSONObject json = JSONObject.parseObject((String) msg.obj);
+                                JSONObject json = JSONObject.parseObject(response);
                                 PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
-                                preferenceAdapter.set(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id), extractValue(json, new String[]{"Type", "Name", "HostKey", "UserId"}), List.of(R.drawable.help,R.drawable.text,R.drawable.school,R.drawable.id), requireContext());
+                                preferenceAdapter.set(List.of(R.string.type, R.string.name, R.string.student_id, R.string.net_id), extractValue(json, new String[]{"Type", "Name", "HostKey", "UserId"}), List.of(R.drawable.help, R.drawable.text, R.drawable.school, R.drawable.id), requireContext());
                                 concatAdapter.addAdapter(new TitleAdapter(getString(R.string.account)));
                                 concatAdapter.addAdapter(preferenceAdapter);
 
@@ -81,7 +85,7 @@ public class GymAccountFragment extends Fragment {
 
                                 getSwimmer();
                             }
-                            case 1 -> JSONArray.parseArray((String) msg.obj).forEach(i -> {
+                            case 1 -> JSONArray.parseArray(response).forEach(i -> {
                                 JSONObject item = (JSONObject) i;
                                 PreferenceAdapter certAdapter = new PreferenceAdapter();
                                 ArrayList<String> list = extractValue(item, new String[]{"Status", "ValidUntil", "PhysicalExamDate"});
@@ -92,13 +96,14 @@ public class GymAccountFragment extends Fragment {
                             });
                         }
                     } else {
-                        if (!viewModel.authorizationManager.isAuthorized((String) msg.obj)) {
-                            System.out.println("Unauthorized");
+                        if (!viewModel.authorizationManager.isAuthorized(response)) {
                             params.toast(R.string.login_warning);
-                            viewModel.loginRequired.setValue(true);
-                        } else if (!viewModel.authorizationManager.isAccessible((String) msg.obj)) {
+                            params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                        } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
                             getAccount();
+                        } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                            params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         }
                     }
                 }
@@ -106,15 +111,11 @@ public class GymAccountFragment extends Fragment {
         });
         http.setParams(params);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-        http.setCookie(viewModel.cookie);
+//        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
-        http.setAuthorization(viewModel.authorization.getValue());
+        http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
 
-        viewModel.loginRequired.observe(getViewLifecycleOwner(), b -> {
-            System.out.println("loginRequired: " + b);
-            if (!b)
-                getAccount();
-        });
+        getAccount();
         return binding.getRoot();
     }
 

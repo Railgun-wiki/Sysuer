@@ -8,59 +8,69 @@
         "id": 101,
         "name": "Academic Status",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/#/myStuRoll?code=jwxsd_wdxj&resourceName=%25E6%2588%2591%25E7%259A%2584%25E5%25AD%25A6%25E7%25B1%258D",
+        "activity": ".academic.SchoolEnrollmentActivity",
         "description": "Student status information inquiry system, check personal student status, admission information, major and class, and other basic information"
       },
       {
         "id": 102,
         "name": "CET-4/6",
+        "activity": ".academic.CETActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/#/stuEnglishGradeAchievement?code=jwxsd_sljcjcx&resourceName=%25E5%259B%259B%25E5%2585%25AD%25E7%25BA%25A7%25E6%2588%2590%25E7%25BB%25A9%25E6%259F%25A5%25E8%25AF%25A2",
         "description": "College English Test Band 4 and 6 information inquiry, including registration time, examination arrangement, score inquiry, etc."
       },
       {
         "id": 103,
         "name": "Registration",
+        "activity": ".academic.RegistrationActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/#/myStuRoll?code=jwxsd_xk&resourceName=%25E6%2588%2591%25E7%259A%2584%25E8%25AF%25B7%25E6%25B3%2595%25E6%258B%258D%25E8%25AF%25B7",
         "description": "Registration information management system, inquiry and confirmation of student registration status every semester"
       },
       {
         "id": 104,
         "name": "Academic Warning",
+        "activity": ".academic.SchoolWorkWarning",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/#/schoolWorkWarning?code=jwxsd_wdxyyj&resourceName=%25E6%2588%2591%25E7%259A%2584%25E5%25AD%25A6%25E4%25B8%259A%25E9%25A2%2584%25E8%25AD%25A6",
         "description": "Academic early warning system, monitoring academic performance, credit completion, and issuing early warning notices in a timely manner"
       },
       {
         "id": 105,
         "name": "Course Progress",
+        "activity": ".academic.CourseCompletionActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/gradua/#/completionstatusStu?code=jwxsd_kcwcqtj&resourceName=%25E8%25AF%25BE%25E7%25A8%258B%25E5%25AE%258C%25E6%2588%2590%25E6%2583%2585%25E5%2586%25B5%25E7%25BB%259F%25E8%25AE%25A1",
         "description": "Course completion inquiry, view completed courses, credit statistics, and graduation requirement completion progress"
       },
       {
         "id": 106,
         "name": "Left Return Campus Registration",
+        "activity": ".academic.LeaveReturnRegistrationActivity",
         "url": "https://xgxt-443.webvpn.sysu.edu.cn/jjrlfx/#/leaveAndReturn?blxn=%222025-2026%22",
         "description": "Left Return Campus Registration system, where students submit off-campus registration applications before the end of the semester, recording off-campus departure time, reason, etc."
       },
       {
         "id": 107,
         "name": "Physics Fitness Test",
+        "activity": ".academic.PhysicalFitnessTestResultActivity",
         "url": "https://tice.sysu.edu.cn/",
         "description": "Physics Fitness Test Result,PE Credit,Swimming Certification"
       },
       {
         "id": 108,
         "name": "Dormitory",
+        "activity": ".academic.DormActivity",
         "url": "https://xgxt-443.webvpn.sysu.edu.cn/ssgl/",
         "description": "Dormitory information inquiry system, check personal dormitory status, allocation situation, fee payment, etc."
       },
       {
         "id": 109,
         "name": "Personal Information",
+        "activity": ".academic.PersonalInformationActivity",
         "url": "https://xgxt-443.webvpn.sysu.edu.cn/xsxx/#/personalInfo",
         "description": "Personal information inquiry system, check personal basic information, educational work experience, family members, and social relationships, as well as dual major dual degree information, work and study records, etc."
       },
       {
         "id": 110,
         "name": "Part-Time Employment",
+        "activity": ".studentAffair.StudentPartTimeActivity",
         "url": "https://xgxt-443.webvpn.sysu.edu.cn/qgzx/#/personalReference",
         "description": "Part-time employment record inquiry system"
       }
@@ -74,11 +84,13 @@
       {
         "id": 201,
         "name": "To-do",
+        "activity": ".todo.TodoActivity",
         "description": "To-do list management tool for recording learning tasks, assignment reminders, and important arrangements"
       },
       {
         "id": 202,
         "name": "Schedule",
+        "activity": ".academic.AgendaActivity",
         "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
         "description": "Schedule management system, including school calendar, class schedule, and personal schedule"
       }
@@ -94,6 +106,12 @@
         "name": "Cross-Exploration Platform",
         "url": "https://explore.sysu.edu.cn/",
         "description": "Cross-exploration platform for student projects, helping students to collaborate and manage cross-disciplinary projects"
+      },
+      {
+        "id": 1202,
+        "name": "Library",
+        "url": "https://library.sysu.edu.cn/",
+        "description": "Sun Yat-sen University Library, providing book borrowing, research services, academic exchange, etc."
       }
     ]
   },
@@ -105,6 +123,7 @@
       {
         "id": 301,
         "name": "Information Portal",
+        "activity": ".life.NewsActivity",
         "url": "https://gongfang.sysu.edu.cn/h5_separation/news/index.html#/newsList",
         "description": "Sun Yat-sen University Information Portal, which gathers various information such as campus news, academic activities, and important notices"
       },
@@ -117,6 +136,7 @@
       {
         "id": 303,
         "name": "Academic Affairs Notice",
+        "activity": ".academic.AcademyNotification",
         "url": "https://jwxt.sysu.edu.cn/jwxt/#/notice/0",
         "description": "Academic affairs notification and announcement system, which publishes important information such as course selection notices, examination arrangements, and teaching adjustments"
       }
@@ -259,48 +279,56 @@
       {
         "id": 701,
         "name": "Teaching Evaluation",
+        "activity": ".academic.EvaluationActivity",
         "url": "https://pjxt.sysu.edu.cn/authentication/main",
         "description": "Teaching evaluation system for students to evaluate the teaching quality of courses and the teaching effectiveness of teachers"
       },
       {
         "id": 702,
         "name": "Course Selection",
+        "activity": ".academic.CourseSelectionActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE",
         "description": "Online course selection system for students to independently select courses, adjust their schedules, and view course selection results"
       },
       {
         "id": 703,
         "name": "Course Schedule",
+        "activity": ".academic.CourseScheduleActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE",
         "description": "Personal schedule management system for planning schedules such as course arrangements, exam times, and event reminders"
       },
       {
         "id": 704,
         "name": "Examination",
+        "activity": ".academic.ExamActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/#/stuExamInfo?code=jwxsd_ksxxck&resourceName=%25E8%2580%2583%25E8%25AF%2595%25E4%25BF%25A1%25E6%2581%25AF%25E6%259F%25A5%25E7%259C%258B",
         "description": "Examination information inquiry system, with functions such as examination time arrangement, examination room distribution, and score inquiry"
       },
       {
         "id": 705,
         "name": "School Calendar",
+        "activity": ".academic.CalendarActivity",
         "url": "https://www.sysu.edu.cn/index/xl.htm",
         "description": "School calendar inquiry system, providing semester arrangements, holiday arrangements, and important date reminders"
       },
       {
         "id": 706,
         "name": "Study Room",
+        "activity": ".academic.ClassroomQueryActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt//yd/studyRoom/#/home",
         "description": "Study room inquiry system, providing inquiry and reservation services for available seats in libraries and teaching buildings"
       },
       {
         "id": 707,
         "name": "Grades",
+        "activity": ".academic.GradeActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/#/stuAchievementView?code=jwxsd_wdcj&resourceName=%25E6%2588%2591%25E7%259A%2584%25E6%2588%2590%25E7%25BB%25A9",
         "description": "Grade inquiry system, with functions such as semester grade inquiry, GPA calculation, and transcript printing"
       },
       {
         "id": 708,
         "name": "Courses",
+        "activity": ".academic.CourseQueryActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/#/openingCoursesStu?code=jwxsd_qxkckk&resourceName=%25E5%2585%25A8%25E6%25A0%25A1%25E5%25BC%2580%25E8%25AF%25BE%25E8%25AF%25BE%25E7%25A8%258B",
         "description": "Course information management system, providing learning support such as course outlines, teaching resources, and assignment submissions"
       },
@@ -319,35 +347,41 @@
       {
         "id": 711,
         "name": "Majors",
+        "activity": ".academic.MajorInfo",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/studentWeb/#/majorInfoView?code=jwxsd_bkzycx&resourceName=%25E6%259C%25AC%25E7%25A7%2591%25E4%25B8%2593%25E4%25B8%259A%25E6%259F%25A5%25E8%25AF%25A2",
         "description": "Major information inquiry system, providing detailed information such as major introductions, faculty, and employment direction"
       },
       {
         "id": 712,
         "name": "Selected Courses",
+        "activity": ".academic.CourseSelectedActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/courseSelection/?code=jwxsd_xk&resourceName=%25E9%2580%2589%25E8%25AF%25BE",
         "description": "Selected courses inquiry system, with functions such as course selection results, grade inquiry, and transcript printing"
       },
       {
         "id": 713,
         "name": "Teaching Assistants",
+        "activity": ".academic.AssistantInfoActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/zjgl/#/assistantInfoQuery?code=jwxsd_zjxxck&resourceName=%25E5%258A%25A9%25E6%2595%2599%25E4%25BF%25A1%25E6%2581%25AF%25E6%259F%25A5%25E7%259C%258B",
         "description": "Teaching assistants information inquiry system, with functions such as assistant names, courses they are teaching, and contact information"
       },
       {
         "id": 714,
         "name": "Level Grades",
+        "activity": ".academic.GradeForLevelActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/#/achieveConvertApply?code=jwxsd_cjzhsq&resourceName=%25E6%2588%2590%25E7%25BB%25A9%25E8%25BD%25AC%25E6%258D%25A2%25E7%2594%25B3%25E8%25AF%25B7",
         "description": "Level grade inquiry system, with functions such as level grade inquiry, GPA calculation, and transcript printing"
       },
       {
         "id": 715,
         "name": "Classroom Occupation",
+        "activity": ".academic.RoomQueryActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/schedule-web/#/classroomCheckStu?code=jwxsd_jsskqkjkxjscx&resourceName=%25E6%2595%2599%25E5%25AE%25A4%25E4%25B8%258A%25E8%25AF%25BE%25E6%2583%2585%25E5%2586%25B5%25E5%258F%258A%25E7%25A9%25BA%25E9%2597%25B2%25E6%2595%2599%25E5%25AE%25A4%25E6%259F%25A5%25E8%25AF%25A2",
         "description": "Classroom inquiry system, with functions such as available classrooms, class schedule, and room capacity inquiry"
       },{
         "id": 716,
         "name": "Assistant Evaluation",
+        "activity": ".academic.AssistantEvaluationActivity",
         "url": "https://jwxt.sysu.edu.cn/jwxt/mk/schedule-web/#/classroomCheckStu?code=jwxsd_jsskqkjkxjscx&resourceName=%25E6%2595%2599%25E5%25AE%25A4%25E4%25B8%258A%25E8%25AF%25BE%25E6%2583%2585%25E5%2586%25B5%25E5%258F%258A%25E7%25A9%25BA%25E9%2597%25B2%25E6%2595%2599%25E5%25AE%25A4%25E6%259F%25A5%25E8%25AF%25A2",
         "description": "Assistant evaluation result inquiry system, with functions such as assistant names, courses they are teaching, and evaluation grades"
       }
@@ -416,6 +450,7 @@
       {
         "id": 902,
         "name": "School Bus",
+        "activity": ".life.SchoolBusActivity",
         "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/index",
         "description": "School bus schedule inquiry system, providing information on bus times, routes, and real-time locations for each campus"
       },
@@ -446,18 +481,21 @@
       {
         "id": 907,
         "name": "Payment Hall",
+        "activity": ".life.Pay",
         "url": "https://pay.sysu.edu.cn/#/",
         "description": "Campus online payment platform for paying various fees such as tuition, accommodation, and miscellaneous fees"
       },
       {
         "id": 908,
         "name": "Sports Venues",
+        "activity": ".life.GymReservationActivity",
         "url": "https://gym.sysu.edu.cn/#/",
         "description": "Sports venue query and reservation system, with functions such as sports facility information, online reservations, and real-time status updates"
       },
       {
         "id": 909,
         "name": "Campus Network",
+        "activity": ".life.NetPayActivity",
         "url": "https://netpay.sysu.edu.cn/",
         "description": "Campus network management system"
       }

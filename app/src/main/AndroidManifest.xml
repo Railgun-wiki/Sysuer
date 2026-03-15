@@ -137,7 +137,7 @@
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".academic.RegisterInfoActivity"
+            android:name=".academic.RegistrationActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
@@ -352,6 +352,17 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_recent_class" />
+        </receiver>
+        <receiver
+            android:name=".widget.TomorrowClassWidget"
+            android:exported="false"
+            android:label="@string/tomorrow_class">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_tomorrow_class" />
         </receiver>
     </application>
 </manifest>

@@ -21,7 +21,7 @@ public class RecentClassWidgetWorker extends Worker {
     @Override
     public Result doWork() {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
-        appWidgetManager.updateAppWidget(new ComponentName(getApplicationContext(), TodayClassWidget.class), new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_next_class));
+        appWidgetManager.updateAppWidget(new ComponentName(getApplicationContext(), RecentClassWidget.class), new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_today_class));
         return Result.success();
     }
 }

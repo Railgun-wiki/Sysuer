@@ -21,18 +21,18 @@
             android:layout_height="wrap_content"
             android:text="@string/today_class"
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:textColor="@color/sysu_color" />
+            android:textColor="@color/widget_title_on_background" />
 
         <TextView
             android:id="@+id/day"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="2025-2 3.5周四"
+            android:text="@string/widget_date"
             android:textAppearance="@style/TextAppearance.Material3.BodySmall"
             android:textColor="@color/primary_dark_light" />
 
@@ -51,5 +51,6 @@
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="4dp"
         android:dividerHeight="2dp" />
 </LinearLayout>

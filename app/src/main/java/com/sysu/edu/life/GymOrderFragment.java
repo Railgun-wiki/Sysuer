@@ -27,6 +27,7 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentGymOrderBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
 
@@ -34,13 +35,14 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class GymOrderFragment extends Fragment {
 
 
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     HttpManager http;
     GymReservationViewModel viewModel;
-    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private int total = -1;
     private int page = 0;
     private ConcatAdapter concatAdapter;
@@ -92,12 +94,13 @@ public class GymOrderFragment extends Fragment {
                         }
                     } else {
                         if (!viewModel.authorizationManager.isAuthorized(response)) {
-                            System.out.println("Unauthorized");
                             params.toast(R.string.login_warning);
                             viewModel.loginRequired.setValue(true);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
                             getOrder();
+                        } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                            params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         }
                     }
                 }
@@ -105,14 +108,9 @@ public class GymOrderFragment extends Fragment {
         });
         http.setParams(params);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-        http.setCookie(viewModel.cookie);
+//        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
-        http.setAuthorization(viewModel.authorization.getValue());
-        viewModel.loginRequired.observe(requireActivity(), b -> {
-            if (!b)
-                regetOrder();
-        });
-
+        http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
         MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
         binding.from.setOnClickListener(_ -> {
             MaterialDatePicker<Long> datePicker = picker
@@ -140,6 +138,7 @@ public class GymOrderFragment extends Fragment {
                 regetOrder();
             });
         });
+        getOrder();
         return binding.getRoot();
     }
 

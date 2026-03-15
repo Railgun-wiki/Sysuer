@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -21,6 +20,10 @@ import okhttp3.Response;
 
 public class HttpManager {
     final CookieManager cookieManager = CookieManager.getInstance(); // 全局 CookieManager 实例
+    final OkHttpClient http = new OkHttpClient.Builder()
+//            .cookieJar(new JavaNetCookieJar(new java.net.CookieManager()))
+//            .authenticator(new JavaNetAuthenticator())
+            .build(); // 全局 OkHttpClient 实例
     Handler handler; // 处理消息的 Handler 对象
     String referrer; // Referer 头字段值
     String cookie; // Cookie 头字段值
@@ -31,10 +34,6 @@ public class HttpManager {
     boolean isAuthorizationRequired; // 是否需要 Authorization 头字段
     boolean isTokenRequired; // 是否需要 token 头字段
     Map<String, String> header;
-    final OkHttpClient http = new OkHttpClient.Builder()
-//            .cookieJar(new JavaNetCookieJar(new java.net.CookieManager()))
-//            .authenticator(new JavaNetAuthenticator())
-            .build(); // 全局 OkHttpClient 实例
 
     /**
      * 构造函数
@@ -173,7 +172,8 @@ public class HttpManager {
                 msg.obj = response.body().string();
                 Bundle bundle = new Bundle();
                 bundle.putInt("code", response.code());
-                bundle.putBoolean("isJSON", Objects.requireNonNull(response.header("Content-Type")).contains("application/json"));
+                String type = response.header("Content-Type");
+                bundle.putBoolean("isJSON", type != null && type.contains("application/json"));
                 bundle.putString("data", (String) msg.obj);
                 msg.setData(bundle);
                 handler.sendMessage(msg);

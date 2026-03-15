@@ -1,7 +1,6 @@
 package com.sysu.edu.life;
 
 import static android.text.TextUtils.isEmpty;
-import static com.sysu.edu.api.CommonUtil.trim;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -11,6 +10,7 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,26 +27,22 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.sysu.edu.R;
+import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemFieldBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 
-import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.util.regex.Pattern;
 
 public class GymListFragment extends Fragment {
 
     static GymReservationViewModel viewModel;
-    final OkHttpClient http = new OkHttpClient.Builder().build();
-    Handler handler;
+    HttpManager http;
     Params params;
     StaggeredGridLayoutManager layoutManager;
     RecyclerViewScrollBinding binding;
@@ -57,23 +53,24 @@ public class GymListFragment extends Fragment {
         if (binding == null) {
             binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
             params = new Params(this);
-            params.setCallback(this::getCampus);
+            params.setCallback(this::getInfo);
             layoutManager = new StaggeredGridLayoutManager(params.getColumn(), StaggeredGridLayoutManager.VERTICAL);
             binding.getRoot().setLayoutManager(layoutManager);
             viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-            FieldAdapter fieldAdapter = new FieldAdapter(viewModel);
+            FieldAdapter fieldAdapter = new FieldAdapter();
             fieldAdapter.setAction(id -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("id", id);
                 bundle.putInt("code", requireArguments().getInt("code") + 1);
                 Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
             });
-//        viewModel.authorization.observe(getViewLifecycleOwner(), _ -> getInfo());
+            fieldAdapter.setParams(params);
             binding.getRoot().setAdapter(fieldAdapter);
-            handler = new Handler(Looper.getMainLooper()) {
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
-                    String response = msg.getData().getString("data");
+                    String response = (String) msg.obj;
+                    System.out.println(response);
                     switch (msg.getData().getInt("code")) {
                         case 401 -> {
                             viewModel.authorizationManager.setAccessible(false);
@@ -81,16 +78,19 @@ public class GymListFragment extends Fragment {
                             getInfo();
                         }
                         case 200 -> {
-                            if (!msg.getData().getBoolean("isJson")) {
+                            if (!msg.getData().getBoolean("isJSON")) {
                                 if (!viewModel.authorizationManager.isAuthorized(response)) {
-                                    System.out.println("Unauthorized");
                                     params.toast(R.string.login_warning);
-                                    viewModel.loginRequired.setValue(true);
-//                            initWeb(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                                    params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                                    return;
+                                }
+                                if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                                    params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                                     return;
                                 }
                                 if (!viewModel.authorizationManager.isAccessible(response)) {
                                     params.toast(R.string.educational_wifi_warning);
+                                    http.setAuthorizationRequired(true);
                                     getInfo();
                                     return;
                                 }
@@ -110,12 +110,10 @@ public class GymListFragment extends Fragment {
                         }
                     }
                 }
-            };
-            getInfo();
-            viewModel.loginRequired.observe(getViewLifecycleOwner(), b -> {
-                if (!b)
-                    getInfo();
             });
+            http.setParams(params);
+            http.setHeader(Map.of("Accept", "application/json, text/plain, */*", "User-Agent", viewModel.ua));
+            getInfo();
         }
         return binding.getRoot();
     }
@@ -132,42 +130,13 @@ public class GymListFragment extends Fragment {
         layoutManager.setSpanCount(params.getColumn());
     }
 
-    void sendRequest(String url, int what) {
-        http.newCall(new Request.Builder()
-                .url(url)
-                .header("Accept", "application/json, text/plain, */*")
-                .header("Cookie", viewModel.cookie)
-                .header("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
-                .header("User-Agent", viewModel.ua)
-                .build()).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Message message = new Message();
-                message.what = -1;
-                handler.sendMessage(message);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                Message message = new Message();
-                message.what = what;
-                Bundle data = new Bundle();
-                String dataString = response.body().string();
-                data.putInt("code", response.code());
-                data.putBoolean("isJson", Objects.requireNonNull(response.header("Content-Type", "")).startsWith("application/json"));
-                data.putString("data", dataString);
-                message.setData(data);
-                handler.sendMessage(message);
-            }
-        });
-    }
 
     void getCampus() {
-        sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/Campus/active", 1);
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/Campus/active", 1);
     }
 
     void getVenue() {
-        sendRequest(viewModel.authorizationManager.getBaseUrl() + "api/venuetype/all", 2);
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/venuetype/all", 2);
     }
 
     /*public void send() {
@@ -213,13 +182,7 @@ public class GymListFragment extends Fragment {
 
     private static class FieldAdapter extends RecyclerAdapter<JSONObject> {
 
-        final GymReservationViewModel viewModel;
         Consumer<String> action;
-
-        public FieldAdapter(GymReservationViewModel viewModel) {
-            super();
-            this.viewModel = viewModel;
-        }
 
         public void setAction(Consumer<String> action) {
             this.action = action;
@@ -240,10 +203,10 @@ public class GymListFragment extends Fragment {
             binding.getRoot().setOnClickListener(_ -> action.accept(item.getString("Identity")));
             String imageUrl = item.getString("ImageUrl");
             if (!isEmpty(imageUrl))
-                Glide.with(holder.itemView.getContext()).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", viewModel.ua)
+                Glide.with(holder.itemView.getContext()).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
                         .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
-                        .addHeader("Cookie", viewModel.cookie)
-                        .addHeader("Authorization", trim(viewModel.authorization.getValue()))
+                        .addHeader("Cookie", CookieManager.getInstance().getCookie(imageUrl))
+                        .addHeader("Authorization", params.getAuthorization())
                         .build())).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(binding.image);
         }
     }

@@ -594,5 +594,8 @@
     <string name="today_class">今日课程</string>
     <string name="recent_class">最近课程</string>
     <string name="add_to_launcher">添加到桌面</string>
+    <string name="tomorrow_class">明日课程</string>
+    <string name="fail_to_add_shortcut">不能添加到桌面，请在系统设置中开启允许桌面快捷方式的权限</string>
+    <string name="widget_date">2025-2 3.5周四</string>
 
 </resources>

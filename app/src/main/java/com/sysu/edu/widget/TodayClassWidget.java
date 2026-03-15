@@ -21,15 +21,16 @@ import androidx.work.WorkManager;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.AgendaActivity;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
+import com.sysu.edu.api.TargetUrl;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class TodayClassWidget extends AppWidgetProvider {
@@ -49,9 +50,7 @@ public class TodayClassWidget extends AppWidgetProvider {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_today_class);
-                if (msg.what == -1) {
-//                    remoteViews.setTextViewText(R.id.week, context.getString(R.string.login_warning));
-                } else {
+                if (msg.what != -1 && msg.getData().getBoolean("isJSON")) {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response.get("code").equals(200)) {
                         switch (msg.what) {
@@ -69,6 +68,7 @@ public class TodayClassWidget extends AppWidgetProvider {
 //                                    item.put("course", "第" + item.get("startClassTimes") + "~" + item.get("endClassTimes") + "节课");
                                     String flag = (String) item.get("useflag");
                                     if ("TD".equals(flag)) {
+                                        if (Objects.equals(status, "before")) beforeArray.add(item);
 //                                        (Objects.equals(status, "before") ? beforeArray : afterArray).add(item);
                                         var view = new RemoteViews(context.getPackageName(), R.layout.widget_item);
                                         view.setTextViewText(R.id.content, String.format("%s：%s\n%s：%s %s",
@@ -81,7 +81,7 @@ public class TodayClassWidget extends AppWidgetProvider {
                                 });
                                 RemoteViewsCompat.setRemoteAdapter(context, remoteViews, R.layout.widget_item, R.id.list, items.build());
                                 remoteViews.setScrollPosition(R.id.list, beforeArray.size());
-                                OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(TodayClassWidgetWorker.class)
+                                OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(DailyWidgetWorker.class)
                                         .setConstraints(new Constraints.Builder()
                                                 .setRequiredNetworkType(NetworkType.CONNECTED)
                                                 .build())
@@ -90,32 +90,12 @@ public class TodayClassWidget extends AppWidgetProvider {
 
                                 WorkManager.getInstance(context).enqueue(workRequest);
                                 break;
-                            /*case 2:
-                                JSONArray dataArray = response.getJSONArray("data");
-                                if (!dataArray.isEmpty()) {
-                                    for (int i = 0; i < dataArray.size(); i++) {
-                                        LinkedList<JSONObject> exams = List.of(thisWeekExams, nextWeekExams).get(i);
-                                        TreeMap<Integer, JSONArray> sortedTimetable = new TreeMap<>();
-                                        dataArray.getJSONObject(i).getJSONObject("timetable").forEach((s, t) -> {
-                                            if (t != null)
-                                                sortedTimetable.put(Integer.parseInt(s), (JSONArray) t);
-                                        });
-                                        sortedTimetable.forEach((key, value) -> {
-                                            if (key.equals(sortedTimetable.firstKey()))
-                                                value.forEach(c -> exams.addFirst((JSONObject) c));
-                                            else
-                                                value.forEach(c -> exams.addLast((JSONObject) c));
-                                        });
-                                    }
-                                    binding.toggle2.clearChecked();
-                                    binding.toggle2.check(R.id.week_18);
-                                }
-                                break;*/
                             case 3:
                                 String term = response.getJSONObject("data").getString("acadYearSemester");
                                 getTodayCourses(term);
                                 getWeek(term);
-                                remoteViews.setTextViewText(R.id.day, String.format("%s %s周%s", term, new SimpleDateFormat("M.dd", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                                remoteViews.setTextViewText(R.id.day, String.format("%s %s周%s", term,
+                                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("M.dd")), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
                                 break;
                             case 4:
                                 remoteViews.setTextViewText(R.id.week, String.format(context.getString(R.string.week_x), response.getJSONArray("data").getJSONObject(0).getString("weekTimes")));
@@ -127,6 +107,8 @@ public class TodayClassWidget extends AppWidgetProvider {
                         update(appWidgetManager, appWidgetIds, remoteViews);
 
                     }
+                } else {
+                    new ContextUtil(context).login(TargetUrl.JWXT, () -> getTerm());
                 }
             }
         });
@@ -134,15 +116,9 @@ public class TodayClassWidget extends AppWidgetProvider {
     }
 
     String getTimePosition(String from, String to) {
-        Date now = new Date();
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault());
-            Date fromDate = simpleDateFormat.parse(from);
-            Date toDate = simpleDateFormat.parse(to);
-            return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException _) {
-        }
-        return "before";
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return now.isBefore(LocalDateTime.parse(from, formatter)) ? "after" : now.isAfter(LocalDateTime.parse(to, formatter)) ? "before" : "in";
     }
 
     void getTerm() {

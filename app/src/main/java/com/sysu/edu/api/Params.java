@@ -4,18 +4,13 @@ package com.sysu.edu.api;
 import static com.sysu.edu.login.LoginManager.initLoginModel;
 import static com.sysu.edu.login.LoginManager.initLoginWebView;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.webkit.WebView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -23,7 +18,6 @@ import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.PreferenceManager;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.MainActivity;
@@ -31,10 +25,8 @@ import com.sysu.edu.R;
 import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.login.LoginActivity;
 import com.sysu.edu.login.LoginViewModel;
-import com.sysu.edu.view.EditTextDialog;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class Params {
 
@@ -43,6 +35,7 @@ public class Params {
     Fragment fragment; // 关联的 Fragment 对象
     ActivityResultLauncher<Intent> launcher; // 用于启动登录 Activity 的 ActivityResultLauncher 对象
     Runnable afterLogin; // 登录成功后的回调 Runnable 对象
+    private ContextUtil contextUtil;
 
     /**
      * 构造函数，用于初始化 Params 对象
@@ -51,6 +44,7 @@ public class Params {
      */
     public Params(FragmentActivity activity) {
         this.activity = activity;
+        contextUtil = new ContextUtil(activity);
         sharedPreferences = activity.getSharedPreferences("privacy", Context.MODE_PRIVATE);
     }
 
@@ -61,6 +55,7 @@ public class Params {
      */
     public Params(Fragment fragment) {
         this.fragment = fragment;
+        contextUtil = new ContextUtil(fragment.requireContext());
         this(fragment.requireActivity());
     }
 
@@ -83,9 +78,9 @@ public class Params {
      * @return 对应的 px 值
      */
     public int dpToPx(int dps) {
-        Resources resource = fragment == null ? activity.getResources() : fragment.getResources();
-        return Math.round(resource.getDisplayMetrics().density * dps);
+        return contextUtil.dpToPx(dps);
     }
+
 
     /**
      * 获取屏幕宽度
@@ -113,7 +108,7 @@ public class Params {
      * @return Cookie
      */
     public String getCookie() {
-        return sharedPreferences.getString("Cookie", "");
+        return contextUtil.getCookie();
     }
 
     /**
@@ -122,11 +117,11 @@ public class Params {
      * @return Authorization
      */
     public String getAuthorization() {
-        return sharedPreferences.getString("authorization", "");
+        return contextUtil.getAuthorization();
     }
 
     public void setAuthorization(String auth) {
-        sharedPreferences.edit().putString("authorization", auth).apply();
+        contextUtil.setAuthorization(auth);
     }
 
     /**
@@ -135,7 +130,7 @@ public class Params {
      * @return 用户名
      */
     public String getUserName() {
-        return sharedPreferences.getString("username", "");
+        return contextUtil.getUserName();
     }
 
     /**
@@ -144,7 +139,7 @@ public class Params {
      * @param userName 用户名
      */
     public void setUserName(String userName) {
-        sharedPreferences.edit().putString("username", userName).apply();
+        contextUtil.setUserName(userName);
     }
 
     /**
@@ -153,7 +148,7 @@ public class Params {
      * @return 密码
      */
     public String getPassword() {
-        return sharedPreferences.getString("password", "");
+        return contextUtil.getPassword();
     }
 
     /**
@@ -162,7 +157,7 @@ public class Params {
      * @param password 密码
      */
     public void setPassword(String password) {
-        sharedPreferences.edit().putString("password", password).apply();
+        contextUtil.setPassword(password);
     }
 
     /**
@@ -171,7 +166,7 @@ public class Params {
      * @return SharedPreferences 对象
      */
     public SharedPreferences getSharedPreferences() {
-        return sharedPreferences;
+        return contextUtil.getSharedPreferences();
     }
 
     /**
@@ -180,7 +175,7 @@ public class Params {
      * @return Token
      */
     public String getToken() {
-        return sharedPreferences.getString("token", "");
+        return contextUtil.getToken();
     }
 
     /**
@@ -189,7 +184,7 @@ public class Params {
      * @return 是否为开发者
      */
     public boolean isDeveloper() {
-        return sharedPreferences.getBoolean("developer", false);
+        return contextUtil.isDeveloper();
     }
 
     /**
@@ -198,7 +193,7 @@ public class Params {
      * @param developer 是否为开发者
      */
     public void setDeveloper(boolean developer) {
-        sharedPreferences.edit().putBoolean("developer", developer).apply();
+        contextUtil.setDeveloper(developer);
     }
 
     /**
@@ -218,8 +213,7 @@ public class Params {
      * @param text 要复制的文本
      */
     public void copy(String tag, String text) {
-        ClipboardManager clip = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-        clip.setPrimaryClip(ClipData.newPlainText(tag, text));
+        contextUtil.copy(tag, text);
     }
 
     /**
@@ -228,7 +222,7 @@ public class Params {
      * @param resource 字符串资源 ID
      */
     public void toast(int resource) {
-        Toast.makeText(activity, resource, Toast.LENGTH_LONG).show();
+        contextUtil.toast(resource);
     }
 
     /**
@@ -237,7 +231,7 @@ public class Params {
      * @param toast 要显示的文本
      */
     public void toast(String toast) {
-        Toast.makeText(activity, toast, Toast.LENGTH_LONG).show();
+        contextUtil.toast(toast);
     }
 
     /**
@@ -246,7 +240,7 @@ public class Params {
      * @return 登录模式（"0"：弹窗登录；"1"：主页弹窗、其他跳转登录；"2"：跳转登录；"3"：自动登录）
      */
     public String getLoginMode() {
-        return PreferenceManager.getDefaultSharedPreferences(activity).getString("loginMode", "2");
+        return contextUtil.getLoginMode();
     }
 
     /**
@@ -256,9 +250,8 @@ public class Params {
      * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
      */
     public void gotoLogin(View view, String url) {
-        System.out.println(url);
-        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN, TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS).contains(url)) {
-            login(url);
+        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN, TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS,TargetUrl.GYM_WEBVPN, TargetUrl.GYM).contains(url)) {
+            contextUtil.login(url, afterLogin);
             return;
         }
         Intent intent = new Intent(activity, LoginActivity.class);
@@ -284,48 +277,13 @@ public class Params {
                 WebView web = initLoginWebView(activity, model, true);
                 initLoginModel(activity, model, url, () -> {
                     afterLogin.run();
-                    System.out.println("Login Successfully");
+//                    System.out.println("Login Successfully");
                     web.destroy();
                     toast(R.string.login_successfully);
                 });
 //                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
             }
             default -> gotoLogin(view, intent);
-        }
-    }
-
-    private void login(String url) {
-        if (getUserName().isEmpty()) {
-            EditTextDialog username = new EditTextDialog(activity);
-            username.setHint(R.string.username);
-            username.setTitle(R.string.username);
-            username.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, activity.getString(R.string.confirm), (_, _) -> {
-                setUserName(username.getText());
-                System.out.println("Login with " + username.getText());
-                login(url);
-            });
-            username.show();
-            return;
-        }
-        if (getPassword().isEmpty()) {
-            EditTextDialog password = new EditTextDialog(activity);
-            password.setHint(R.string.password);
-            password.setTitle(R.string.password);
-            password.setPasswordMode();
-            password.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, activity.getString(R.string.confirm), (_, _) -> {
-                setPassword(password.getText());
-                password.getDialog().dismiss();
-                login(url);
-            });
-            password.show();
-            return;
-        }
-        try {
-            LoginManager loginManager = new LoginManager();
-            loginManager.setParams(this);
-            if (loginManager.login(getUserName(), getPassword(), url))
-                afterLogin.run();
-        } catch (ExecutionException | InterruptedException _) {
         }
     }
 

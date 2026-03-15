@@ -91,7 +91,7 @@ public class TrainingProgramFragment extends Fragment {
                     } else {
                         JSONObject data = JSONObject.parseObject((String) msg.obj);
                         if (data.getInteger("code") == 200) {
-                            deal(msg.what, data);
+                            deal(msg.what, data, inflater);
                         } else {
                             params.toast(R.string.login_warning);
                             params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
@@ -125,7 +125,7 @@ public class TrainingProgramFragment extends Fragment {
         http.getRequest("https://jwxt.sysu.edu.cn/jwxt/base-info/codedata/findcodedataNames?datableNumber=127", 2);
     }
 
-    void deal(int what, JSONObject data) {
+    void deal(int what, JSONObject data, LayoutInflater inflater) {
         switch (what) {
             case 1: {
                 ArrayList<String> list = new ArrayList<>();
@@ -156,7 +156,7 @@ public class TrainingProgramFragment extends Fragment {
             } // 处理年级
             case 3: {
                 data.getJSONArray("data").forEach(e -> {
-                    Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_filter_chip, binding.types, false);
+                    Chip chip = (Chip) inflater.inflate(R.layout.item_filter_chip, binding.types, false);
                     chip.setOnCheckedChangeListener((_, isChecked) -> {
                         if (isChecked) {
                             type.setValue(((JSONObject) e).getString("dataNumber"));

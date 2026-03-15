@@ -21,16 +21,20 @@ import androidx.work.WorkManager;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.AgendaActivity;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
+import com.sysu.edu.api.TargetUrl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RecentClassWidget extends AppWidgetProvider {
 
@@ -49,16 +53,15 @@ public class RecentClassWidget extends AppWidgetProvider {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_today_class);
-                if (msg.what == -1) {
-//                    remoteViews.setTextViewText(R.id.week, context.getString(R.string.login_warning));
-                } else {
+                if (msg.what != -1) {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response.get("code").equals(200)) {
                         switch (msg.what) {
                             case 1:
 //                                ArrayList<JSONObject> todayCourse = new ArrayList<>();
 //                                ArrayList<JSONObject> tomorrowCourse = new ArrayList<>();
-                                ArrayList<JSONObject> beforeArray = new ArrayList<>();
+//                                ArrayList<JSONObject> beforeArray = new ArrayList<>();
+                                AtomicReference<LocalDateTime> finish = new AtomicReference<>(null);
 //                                ArrayList<JSONObject> afterArray = new ArrayList<>();
                                 RemoteViewsCompat.RemoteCollectionItems.Builder items = new RemoteViewsCompat.RemoteCollectionItems.Builder();
                                 response.getJSONArray("data").forEach(e -> {
@@ -66,9 +69,10 @@ public class RecentClassWidget extends AppWidgetProvider {
                                     String status = getTimePosition(item.getString("teachingDate") + " " + item.getString("startTime"), item.getString("teachingDate") + " " + item.getString("endTime"));
                                     item.put("status", status);
                                     item.put("time", item.get("startTime") + "~" + item.get("endTime"));
-//                                    item.put("course", "第" + item.get("startClassTimes") + "~" + item.get("endClassTimes") + "节课");
-                                    String flag = (String) item.get("useflag");
-                                    if ("RT".equals(flag)) {
+                                    LocalDateTime date = LocalDateTime.parse(item.getString("teachingDate") + " " + item.getString("startTime"), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                                    if ("RT".equals(item.get("useflag")) && (finish.get() == null || finish.get().isBefore(date))) {
+                                        finish.set(date);
+//                                        System.out.println(item);
 //                                        (Objects.equals(status, "before") ? beforeArray : afterArray).add(item);
                                         var view = new RemoteViews(context.getPackageName(), R.layout.widget_item);
                                         view.setTextViewText(R.id.content, String.format("%s：%s\n%s：%s %s",
@@ -80,12 +84,12 @@ public class RecentClassWidget extends AppWidgetProvider {
                                     }
                                 });
                                 RemoteViewsCompat.setRemoteAdapter(context, remoteViews, R.layout.widget_item, R.id.list, items.build());
-                                remoteViews.setScrollPosition(R.id.list, beforeArray.size());
-                                OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(TodayClassWidgetWorker.class)
+//                                remoteViews.setScrollPosition(R.id.list, beforeArray.size());
+                                OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(RecentClassWidgetWorker.class)
                                         .setConstraints(new Constraints.Builder()
                                                 .setRequiredNetworkType(NetworkType.CONNECTED)
                                                 .build())
-                                        .setInitialDelay(24 - LocalTime.now().getHour(), TimeUnit.HOURS)
+                                        .setInitialDelay(finish.get().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() - System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                                         .build();
 
                                 WorkManager.getInstance(context).enqueue(workRequest);
@@ -127,6 +131,8 @@ public class RecentClassWidget extends AppWidgetProvider {
                         update(appWidgetManager, appWidgetIds, remoteViews);
 
                     }
+                }else{
+                    new ContextUtil(context).login(TargetUrl.JWXT,()->getTerm());
                 }
             }
         });

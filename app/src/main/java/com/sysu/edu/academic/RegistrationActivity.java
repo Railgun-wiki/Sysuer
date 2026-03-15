@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 
-public class RegisterInfoActivity extends AppCompatActivity {
+public class RegistrationActivity extends AppCompatActivity {
 
     HttpManager http;
     int page = 0;

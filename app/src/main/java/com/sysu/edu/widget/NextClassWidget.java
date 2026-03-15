@@ -20,10 +20,15 @@ import androidx.work.WorkManager;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.academic.AgendaActivity;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
+import com.sysu.edu.api.TargetUrl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,7 +57,7 @@ public class NextClassWidget extends AppWidgetProvider {
             public void handleMessage(@NonNull Message msg) {
                 RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_next_class);
                 if (msg.what == -1) {
-                    remoteViews.setTextViewText(R.id.week, context.getString(R.string.login_warning));
+                    new ContextUtil(context).login(TargetUrl.JWXT, () -> getTerm());
                 } else {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response.get("code").equals(200)) {
@@ -123,7 +128,7 @@ public class NextClassWidget extends AppWidgetProvider {
                                 getTodayCourses(term);
 //                                getExams(term);
                                 getWeek(term);
-                                remoteViews.setTextViewText(R.id.day, String.format("%s学期\n%s周%s", term, new SimpleDateFormat("MM.dd", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                                remoteViews.setTextViewText(R.id.day, String.format("%s学期\n%s周%s", term, DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
                                 break;
                             case 4:
                                 remoteViews.setTextViewText(R.id.week, String.format(context.getString(R.string.week_x), response.getJSONArray("data").getJSONObject(0).getString("weekTimes")));
@@ -141,15 +146,9 @@ public class NextClassWidget extends AppWidgetProvider {
     }
 
     String getTimePosition(String from, String to) {
-        Date now = new Date();
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault());
-            Date fromDate = simpleDateFormat.parse(from);
-            Date toDate = simpleDateFormat.parse(to);
-            return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException _) {
-        }
-        return "before";
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return now.isBefore(LocalDateTime.parse(from, formatter)) ? "after" : now.isAfter(LocalDateTime.parse(to, formatter)) ? "before" : "in";
     }
 
     void getTerm() {
@@ -167,9 +166,9 @@ public class NextClassWidget extends AppWidgetProvider {
         http.getRequest("https://jwxt.sysu.edu.cn/jwxt/timetable-search/classTableInfo/queryTodayStudentClassTable?academicYear=" + term, 1);
     }
 
-    void getExams(String term) {
+    /*void getExams(String term) {
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/mk/");
         http.postRequest("https://jwxt.sysu.edu.cn/jwxt/examination-manage/classroomResource/queryStuEaxmInfo?code=jwxsd_ksxxck" + term, String.format("{\"acadYear\":\"%s\",\"examWeekId\":\"1928284621349085186\",\"examWeekName\":\"18-19周期末考\",\"examDate\":\"\"}", term), 2);
-    }
+    }*/
 
 }

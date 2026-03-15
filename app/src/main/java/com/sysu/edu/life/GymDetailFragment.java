@@ -49,9 +49,9 @@ import java.util.regex.Pattern;
 public class GymDetailFragment extends Fragment {
 
     final MutableLiveData<Integer> position = new MutableLiveData<>();
+    final HashMap<String, JSONObject> fee = new HashMap<>();
     HttpManager http;
     GymReservationViewModel viewModel;
-    final HashMap<String, JSONObject> fee = new HashMap<>();
     String id;
 
     @Override
@@ -152,21 +152,16 @@ public class GymDetailFragment extends Fragment {
         http.setParams(params);
         http.setUA(viewModel.ua);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
+        http.setAuthorizationRequired(true);
         return binding.getRoot();
     }
 
-    void sendRequest(String url, int what) {
-        http.setAuthorization(viewModel.authorization.getValue());
-        http.setCookie(viewModel.cookie);
-        http.getRequest(url, what);
-    }
-
     void getInfo(String id, String from, String to) {
-        sendRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venue/available-slots/range?venueTypeId=%s&start=%s&end=%s", id, from, to), 0);
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venue/available-slots/range?venueTypeId=%s&start=%s&end=%s", id, from, to), 0);
     }
 
     void getFee(String id) {
-        sendRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venuetype/%s/feetemplates", id), 1);
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venuetype/%s/feetemplates", id), 1);
     }
 
 

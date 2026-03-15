@@ -11,9 +11,11 @@ import androidx.work.WorkerParameters;
 
 import com.sysu.edu.R;
 
-public class TodayClassWidgetWorker extends Worker {
+import java.util.List;
 
-    public TodayClassWidgetWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+public class DailyWidgetWorker extends Worker {
+
+    public DailyWidgetWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -21,7 +23,7 @@ public class TodayClassWidgetWorker extends Worker {
     @Override
     public Result doWork() {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
-        appWidgetManager.updateAppWidget(new ComponentName(getApplicationContext(), TodayClassWidget.class), new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_next_class));
+        List.of(TodayClassWidget.class, TomorrowClassWidget.class).forEach(c -> appWidgetManager.updateAppWidget(new ComponentName(getApplicationContext(), c), new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_today_class)));
         return Result.success();
     }
 }

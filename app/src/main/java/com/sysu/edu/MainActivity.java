@@ -42,51 +42,21 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.sysu.edu.academic.AcademyNotification;
-import com.sysu.edu.academic.AgendaActivity;
-import com.sysu.edu.academic.AssistantEvaluationActivity;
-import com.sysu.edu.academic.AssistantInfoActivity;
-import com.sysu.edu.academic.CETActivity;
-import com.sysu.edu.academic.CalendarActivity;
-import com.sysu.edu.academic.ClassroomQueryActivity;
-import com.sysu.edu.academic.CourseCompletionActivity;
-import com.sysu.edu.academic.CourseQueryActivity;
-import com.sysu.edu.academic.CourseScheduleActivity;
-import com.sysu.edu.academic.CourseSelectedActivity;
-import com.sysu.edu.academic.CourseSelectionActivity;
-import com.sysu.edu.academic.DormActivity;
-import com.sysu.edu.academic.EvaluationActivity;
-import com.sysu.edu.academic.ExamActivity;
-import com.sysu.edu.academic.GradeActivity;
-import com.sysu.edu.academic.GradeForLevelActivity;
-import com.sysu.edu.academic.LeaveReturnRegistrationActivity;
-import com.sysu.edu.academic.MajorInfo;
-import com.sysu.edu.academic.PersonalInformationActivity;
-import com.sysu.edu.academic.PhysicalFitnessTestResultActivity;
-import com.sysu.edu.academic.RegisterInfoActivity;
-import com.sysu.edu.academic.RoomQueryActivity;
-import com.sysu.edu.academic.SchoolEnrollmentActivity;
-import com.sysu.edu.academic.SchoolWorkWarning;
-import com.sysu.edu.academic.TrainingProgramActivity;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
 import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ActivityMainBinding;
 import com.sysu.edu.home.HomeViewModel;
-import com.sysu.edu.life.GymReservationActivity;
-import com.sysu.edu.life.NetPayActivity;
-import com.sysu.edu.life.NewsActivity;
-import com.sysu.edu.life.Pay;
-import com.sysu.edu.life.SchoolBusActivity;
-import com.sysu.edu.studentAffair.StudentPartTimeActivity;
-import com.sysu.edu.todo.TodoActivity;
 import com.sysu.edu.widget.NextClassWidget;
 import com.sysu.edu.widget.NextClassWidgetWorker;
+import com.sysu.edu.widget.RecentClassWidget;
 import com.sysu.edu.widget.TodayClassWidget;
+import com.sysu.edu.widget.TomorrowClassWidget;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -264,8 +234,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException _) {
         }
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        appWidgetManager.updateAppWidget(new ComponentName(this, NextClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_next_class));
-        appWidgetManager.updateAppWidget(new ComponentName(this, TodayClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
+        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> appWidgetManager.updateAppWidget(new ComponentName(this, e), new RemoteViews(getPackageName(), R.layout.widget_next_class)));
+//        appWidgetManager.updateAppWidget(new ComponentName(this, NextClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_next_class));
+//        appWidgetManager.updateAppWidget(new ComponentName(this, TodayClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
+//        appWidgetManager.updateAppWidget(new ComponentName(this, TomorrowClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
+//        appWidgetManager.updateAppWidget(new ComponentName(this, RecentClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
     }
 
     @Override
@@ -282,7 +255,6 @@ public class MainActivity extends AppCompatActivity {
         WorkManager.getInstance(getApplicationContext())
                 .enqueueUniqueWork("next_class_widget_update",
                         ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(NextClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
-
 
     }
 
@@ -307,27 +279,27 @@ public class MainActivity extends AppCompatActivity {
 
     void initActionMap(Map<Integer, View.OnClickListener> actionMap) {
         // 学术服务 (id: 1xx)
-        actionMap.put(101, newActivity(SchoolEnrollmentActivity.class));           // 学籍
-        actionMap.put(102, newActivity(CETActivity.class));          // 四六级
-        actionMap.put(103, newActivity(RegisterInfoActivity.class));         // 注册
-        actionMap.put(104, newActivity(SchoolWorkWarning.class));    // 学业预警
-        actionMap.put(105, newActivity(CourseCompletionActivity.class));     // 课程完成情况
-        actionMap.put(106, newActivity(LeaveReturnRegistrationActivity.class));     // 请假返回登记
-        actionMap.put(107, newActivity(PhysicalFitnessTestResultActivity.class));     // 体测
-        actionMap.put(108, newActivity(DormActivity.class));     // 宿舍
-        actionMap.put(109, newActivity(PersonalInformationActivity.class));     // 个人信息
-        actionMap.put(110, newActivity(StudentPartTimeActivity.class));     // 勤工俭学
+//        actionMap.put(101, newActivity(SchoolEnrollmentActivity.class));           // 学籍
+//        actionMap.put(102, newActivity(CETActivity.class));          // 四六级
+//        actionMap.put(103, newActivity(RegistrationActivity.class));         // 注册
+//        actionMap.put(104, newActivity(SchoolWorkWarning.class));    // 学业预警
+//        actionMap.put(105, newActivity(CourseCompletionActivity.class));     // 课程完成情况
+//        actionMap.put(106, newActivity(LeaveReturnRegistrationActivity.class));     // 请假返回登记
+//        actionMap.put(107, newActivity(PhysicalFitnessTestResultActivity.class));     // 体测
+//        actionMap.put(108, newActivity(DormActivity.class));     // 宿舍
+//        actionMap.put(109, newActivity(PersonalInformationActivity.class));     // 个人信息
+//        actionMap.put(110, newActivity(StudentPartTimeActivity.class));     // 勤工俭学
 
 
         // 学习服务 (id: 2xx)
-        actionMap.put(201, newActivity(TodoActivity.class));         // 待办
+//        actionMap.put(201, newActivity(TodoActivity.class));         // 待办
 //        actionMap.put(202, browse("https://explore.sysu.edu.cn/"));         // 交叉探索平台
 //        actionMap.put(203, browse("https://aic.sysu.edu.cn/"));         // 逸仙智课平台
-        actionMap.put(202, newActivity(AgendaActivity.class));         // 日程
+//        actionMap.put(202, newActivity(AgendaActivity.class));         // 日程
 
 
         // 资讯门户 (id: 3xx)
-        actionMap.put(301, newActivity(NewsActivity.class));                 // 资讯门户
+//        actionMap.put(301, newActivity(NewsActivity.class));                 // 资讯门户
         actionMap.put(302, _ -> {
             try {
                 startActivity(Objects.requireNonNull(getPackageManager().getLaunchIntentForPackage("com.comingx.zanao")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -335,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
                 params.toast(R.string.no_app);
             }
         }); // 校园集市
-        actionMap.put(303, newActivity(AcademyNotification.class));  // 教务通知
+//        actionMap.put(303, newActivity(AcademyNotification.class));  // 教务通知
 
         // 系统服务 (id: 4xx)
 //        actionMap.put(401, browse("https://gym.sysu.edu.cn/#/"));                   // 体育场馆预定系统
@@ -379,22 +351,22 @@ public class MainActivity extends AppCompatActivity {
         //actionMap.put(603, v -> startActivity(Objects.requireNonNull(this.getPackageManager().getLaunchIntentForPackage("com.tencent.wework")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))); // 中大招生
 
         // 教务服务 (id: 7xx)
-        actionMap.put(701, newActivity(EvaluationActivity.class));           // 评教
-        actionMap.put(702, newActivity(CourseSelectionActivity.class));
-        actionMap.put(703, newActivity(CourseScheduleActivity.class));               // 课程表
-        actionMap.put(704, newActivity(ExamActivity.class));                 // 考试
-        actionMap.put(705, newActivity(CalendarActivity.class));             // 校历
-        actionMap.put(706, newActivity(ClassroomQueryActivity.class));       // 自习室
-        actionMap.put(707, newActivity(GradeActivity.class));                        // 成绩
-        actionMap.put(708, newActivity(CourseQueryActivity.class));                  // 课程
+//        actionMap.put(701, newActivity(EvaluationActivity.class));           // 评教
+//        actionMap.put(702, newActivity(CourseSelectionActivity.class));
+//        actionMap.put(703, newActivity(CourseScheduleActivity.class));               // 课程表
+//        actionMap.put(704, newActivity(ExamActivity.class));                 // 考试
+//        actionMap.put(705, newActivity(CalendarActivity.class));             // 校历
+//        actionMap.put(706, newActivity(ClassroomQueryActivity.class));       // 自习室
+//        actionMap.put(707, newActivity(GradeActivity.class));                        // 成绩
+//        actionMap.put(708, newActivity(CourseQueryActivity.class));                  // 课程
 //        actionMap.put(709, browse("https://jwxt.sysu.edu.cn/jwxt/mk/#/personalTrainingProgramView")); // 个人培养方案
-        actionMap.put(710, newActivity(TrainingProgramActivity.class));             // 培养方案
-        actionMap.put(711, newActivity(MajorInfo.class));                    // 专业
-        actionMap.put(712, newActivity(CourseSelectedActivity.class));                  // 已选课程
-        actionMap.put(713, newActivity(AssistantInfoActivity.class));       // 助教信息
-        actionMap.put(714, newActivity(GradeForLevelActivity.class));           // 等级制成绩
-        actionMap.put(715, newActivity(RoomQueryActivity.class));           // 教室
-        actionMap.put(716, newActivity(AssistantEvaluationActivity.class)); // 助教考核
+//        actionMap.put(710, newActivity(TrainingProgramActivity.class));             // 培养方案
+//        actionMap.put(711, newActivity(MajorInfo.class));                    // 专业
+//        actionMap.put(712, newActivity(CourseSelectedActivity.class));                  // 已选课程
+//        actionMap.put(713, newActivity(AssistantInfoActivity.class));       // 助教信息
+//        actionMap.put(714, newActivity(GradeForLevelActivity.class));           // 等级制成绩
+//        actionMap.put(715, newActivity(RoomQueryActivity.class));           // 教室
+//        actionMap.put(716, newActivity(AssistantEvaluationActivity.class)); // 助教考核
 
 
         // 学习平台 (id: 8xx)
@@ -407,13 +379,13 @@ public class MainActivity extends AppCompatActivity {
 //        actionMap.put(807, browse("https://www.pigai.org/"));              // 批改网
 
         // 生活服务 (id: 9xx)
-        actionMap.put(902, newActivity(SchoolBusActivity.class));                    // 校车
+//        actionMap.put(902, newActivity(SchoolBusActivity.class));                    // 校车
 //        actionMap.put(903, browse("https://visitor.sysu.edu.cn/"));                 // 逸仙通行
 //        actionMap.put(905, browse("https://gongfang.sysu.edu.cn/h5_separation/repair_apply/index.html#/applyDetail/20251231162524362223"));                 // 报修
 //        actionMap.put(906, browse("https://zhny.sysu.edu.cn/h5/#/"));        // 水电费
-        actionMap.put(907, newActivity(Pay.class));                          // 缴费大厅
-        actionMap.put(908, newActivity(GymReservationActivity.class));     // 体育馆预约
-        actionMap.put(909, newActivity(NetPayActivity.class));              // 校园网
+//        actionMap.put(907, newActivity(Pay.class));                          // 缴费大厅
+//        actionMap.put(908, newActivity(GymReservationActivity.class));     // 体育馆预约
+//        actionMap.put(909, newActivity(NetPayActivity.class));              // 校园网
 
 
         // 人工智能服务 (id: 10xx)

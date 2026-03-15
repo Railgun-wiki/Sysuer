@@ -6,7 +6,6 @@ import static com.sysu.edu.api.CommonUtil.trim;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ShortcutManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -33,6 +32,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONReader;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.sysu.edu.MainActivity;
 import com.sysu.edu.R;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.Params;
@@ -181,7 +181,15 @@ public class ServiceFragment extends Fragment {
             ItemActionChipBinding chip = ItemActionChipBinding.inflate(inflater, binding.serviceBoxItems, false);
             View.OnClickListener action = viewModel.actionMap.get(itemId);
             String url = item.getString("url");
-            chip.getRoot().setOnClickListener(action != null ? action : isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()));
+            String activity = item.getString("activity");
+
+            chip.getRoot().setOnClickListener(action != null ? action : isEmpty(activity) ? isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()) : v -> {
+                try {
+                    startActivity(new Intent(requireContext(), Class.forName(requireContext().getPackageName() + activity)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle());
+                } catch (ClassNotFoundException _) {
+                    params.toast("未找到对应活动");
+                }
+            });
             chip.getRoot().setOnLongClickListener(_ -> showActionDialog(item));
             chip.getRoot().setText(item.getString("name"));
             binding.serviceBoxItems.addView(chip.getRoot());
@@ -194,31 +202,25 @@ public class ServiceFragment extends Fragment {
         MutableLiveData<Boolean> isShortcutCollected = new MutableLiveData<>(db.isDashboardShortcutCollected(itemId));
         actionBinding.collect.setText(Boolean.TRUE.equals(isServiceCollected.getValue()) ? R.string.cancel_collect : R.string.collect);
         actionBinding.addToDashboard.setText(Boolean.TRUE.equals(isShortcutCollected.getValue()) ? R.string.cancel_add_shortcut : R.string.add_to_dashboard);
-        actionBinding.addToLauncher.setOnClickListener(_->{
-            ShortcutManager shortcutManager = requireContext().getSystemService(ShortcutManager.class);
-//            ShortcutManagerCompat shortcutManagerCompat = ShortcutManagerCompat.(requireContext());
+        actionBinding.addToLauncher.setOnClickListener(_ -> {
             if (ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext())) {
-                // Enable the existing shortcut with the ID "my-shortcut".
+                Intent intent = new Intent(requireContext(), MainActivity.class);
+                if (item.containsKey("activity")) {
+                    try {
+                        intent = new Intent(requireContext(), Class.forName(requireContext().getPackageName() + item.getString("activity")));
+                    } catch (ClassNotFoundException _) {
+                    }
+                } else if (item.containsKey("url"))
+                    intent = new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(trim(item.getString("url"))));
                 ShortcutInfoCompat pinShortcutInfo = new ShortcutInfoCompat.Builder(requireContext(), String.valueOf(itemId))
                         .setShortLabel(item.getString("name"))
                         .setLongLabel(item.getString("name"))
                         .setIcon(IconCompat.createWithResource(requireContext(), R.mipmap.icon))
-//                        .setActivity(new ComponentName(requireContext(), MainActivity.class))
-                        .setIntent(new Intent(requireContext(), BrowserActivity.class).setAction(Intent.ACTION_VIEW).setData(Uri.parse(trim(item.getString("url")))))
+                        .setIntent(intent.setAction(Intent.ACTION_VIEW))
                         .build();
-
-                // Create the PendingIntent object only if your app needs to be notified
-                // that the user let the shortcut be pinned. If the pinning operation fails,
-                // your app isn't notified. Assume here that the app implements a method
-                // called createShortcutResultIntent() that returns a broadcast intent.
-                Intent pinnedShortcutCallbackIntent = ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo);
-
-                // Configure the intent so that your app's broadcast receiver gets the
-                // callback successfully. For details, see PendingIntent.getBroadcast().
-                PendingIntent successCallback = PendingIntent.getBroadcast(requireContext(), /* request code */ 0, pinnedShortcutCallbackIntent, /* flags */ PendingIntent.FLAG_IMMUTABLE);
-                ShortcutManagerCompat.requestPinShortcut(requireContext(), pinShortcutInfo, successCallback.getIntentSender());
-            }else{
-
+                ShortcutManagerCompat.requestPinShortcut(requireContext(), pinShortcutInfo, PendingIntent.getBroadcast(requireContext(), /* request code */ 0, ShortcutManagerCompat.createShortcutResultIntent(requireContext(), pinShortcutInfo), /* flags */ PendingIntent.FLAG_IMMUTABLE).getIntentSender());
+            } else {
+                params.toast(R.string.fail_to_add_shortcut);
             }
         });
         actionBinding.collect.setOnClickListener(_ -> {
