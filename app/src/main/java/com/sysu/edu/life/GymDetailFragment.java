@@ -102,8 +102,8 @@ public class GymDetailFragment extends Fragment {
                     params.toast(R.string.no_wifi_warning);
                 } else {
                     String response = (String) msg.obj;
+                    System.out.println(response);
                     if (msg.getData().getBoolean("isJSON")) {
-//                    System.out.println(msg.getData().getString("data"));
                         switch (msg.what) {
                             case 0:
                                 field.clear();
@@ -113,6 +113,7 @@ public class GymDetailFragment extends Fragment {
                                     JSONObject item = (JSONObject) e;
                                     JSONArray timeslots = item.getJSONArray("Timeslots");
                                     if (timeslots != null) {
+                                        System.out.println(timeslots);
                                         gridLayoutManager.setSpanCount(timeslots.size() + 1);
                                         if (Boolean.FALSE.equals(name.getValue())) {
                                             field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
@@ -144,11 +145,12 @@ public class GymDetailFragment extends Fragment {
                     } else if (!viewModel.authorizationManager.isAuthorized(response)) {
                         params.toast(R.string.login_warning);
                         params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-                    } else if (!viewModel.authorizationManager.isAccessible(response)) {
-                        params.toast(R.string.educational_wifi_warning);
-                        getInfo();
-                    } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                    }  else if (Pattern.compile("人机识别检测").matcher(response).find()) {
                         params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                    }else if (!viewModel.authorizationManager.isAccessible(response)) {
+                        params.toast(R.string.educational_wifi_warning);
+                        http.setAuthorizationRequired(true);
+                        getInfo();
                     }
 
                 }
@@ -162,17 +164,19 @@ public class GymDetailFragment extends Fragment {
         http.setParams(params);
         http.setUA(viewModel.ua);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-        http.setAuthorizationRequired(true);
+        http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
         return binding.getRoot();
     }
 
     void getInfo() {
         Integer positionValue = viewModel.position.getValue();
+//        System.out.println(positionValue);
         if (positionValue != null)
             getInfo(id, date.getFormattedDate(positionValue), date.getFormattedDate(positionValue));
     }
 
     void getInfo(String id, String from, String to) {
+
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venue/available-slots/range?venueTypeId=%s&start=%s&end=%s", id, from, to), 0);
     }
 

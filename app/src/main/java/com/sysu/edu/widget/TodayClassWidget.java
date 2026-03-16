@@ -87,7 +87,6 @@ public class TodayClassWidget extends AppWidgetProvider {
                                                 .build())
                                         .setInitialDelay(24 - LocalTime.now().getHour(), TimeUnit.HOURS)
                                         .build();
-
                                 WorkManager.getInstance(context).enqueue(workRequest);
                                 break;
                             case 3:

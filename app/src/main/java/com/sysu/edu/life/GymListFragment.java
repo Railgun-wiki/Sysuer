@@ -62,7 +62,7 @@ public class GymListFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putString("id", id);
                 bundle.putInt("code", requireArguments().getInt("code") + 1);
-                viewModel.position.postValue(0);
+//                viewModel.position.postValue(0);
                 Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
             });
             fieldAdapter.setParams(params);
@@ -76,6 +76,7 @@ public class GymListFragment extends Fragment {
                     switch (msg.getData().getInt("code")) {
                         case 401 -> {
                             viewModel.authorizationManager.setAccessible(false);
+                            http.setAuthorizationRequired(true);
                             params.toast(R.string.educational_wifi_warning);
                             getInfo();
                         }

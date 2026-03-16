@@ -27,6 +27,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.DialogEditTextBinding;
 import com.sysu.edu.databinding.FragmentQuestionnaireBinding;
 import com.sysu.edu.databinding.ItemOptionBinding;
@@ -130,7 +131,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                         });
                                     }));
                         } else {
-                            params.gotoLogin(getView(), "https://pjxt.sysu.edu.cn");
+                            params.gotoLogin(getView(), TargetUrl.PJXT);
                         }
                         break;
                     }
@@ -162,19 +163,15 @@ public class EvaluationQuestionnaireFragment extends Fragment {
         http.setParams(params);
         binding.save.setOnClickListener(_ -> saveEvaluation());
         binding.submit.setOnClickListener(_ -> Snackbar.make(binding.getRoot(), "提交后不可更改", Snackbar.LENGTH_LONG).setAction(R.string.confirm, _ -> submitEvaluation()).show());
-        binding.reset.setOnClickListener(_ -> {
-            adp.getAdapters().forEach(adapter -> {
-                if (adapter instanceof OptionAdapter) {
-                    ((OptionAdapter) adapter).clearAnswer();
-                } else if (adapter instanceof RankAdapter) {
-                    ((RankAdapter) adapter).clearAnswer();
-                } else if (adapter instanceof BlanketAdapter) {
-                    ((BlanketAdapter) adapter).clearAnswer();
-                }
-            });
-            /*answers.getJSONArray("pjjglist").forEach(o -> ((JSONObject) o).getJSONArray("pjxxlist").forEach(e -> ((JSONObject) e).put("xxdalist", new JSONArray())));
-            adp.notifyDataSetChanged();*/
-        });
+        binding.reset.setOnClickListener(_ -> adp.getAdapters().forEach(adapter -> {
+            if (adapter instanceof OptionAdapter) {
+                ((OptionAdapter) adapter).clearAnswer();
+            } else if (adapter instanceof RankAdapter) {
+                ((RankAdapter) adapter).clearAnswer();
+            } else if (adapter instanceof BlanketAdapter) {
+                ((BlanketAdapter) adapter).clearAnswer();
+            }
+        }));
         binding.auto.setOnClickListener(_ -> adp.getAdapters().forEach(adapter -> {
             if (adapter instanceof OptionAdapter) {
                 ((OptionAdapter) adapter).setLastOption();

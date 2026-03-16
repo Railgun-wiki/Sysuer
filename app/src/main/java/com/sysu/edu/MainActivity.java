@@ -4,10 +4,8 @@ import static com.sysu.edu.api.DownloadManager.downloadFile;
 import static com.sysu.edu.api.DownloadManager.openFile;
 
 import android.app.DownloadManager;
-import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -19,7 +17,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
-import android.widget.RemoteViews;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -233,8 +230,9 @@ public class MainActivity extends AppCompatActivity {
             }*/
         } catch (PackageManager.NameNotFoundException _) {
         }
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> appWidgetManager.updateAppWidget(new ComponentName(this, e), new RemoteViews(getPackageName(), R.layout.widget_next_class)));
+//        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
+        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> startService(new Intent(this, e)));
+//                .forEach(e -> appWidgetManager.updateAppWidget(new ComponentName(this, e), new RemoteViews(getPackageName(), R.layout.widget_next_class)));
 //        appWidgetManager.updateAppWidget(new ComponentName(this, NextClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_next_class));
 //        appWidgetManager.updateAppWidget(new ComponentName(this, TodayClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
 //        appWidgetManager.updateAppWidget(new ComponentName(this, TomorrowClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));

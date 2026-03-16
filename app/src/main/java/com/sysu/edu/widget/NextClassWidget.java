@@ -128,7 +128,7 @@ public class NextClassWidget extends AppWidgetProvider {
                                 getTodayCourses(term);
 //                                getExams(term);
                                 getWeek(term);
-                                remoteViews.setTextViewText(R.id.day, String.format("%s学期\n%s周%s", term, DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                                remoteViews.setTextViewText(R.id.day, String.format("%s学期\n%s周%s", term, DateTimeFormatter.ofPattern("MM-dd").format(LocalDate.now()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
                                 break;
                             case 4:
                                 remoteViews.setTextViewText(R.id.week, String.format(context.getString(R.string.week_x), response.getJSONArray("data").getJSONObject(0).getString("weekTimes")));

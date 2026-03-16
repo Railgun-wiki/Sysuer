@@ -168,7 +168,7 @@ public class LoginManager {
                                 .post(RequestBody.create("", MediaType.parse("application/x-www-form-urlencoded")))
                                 .build()).execute();
 
-                    return false;
+                    return true;
                 }
                 JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
                 login(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
@@ -216,11 +216,14 @@ public class LoginManager {
     public void getGymToken() {
         Matcher re = Pattern.compile("prefix = '(.+?)'").matcher(loginForGym("https://gym-443.webvpn.sysu.edu.cn/"));
         String prefix = "";
-        // System.out.println(b.stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList()));
+//        System.out.println(cookieJar.loadForRequest(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn/")).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList()));
         List<Cookie> filterChallenge = cookieJar.loadForRequest(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn/")).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList());
         if (re.find()) prefix = re.group(1);
-        if (!filterChallenge.isEmpty() && !isEmpty(prefix))
-            cookieJar.saveFromResponse(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn"), List.of(new Cookie.Builder().domain("gym-443.webvpn.sysu.edu.cn").name("safeline_bot_challenge_ans").value(Answer.encode(prefix, filterChallenge.get(0).value())).build()));
+        if (!filterChallenge.isEmpty() && !isEmpty(prefix)) {
+            String s = Answer.encode(prefix, filterChallenge.get(0).value());
+//            System.out.println(s);
+            cookieJar.saveFromResponse(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn"), List.of(new Cookie.Builder().domain("gym-443.webvpn.sysu.edu.cn").name("safeline_bot_challenge_ans").value(s).build()));
+        }
     }
 
     public String getNewsAuthorization(String url) {
@@ -297,88 +300,88 @@ public class LoginManager {
 //            return cookieManager;
 //        }
     }
-}
 
-class Answer {
-    /**
-     * 计算字符串的SHA1哈希值，返回十六进制字符串
-     */
-    public static String hexSha1(String input) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-1");
-        byte[] hash = md.digest(input.getBytes());
-        return bytesToHex(hash);
-    }
+    static class Answer {
+        /**
+         * 计算字符串的SHA1哈希值，返回十六进制字符串
+         */
+        public static String hexSha1(String input) throws NoSuchAlgorithmException {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hash = md.digest(input.getBytes());
+            return bytesToHex(hash);
+        }
 
-    /**
-     * 将字节数组转换为十六进制字符串
-     */
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
+        /**
+         * 将字节数组转换为十六进制字符串
+         */
+        private static String bytesToHex(byte[] bytes) {
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : bytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
             }
-            hexString.append(hex);
+            return hexString.toString();
         }
-        return hexString.toString();
-    }
 
-    /**
-     * 将十六进制字符串转换为二进制字符串 每个十六进制字符转换为4位二进制
-     */
-    public static String hexToBinary(String hexStr) {
-        StringBuilder binaryStr = new StringBuilder();
-        for (int i = 0; i < hexStr.length(); i++) {
-            char c = hexStr.charAt(i);
-            int value = Character.digit(c, 16);
-            // 转换为4位二进制，前面补0
-            String binary = String.format("%4s", Integer.toBinaryString(value)).replace(' ', '0');
-            binaryStr.append(binary);
-        }
-        return binaryStr.toString();
-    }
-
-    /**
-     * 模拟JS中的bin_sha1函数
-     */
-    public static String binSha1(String input) throws NoSuchAlgorithmException {
-        String hexHash = hexSha1(input);
-        return hexToBinary(hexHash);
-    }
-
-    /**
-     * 找到满足条件的suffix
-     */
-    public static String findSuffix(String prefix, int leadingZeroBit) throws NoSuchAlgorithmException {
-        int cnt = 0;
-        while (true) {
-            String suffix = Integer.toHexString(cnt);
-            String hashBinary = binSha1(prefix + suffix);
-            // 检查前leadingZeroBit位是否全为0
-            if (hashBinary.substring(0, leadingZeroBit).equals("0".repeat(leadingZeroBit))) {
-                return suffix;
+        /**
+         * 将十六进制字符串转换为二进制字符串 每个十六进制字符转换为4位二进制
+         */
+        public static String hexToBinary(String hexStr) {
+            StringBuilder binaryStr = new StringBuilder();
+            for (int i = 0; i < hexStr.length(); i++) {
+                char c = hexStr.charAt(i);
+                int value = Character.digit(c, 16);
+                // 转换为4位二进制，前面补0
+                String binary = String.format("%4s", Integer.toBinaryString(value)).replace(' ', '0');
+                binaryStr.append(binary);
             }
-            cnt++;
+            return binaryStr.toString();
         }
-    }
 
-    /**
-     * 计算最终的safeline_bot_challenge_ans cookie值
-     */
-    public static String getFinalCookie(String safelineBotChallenge, String prefix, int leadingZeroBit)
-            throws NoSuchAlgorithmException {
-        return safelineBotChallenge + findSuffix(prefix, leadingZeroBit);
-    }
-
-    public static String encode(String prefix, String safelineBotChallenge) {
-        try {
-            return getFinalCookie(safelineBotChallenge, prefix, 9);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("SHA-1算法不可用: " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("发生错误: " + e.getMessage());
+        /**
+         * 模拟JS中的bin_sha1函数
+         */
+        public static String binSha1(String input) throws NoSuchAlgorithmException {
+            String hexHash = hexSha1(input);
+            return hexToBinary(hexHash);
         }
-        return "";
+
+        /**
+         * 找到满足条件的suffix
+         */
+        public static String findSuffix(String prefix, int leadingZeroBit) throws NoSuchAlgorithmException {
+            int cnt = 0;
+            while (true) {
+                String suffix = Integer.toHexString(cnt);
+                String hashBinary = binSha1(prefix + suffix);
+                // 检查前leadingZeroBit位是否全为0
+                if (hashBinary.substring(0, leadingZeroBit).equals("0".repeat(leadingZeroBit))) {
+                    return suffix;
+                }
+                cnt++;
+            }
+        }
+
+        /**
+         * 计算最终的safeline_bot_challenge_ans cookie值
+         */
+        public static String getFinalCookie(String safelineBotChallenge, String prefix, int leadingZeroBit)
+                throws NoSuchAlgorithmException {
+            return safelineBotChallenge + findSuffix(prefix, leadingZeroBit);
+        }
+
+        public static String encode(String prefix, String safelineBotChallenge) {
+            try {
+                return getFinalCookie(safelineBotChallenge, prefix, 9);
+            } catch (NoSuchAlgorithmException e) {
+                System.err.println("SHA-1算法不可用: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("发生错误: " + e.getMessage());
+            }
+            return "";
+        }
     }
 }
