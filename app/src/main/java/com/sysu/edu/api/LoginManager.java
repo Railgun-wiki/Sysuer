@@ -179,10 +179,6 @@ public class LoginManager {
                     params.setToken(token);
                     cookieJar.saveFromResponse(HttpUrl.get("https://pay.sysu.edu.cn/client/api/client/auth/netId/login"), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
                 }
-
-//                login("https://netpay.sysu.edu.cn/netpay/index.jsp");
-//                System.out.println(cookieJar.loadForRequest(HttpUrl.get("https://pay.sysu.edu.cn")));
-//                System.out.println(cookieJar.loadForRequest(HttpUrl.get("https://xgxt-443.webvpn.sysu.edu.cn/")));
                 return true;
             } catch (Exception _) {
             }
