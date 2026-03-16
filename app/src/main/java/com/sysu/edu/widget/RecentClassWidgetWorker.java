@@ -1,17 +1,14 @@
 package com.sysu.edu.widget;
 
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.widget.RemoteViews;
+import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.sysu.edu.R;
-
 public class RecentClassWidgetWorker extends Worker {
+
 
     public RecentClassWidgetWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -20,8 +17,7 @@ public class RecentClassWidgetWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getApplicationContext());
-        appWidgetManager.updateAppWidget(new ComponentName(getApplicationContext(), RecentClassWidget.class), new RemoteViews(getApplicationContext().getPackageName(), R.layout.widget_today_class));
+        getApplicationContext().startService(new Intent(getApplicationContext(), RecentClassWidget.class));
         return Result.success();
     }
 }
