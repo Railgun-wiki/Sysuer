@@ -10,9 +10,10 @@ public class GymReservationViewModel extends ViewModel {
     //    final MutableLiveData<String> authorization = new MutableLiveData<>("");
 //    String cookie = "";
     final AuthorizationManager authorizationManager = new AuthorizationManager("https://gym.sysu.edu.cn/", "https://gym-443.webvpn.sysu.edu.cn/");
-    final MutableLiveData<Boolean> loginRequired = new MutableLiveData<>();
+//    final MutableLiveData<Boolean> loginRequired = new MutableLiveData<>();
 
     long from = System.currentTimeMillis();
     long to = System.currentTimeMillis();
 
+    final MutableLiveData<Integer> position = new MutableLiveData<>();
 }

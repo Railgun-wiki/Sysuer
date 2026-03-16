@@ -153,11 +153,11 @@ public class LoginManager {
                             params.setAuthorization(auth);
                         }
                     } else if (Objects.equals(service, TargetUrl.GYM_WEBVPN)) {
-                        getToken();
+                        getGymToken();
                         cookieJar.copy("https://gym-443.webvpn.sysu.edu.cn", "https://gym.webvpn.sysu.edu.cn");
                         String auth = getGymAuthorization();
 //                        login("https://gym-443.webvpn.sysu.edu.cn/authsport/Account/Auth?response_type=token&client_id=sysu_2021&redirect_uri=https%3A%2F%2gym.sysu.edu.cn%2F%23&client_id=unnc&scope=PE");
-                        System.out.println(auth);
+//                        System.out.println(auth);
                         if (params != null)
                             params.setAuthorization("Bearer " + auth);
                     } else {
@@ -168,12 +168,16 @@ public class LoginManager {
                                 .post(RequestBody.create("", MediaType.parse("application/x-www-form-urlencoded")))
                                 .build()).execute();
 
-                    return true;
+                    return false;
                 }
-                JSONObject params = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
-                login(redirect(doLogin(username, encrypt(params.getString("publicKey"), password), params.getString("publicKeyId"))) + "?service=" + service);
+                JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
+                login(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
                 if (Objects.equals(service, TargetUrl.PORTAL)) {
                     login("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
+                } else if (Objects.equals(service, TargetUrl.PAY)) {
+                    String token = getPayToken(service);
+                    params.setToken(token);
+                    cookieJar.saveFromResponse(HttpUrl.get("https://pay.sysu.edu.cn/client/api/client/auth/netId/login"), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
                 }
 
 //                login("https://netpay.sysu.edu.cn/netpay/index.jsp");
@@ -184,6 +188,13 @@ public class LoginManager {
             }
             return false;
         }).get();
+    }
+
+    private String getPayToken(String service) throws IOException {
+        return JSONObject.parse(client.newCall(new Request.Builder().url("https://pay.sysu.edu.cn/client/api/client/auth/netId/login")
+                .header("Referer", "https://pay.sysu.edu.cn/")
+                .post(RequestBody.create("{\"key\":\"https://cas.sysu.edu.cn/cas/serviceValidate?service=https://pay.sysu.edu.cn/sso&ticket=" + getTicket(service) + "\"}\n", MediaType.parse("application/json")))
+                .build()).execute().body().string()).getString("data");
     }
 
     private String encrypt(String publicKeyBase64, String plainText) throws Exception {
@@ -202,7 +213,7 @@ public class LoginManager {
         this.params = params;
     }
 
-    public void getToken() {
+    public void getGymToken() {
         Matcher re = Pattern.compile("prefix = '(.+?)'").matcher(loginForGym("https://gym-443.webvpn.sysu.edu.cn/"));
         String prefix = "";
         // System.out.println(b.stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList()));

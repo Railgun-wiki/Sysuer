@@ -62,6 +62,7 @@ public class GymListFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 bundle.putString("id", id);
                 bundle.putInt("code", requireArguments().getInt("code") + 1);
+                viewModel.position.postValue(0);
                 Navigation.findNavController(binding.getRoot()).navigate(R.id.campus_to_field, bundle);
             });
             fieldAdapter.setParams(params);
@@ -71,6 +72,7 @@ public class GymListFragment extends Fragment {
                 public void handleMessage(@NonNull Message msg) {
                     String response = (String) msg.obj;
                     System.out.println(response);
+                    System.out.println(msg.getData().getInt("code"));
                     switch (msg.getData().getInt("code")) {
                         case 401 -> {
                             viewModel.authorizationManager.setAccessible(false);
@@ -92,19 +94,19 @@ public class GymListFragment extends Fragment {
                                     params.toast(R.string.educational_wifi_warning);
                                     http.setAuthorizationRequired(true);
                                     getInfo();
-                                    return;
                                 }
-                                return;
-                            }
-                            JSONArray data = JSONArray.parseArray(response);
-                            if (data != null) {
-                                switch (msg.what) {
-                                    case 1 -> data.forEach(e -> fieldAdapter.add((JSONObject) e));
-                                    case 2 -> data.forEach(e -> {
-                                                if (Objects.equals(((JSONObject) e).getString("Campus"), requireArguments().getString("id")))
-                                                    fieldAdapter.add((JSONObject) e);
-                                            }
-                                    );
+                            } else {
+                                JSONArray data = JSONArray.parseArray(response);
+                                if (data != null && !data.isEmpty()) {
+                                    switch (msg.what) {
+                                        case 1 ->
+                                                data.forEach(e -> fieldAdapter.add((JSONObject) e));
+                                        case 2 -> data.forEach(e -> {
+                                                    if (Objects.equals(((JSONObject) e).getString("Campus"), requireArguments().getString("id")))
+                                                        fieldAdapter.add((JSONObject) e);
+                                                }
+                                        );
+                                    }
                                 }
                             }
                         }
@@ -112,6 +114,7 @@ public class GymListFragment extends Fragment {
                 }
             });
             http.setParams(params);
+            http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
             http.setHeader(Map.of("Accept", "application/json, text/plain, */*", "User-Agent", viewModel.ua));
             getInfo();
         }

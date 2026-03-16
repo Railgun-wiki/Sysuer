@@ -95,7 +95,8 @@ public class GymOrderFragment extends Fragment {
                     } else {
                         if (!viewModel.authorizationManager.isAuthorized(response)) {
                             params.toast(R.string.login_warning);
-                            viewModel.loginRequired.setValue(true);
+//                            viewModel.loginRequired.setValue(true);
+                            params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
                             getOrder();

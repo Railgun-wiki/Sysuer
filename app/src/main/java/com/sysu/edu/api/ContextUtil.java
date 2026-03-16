@@ -121,6 +121,15 @@ public class ContextUtil {
     }
 
     /**
+     * 设置 Token
+     *
+     * @param token Token
+     */
+    public void setToken(String token) {
+        sharedPreferences.edit().putString("token", token).apply();
+    }
+
+    /**
      * 获取是否为开发者
      *
      * @return 是否为开发者

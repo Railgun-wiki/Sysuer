@@ -27,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.DialogGymReservationBinding;
 import com.sysu.edu.databinding.FragmentGymDetailBinding;
 import com.sysu.edu.databinding.ItemDateBinding;
@@ -48,11 +49,11 @@ import java.util.regex.Pattern;
 
 public class GymDetailFragment extends Fragment {
 
-    final MutableLiveData<Integer> position = new MutableLiveData<>();
     final HashMap<String, JSONObject> fee = new HashMap<>();
     HttpManager http;
     GymReservationViewModel viewModel;
     String id;
+    DateAdapter date;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -60,13 +61,16 @@ public class GymDetailFragment extends Fragment {
         FragmentGymDetailBinding binding = FragmentGymDetailBinding.inflate(inflater, container, false);
         DialogGymReservationBinding dialogBinding = DialogGymReservationBinding.inflate(inflater, container, false);
         binding.date.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        DateAdapter date = new DateAdapter(requireContext());
+        date = new DateAdapter(requireContext());
 
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         dialog.setContentView(dialogBinding.getRoot());
         initReservationDialog(dialogBinding);
-
-        date.setAction(position::setValue);
+        viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
+        if (viewModel.position.getValue() == null) {
+            viewModel.position.postValue(0);
+        }
+        date.setAction(viewModel.position::setValue);
         Params params = new Params(this);
         binding.date.recyclerView.setAdapter(date);
         binding.date.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -87,63 +91,69 @@ public class GymDetailFragment extends Fragment {
                 updateReservationDialog(dialogBinding, p.getString("Venue"), p.getString("Date"), p.getString("Duration"), String.format(Locale.getDefault(), "运动时￥%d或现金￥%d", studentFee.getInteger("CreditFee"), studentFee.getInteger("CashFee")), p.getString("Type"));
             dialog.show();
         });
-        position.observe(getViewLifecycleOwner(), p -> {
-            if (p != null) getInfo(id, date.getFormattedDate(p), date.getFormattedDate(p));
+        viewModel.position.observe(getViewLifecycleOwner(), p -> {
+            if (p != null) getInfo();
         });
-        viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
-                } else if (msg.getData().getBoolean("isJSON")) {
-//                    System.out.println(msg.getData().getString("data"));
-                    switch (msg.what) {
-                        case 0:
-                            field.clear();
-                            AtomicInteger availableCapacity = new AtomicInteger();
-                            MutableLiveData<Boolean> name = new MutableLiveData<>(false);
-                            Objects.requireNonNull(JSONArray.parse((String) msg.obj)).forEach(e -> {
-                                JSONObject item = (JSONObject) e;
-                                JSONArray timeslots = item.getJSONArray("Timeslots");
-                                if (timeslots != null) {
-                                    gridLayoutManager.setSpanCount(timeslots.size() + 1);
-                                    if (Boolean.FALSE.equals(name.getValue())) {
-                                        field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
-                                        timeslots.forEach(o -> field.add(new JSONObject().fluentPut("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End"))).fluentPut("Type", 2)));
-                                        name.setValue(true);
-                                    }
-                                    String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll("");
-                                    field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
-                                    timeslots.forEach(o -> {
-                                        JSONObject jsonObject = (JSONObject) o;
-                                        field.add(jsonObject.fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
-                                        int capacity = Integer.parseInt(jsonObject.getString("AvailableCapacity"));
-                                        if (capacity > 0)
-                                            availableCapacity.addAndGet(capacity);
-                                    });
-                                    if (position.getValue() != null)
-                                        date.setAvailableCapacity(position.getValue(), availableCapacity.get());
-                                }
-                            });
-                            getFee(id);
-                            break;
-                        case 1:
-                            fee.clear();
-                            JSONArray feeTemplates = JSONArray.parse(msg.getData().getString("data"));
-                            if (feeTemplates != null)
-                                feeTemplates.forEach(e -> fee.put(((JSONObject) e).getString("UserRole"), (JSONObject) e));
-                            break;
-                    }
                 } else {
-                    params.toast(R.string.educational_wifi_warning);
+                    String response = (String) msg.obj;
+                    if (msg.getData().getBoolean("isJSON")) {
+//                    System.out.println(msg.getData().getString("data"));
+                        switch (msg.what) {
+                            case 0:
+                                field.clear();
+                                AtomicInteger availableCapacity = new AtomicInteger();
+                                MutableLiveData<Boolean> name = new MutableLiveData<>(false);
+                                JSONArray.parse(response).forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    JSONArray timeslots = item.getJSONArray("Timeslots");
+                                    if (timeslots != null) {
+                                        gridLayoutManager.setSpanCount(timeslots.size() + 1);
+                                        if (Boolean.FALSE.equals(name.getValue())) {
+                                            field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
+                                            timeslots.forEach(o -> field.add(new JSONObject().fluentPut("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End"))).fluentPut("Type", 2)));
+                                            name.setValue(true);
+                                        }
+                                        String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll("");
+                                        field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
+                                        timeslots.forEach(o -> {
+                                            JSONObject jsonObject = (JSONObject) o;
+                                            field.add(jsonObject.fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
+                                            int capacity = Integer.parseInt(jsonObject.getString("AvailableCapacity"));
+                                            if (capacity > 0)
+                                                availableCapacity.addAndGet(capacity);
+                                        });
+                                        if (viewModel.position.getValue() != null)
+                                            date.setAvailableCapacity(viewModel.position.getValue(), availableCapacity.get());
+                                    }
+                                });
+                                getFee(id);
+                                break;
+                            case 1:
+                                fee.clear();
+                                JSONArray feeTemplates = JSONArray.parse(response);
+                                if (feeTemplates != null)
+                                    feeTemplates.forEach(e -> fee.put(((JSONObject) e).getString("UserRole"), (JSONObject) e));
+                                break;
+                        }
+                    } else if (!viewModel.authorizationManager.isAuthorized(response)) {
+                        params.toast(R.string.login_warning);
+                        params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                    } else if (!viewModel.authorizationManager.isAccessible(response)) {
+                        params.toast(R.string.educational_wifi_warning);
+                        getInfo();
+                    } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                        params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                    }
+
                 }
             }
         });
-        if (position.getValue() == null) {
-            position.postValue(0);
-        }
 
         /*viewModel.loginRequired.observe(requireActivity(), b -> {
             if (!b)
@@ -154,6 +164,12 @@ public class GymDetailFragment extends Fragment {
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
         http.setAuthorizationRequired(true);
         return binding.getRoot();
+    }
+
+    void getInfo() {
+        Integer positionValue = viewModel.position.getValue();
+        if (positionValue != null)
+            getInfo(id, date.getFormattedDate(positionValue), date.getFormattedDate(positionValue));
     }
 
     void getInfo(String id, String from, String to) {

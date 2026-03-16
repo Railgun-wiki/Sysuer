@@ -250,7 +250,8 @@ public class Params {
      * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
      */
     public void gotoLogin(View view, String url) {
-        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN, TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS,TargetUrl.GYM_WEBVPN, TargetUrl.GYM).contains(url)) {
+        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN,
+                TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS, TargetUrl.GYM_WEBVPN, TargetUrl.GYM, TargetUrl.PAY, TargetUrl.PJXT).contains(url)) {
             contextUtil.login(url, afterLogin);
             return;
         }

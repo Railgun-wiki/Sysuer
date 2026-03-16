@@ -24,6 +24,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ItemEvaluationBinding;
 import com.sysu.edu.databinding.RecyclerViewScrollBinding;
 import com.sysu.edu.template.RecyclerAdapter;
@@ -52,16 +53,17 @@ public class EvaluationCategoryFragment extends Fragment {
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
+//                System.out.println(msg.obj);
                 if (msg.what == 1) {
                     JSONObject data = JSON.parseObject((String) msg.obj);
                     if (data != null && Objects.equals(data.get("code"), "200")) {
                         data.getJSONObject("result").getJSONArray("list").forEach(e -> categoryAdapter.add((JSONObject) e));
                     } else {
-                        params.gotoLogin(getView(), "https://pjxt.sysu.edu.cn");
+                        params.gotoLogin(getView(), TargetUrl.PJXT);
                     }
                 } else if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
-                    params.gotoLogin(getView(), "https://pjxt.sysu.edu.cn");
+                    params.gotoLogin(getView(), TargetUrl.PJXT);
                 }
             }
         });
