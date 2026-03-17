@@ -76,14 +76,20 @@ public class Application extends android.app.Application {
 
     public void initCrash() {
         Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler((_, throwable) -> {
+        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
+    }
+
+    class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+        @Override
+        public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            throwable.printStackTrace(pw);
+            e.printStackTrace(pw);
             pw.close();
             startActivity(new Intent(Application.this, CrashActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("crash", sw.toString()));
+            uncaughtException(t, e);
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(10);
-        });
+        }
     }
 }

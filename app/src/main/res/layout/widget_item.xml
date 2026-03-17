@@ -23,7 +23,9 @@
             style="@style/TextAppearance.Material3.TitleMedium.Emphasized"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="middle"
             android:text="@string/course_name"
+            android:maxLines="2"
             android:textColor="@color/widget_title_on_background" />
 
         <TextView

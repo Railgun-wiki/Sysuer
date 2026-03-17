@@ -1,6 +1,5 @@
 package com.sysu.edu.life;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,9 +8,6 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -34,14 +30,19 @@ import com.sysu.edu.databinding.ItemDateBinding;
 import com.sysu.edu.databinding.ItemFieldDetailBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -53,7 +54,10 @@ public class GymDetailFragment extends Fragment {
     HttpManager http;
     GymReservationViewModel viewModel;
     String id;
+    String hash;
     DateAdapter date;
+    String userId;
+    String type;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -88,7 +92,7 @@ public class GymDetailFragment extends Fragment {
         field.setAction((JSONObject p) -> {
             JSONObject studentFee = fee.get("学生");
             if (studentFee != null)
-                updateReservationDialog(dialogBinding, p.getString("Venue"), p.getString("Date"), p.getString("Duration"), String.format(Locale.getDefault(), "运动时￥%d或现金￥%d", studentFee.getInteger("CreditFee"), studentFee.getInteger("CashFee")), p.getString("Type"));
+                updateReservationDialog(dialogBinding, p, studentFee);
             dialog.show();
         });
         viewModel.position.observe(getViewLifecycleOwner(), p -> {
@@ -102,29 +106,31 @@ public class GymDetailFragment extends Fragment {
                     params.toast(R.string.no_wifi_warning);
                 } else {
                     String response = (String) msg.obj;
-                    System.out.println(response);
+//                    System.out.println(response);
                     if (msg.getData().getBoolean("isJSON")) {
                         switch (msg.what) {
                             case 0:
                                 field.clear();
+                                hash = md5(response);
                                 AtomicInteger availableCapacity = new AtomicInteger();
                                 MutableLiveData<Boolean> name = new MutableLiveData<>(false);
                                 JSONArray.parse(response).forEach(e -> {
                                     JSONObject item = (JSONObject) e;
                                     JSONArray timeslots = item.getJSONArray("Timeslots");
                                     if (timeslots != null) {
-                                        System.out.println(timeslots);
+//                                        System.out.println(timeslots);
                                         gridLayoutManager.setSpanCount(timeslots.size() + 1);
                                         if (Boolean.FALSE.equals(name.getValue())) {
                                             field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
                                             timeslots.forEach(o -> field.add(new JSONObject().fluentPut("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End"))).fluentPut("Type", 2)));
                                             name.setValue(true);
-                                        }
-                                        String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll("");
+                                        }// 第一列
+                                        String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll(""); // 第一行
                                         field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
                                         timeslots.forEach(o -> {
+
                                             JSONObject jsonObject = (JSONObject) o;
-                                            field.add(jsonObject.fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
+                                            field.add(jsonObject.clone().fluentPut("VenueBooking", item.fluentPut("Timeslots", JSONArray.of(jsonObject))).fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
                                             int capacity = Integer.parseInt(jsonObject.getString("AvailableCapacity"));
                                             if (capacity > 0)
                                                 availableCapacity.addAndGet(capacity);
@@ -140,14 +146,40 @@ public class GymDetailFragment extends Fragment {
                                 JSONArray feeTemplates = JSONArray.parse(response);
                                 if (feeTemplates != null)
                                     feeTemplates.forEach(e -> fee.put(((JSONObject) e).getString("UserRole"), (JSONObject) e));
+                                getMe();
+                                break;
+                            case 2:
+                                JSONArray mes = JSONArray.parseArray(response);
+                                if (!mes.isEmpty()) {
+                                    JSONObject me = mes.getJSONObject(0);
+                                    userId = me.getString("UserId");
+                                }
+                                getType(id);
+                                break;
+                            case 3:
+                                JSONArray types = JSONArray.parseArray(response);
+                                if (!types.isEmpty()) {
+                                    type = types.getJSONObject(0).getString("TypeIdentity");
+                                }
+                                break;
+                            case 4:
+                                System.out.println(response);
+                                JSONObject result = JSONObject.parse(response);
+                                if (result.getInteger("Code") == 200) {
+                                    params.toast(R.string.reserve_success);
+                                } else {
+                                    params.toast(result.getString("Result"));
+                                }
+                                // 订单编号
+                                /*{"Code":200,"Result":{"Identity":"6ae40ca4-392b-4ebc-8ba2-8ec1126f54bc","Name":"tangxb6","BookingId":"#RB-44U4HTRRQ4","UserId":"tangxb6","HostKey":"24308152","VenueTypeId":"802fbfda-f9f6-41c8-9c72-685247f07c73","VenueBookings":[{"VenueId":"d2c4c59a-1d00-4c44-9a6a-24f26390227e","VenueName":"东校园游泳池","TimeSlots":[{"Date":"2026-03-18T00:00:00","Start":"19:30","End":"21:00"}]}],"Participants":[],"Status":"Accepted","Description":"东校园游泳池","Charge":-5,"IsCash":false,"CreatedAt":"2026-03-17T21:30:19.8154563+08:00","UpdatedAt":"2026-03-17T13:30:19.611245Z","ActionedBy":"tangxb6","Token":null}}*/
                                 break;
                         }
                     } else if (!viewModel.authorizationManager.isAuthorized(response)) {
                         params.toast(R.string.login_warning);
                         params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-                    }  else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                    } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
                         params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-                    }else if (!viewModel.authorizationManager.isAccessible(response)) {
+                    } else if (!viewModel.authorizationManager.isAccessible(response)) {
                         params.toast(R.string.educational_wifi_warning);
                         http.setAuthorizationRequired(true);
                         getInfo();
@@ -170,13 +202,11 @@ public class GymDetailFragment extends Fragment {
 
     void getInfo() {
         Integer positionValue = viewModel.position.getValue();
-//        System.out.println(positionValue);
         if (positionValue != null)
             getInfo(id, date.getFormattedDate(positionValue), date.getFormattedDate(positionValue));
     }
 
     void getInfo(String id, String from, String to) {
-
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venue/available-slots/range?venueTypeId=%s&start=%s&end=%s", id, from, to), 0);
     }
 
@@ -184,79 +214,59 @@ public class GymDetailFragment extends Fragment {
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/venuetype/%s/feetemplates", id), 1);
     }
 
-
-    @SuppressLint("SetJavaScriptEnabled")
-    public void generateToken(String id) {
-        String uuid = generateUUID();
-        WebView web = new WebView(requireContext());
-        WebSettings webSettings = web.getSettings();
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setDatabaseEnabled(true);
-        webSettings.setLoadWithOverviewMode(true);
-        webSettings.setUseWideViewPort(true);
-        webSettings.setBlockNetworkImage(false);
-        webSettings.setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)");
-        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.supportZoom();
-        webSettings.setSupportZoom(true);
-        webSettings.setDisplayZoomControls(false);
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-        web.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                //viewModel.token = cookie.getCookie(url);
-//                handler.postDelayed(() -> {
-                web.evaluateJavascript("(function(){var c=document.querySelector(\".main-container\").__vue__;var uuid=c.generateUUID();return [uuid,c.genToken(uuid)];})()", string -> {
-                    if (!Objects.equals(string, "null")) {
-                        JSONArray tokenArray = JSONArray.parse(string);
-                        if (tokenArray != null && tokenArray.size() == 2) {
-                            System.out.println(tokenArray);
-//                                viewModel.token = tokenArray.getString(0);
-//                                viewModel.authorization = tokenArray.getString(1);
-                        }
-                    }
-                    web.destroy();
-                });
-//                }, 500);
-                super.onPageFinished(view, url);
-            }
-        });
-
-        //System.out.println(id);
-        web.loadUrl("https://gym.sysu.edu.cn/#/booking/" + id);
-
-        //((ViewGroup) requireActivity().findViewById(android.R.id.content)).addView(web);
+    void getMe() {
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/swimmer/me", 2);
     }
 
-    public String generateUUID() {
-        final Random RANDOM = new Random();
-        final String TEMPLATE = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
-        StringBuilder uuid = new StringBuilder();
+    void getType(String id) {
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/venue/type/" + id, 3);
+    }
 
-        for (int i = 0; i < TEMPLATE.length(); i++) {
-            char templateChar = TEMPLATE.charAt(i);
+    public void reserve(String payload) {
+        http.postRequest(viewModel.authorizationManager.getBaseUrl() + "api/BookingRequestVenue", payload, 4);
+    }
 
-            if (templateChar == 'x' || templateChar == 'y') {
-                int randomNum = RANDOM.nextInt(16); // 0-15的随机数
-                int value;
+    /**
+     * 生成 UUID
+     *
+     * @return 生成的 UUID
+     *
+     */
+    String generateUUID() {
+        return UUID.randomUUID().toString();
+    }
 
-                if (templateChar == 'x') {
-                    value = randomNum; // 0-15
-                } else { // templateChar == 'y'
-                    value = (randomNum & 0x3) | 0x8; // 8, 9, 10, 11
-                }
+    /**
+     * 生成 Token
+     *
+     * @param hash 哈希值
+     * @return 生成的 Token
+     *
+     */
+    String genToken(String uuid, String hash) {
+        long timestamp = System.currentTimeMillis() / 1000L;
+        return md5("SYSUBOOKING-" + uuid + timestamp) + "." + timestamp + "." + hash;
+    }
 
-                uuid.append(Integer.toHexString(value));
-            } else {
-                uuid.append(templateChar);
+    /**
+     * 计算 MD5 哈希值
+     *
+     * @param input 输入字符串
+     * @return 计算得到的 MD5 哈希值（十六进制小写字符串）
+     *
+     */
+    String md5(String input) {
+        try {
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : MessageDigest.getInstance("MD5").digest(input.getBytes(StandardCharsets.UTF_8))) {
+                String hex = Integer.toHexString(0xff & b);
+                hexString.append(hex.length() == 1 ? "0" : hex);
             }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5 algorithm not available", e);
         }
-
-        return uuid.toString();
     }
-
 
     void initReservationDialog(DialogGymReservationBinding binding) {
         binding.field.key.setText(R.string.field);
@@ -264,16 +274,40 @@ public class GymDetailFragment extends Fragment {
         binding.time.key.setText(R.string.time);
         binding.fee.key.setText(R.string.fee);
         binding.type.key.setText(R.string.type);
-        binding.reserve.setOnClickListener(_ -> generateToken(id));
+
     }
 
-    void updateReservationDialog(DialogGymReservationBinding binding, String field, String date, String time, String fee, String type) {
-        binding.field.value.setText(field);
-        binding.date.value.setText(date);
-        binding.time.value.setText(time);
-        binding.fee.value.setText(fee);
-        binding.type.value.setText(type);
+    void updateReservationDialog(DialogGymReservationBinding binding, JSONObject item, JSONObject studentFee) {
+        binding.field.value.setText(item.getString("Venue"));
+        binding.date.value.setText(item.getString("Date"));
+        binding.time.value.setText(item.getString("Duration"));
+        Integer creditFee = studentFee.getInteger("CreditFee");
+        Integer cashFee = studentFee.getInteger("CashFee");
+        binding.fee.value.setText(String.format(Locale.getDefault(), "运动时￥%d或现金￥%d", creditFee, cashFee));
+        binding.type.value.setText(item.getString("Type"));
+        binding.reserve.setOnClickListener(_ -> {
+            String uuid = generateUUID();
+            String time = LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC).toString();
+//            {"Identity":"561e14e8-1f6d-44d4-89e9-e9cbe0b5bb81","BookingId":"e59ec78d1b4b06f72f6860d10e0fe7d2.1773708652.b268e04b7b07d45673fdf4ad2f14c914","VenueTypeId":"802fbfda-f9f6-41c8-9c72-685247f07c73","VenueBookings":[{"VenueId":"d2c4c59a-1d00-4c44-9a6a-24f26390227e","VenueName":"东校园游泳池","TimeSlots":[{"Date":"2026-03-17T00:00:00.000Z","Start":"16:30","End":"18:00"}]}],"Participants":[],"Status":"Accepted","Description":"东校园游泳池","CreatedAt":"2026-03-17T00:50:52.552Z","UpdatedAt":"2026-03-17T00:50:52.552Z","ActionedBy":"tangxb6","IsCash":false,"Charge":5}
+            JSONObject payload = JSONObject.of(
+                    "Identity", uuid,
+                    "BookingId", genToken(uuid, hash),
+                    "VenueTypeId", type,
+                    "VenueBookings", JSONArray.of(item.getJSONObject("VenueBooking")),
+                    "Participants", JSONArray.of(),
+                    "Status", "Accepted",
+                    "Description", item.getString("VenueName"),
+                    "CreatedAt", time,
+                    "UpdatedAt", time,
+                    "ActionedBy", userId,/*NetID*/
+                    "IsCash", false,
+                    "Charge", creditFee
+            );
+            System.out.println(payload);
+            reserve(payload.toJSONString());
+        });
     }
+
 
     static class DateAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final Context context;

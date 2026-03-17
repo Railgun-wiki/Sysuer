@@ -39,6 +39,7 @@ public class CrashActivity extends AppCompatActivity {
     String crashInfo;
     Params params;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

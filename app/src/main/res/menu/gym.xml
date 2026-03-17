@@ -5,6 +5,10 @@
         android:icon="@drawable/card"
         android:title="@string/field" />
     <item
+        android:id="@+id/gym_reservation_fragment"
+        android:icon="@drawable/todo"
+        android:title="@string/reservation" />
+    <item
         android:id="@+id/gym_order_fragment"
         android:icon="@drawable/text"
         android:title="@string/order" />

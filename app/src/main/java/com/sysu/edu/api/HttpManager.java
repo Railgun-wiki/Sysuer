@@ -137,7 +137,7 @@ public class HttpManager {
      * @param type 请求数据类型
      * @param what 消息标识
      */
-    private void sendRequest(@NonNull String url, String data, String type, int what) {
+    private void sendRequest(@NonNull String url, String data, String type, int what, String method) {
         Request.Builder request = new Request.Builder().url(url);
         //(cookieManager);
         if (params != null) request.header("Cookie", params.getCookie());
@@ -158,6 +158,9 @@ public class HttpManager {
         if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
         if (isTokenRequired && params != null) request.header("token", params.getToken());
         if (header != null) header.forEach(request::header);
+        if ("DELETE".equals(method)) {
+            request.delete();
+        }
         http.newCall(request.build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -189,7 +192,7 @@ public class HttpManager {
      * @param what 消息标识
      */
     public void postRequest(@NonNull String url, String data, int what) {
-        sendRequest(url, data, "application/json", what);
+        sendRequest(url, data, "application/json", what, "POST");
     }
 
     /**
@@ -201,7 +204,7 @@ public class HttpManager {
      * @param what 消息标识
      */
     public void postRequest(@NonNull String url, String data, String type, int what) {
-        sendRequest(url, data, type, what);
+        sendRequest(url, data, type, what, "POST");
     }
 
     /**
@@ -211,6 +214,10 @@ public class HttpManager {
      * @param what 消息标识
      */
     public void getRequest(@NonNull String url, int what) {
-        sendRequest(url, null, null, what);
+        sendRequest(url, null, null, what, "GET");
+    }
+
+    public void deleteRequest(@NonNull String url, int what) {
+        sendRequest(url, null, null, what, "DELETE");
     }
 }

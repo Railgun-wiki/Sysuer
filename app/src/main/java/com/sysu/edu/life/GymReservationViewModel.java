@@ -15,5 +15,8 @@ public class GymReservationViewModel extends ViewModel {
     long from = System.currentTimeMillis();
     long to = System.currentTimeMillis();
 
+    long reservationFrom = System.currentTimeMillis();
+    long reservationTo = System.currentTimeMillis();
+
     final MutableLiveData<Integer> position = new MutableLiveData<>();
 }

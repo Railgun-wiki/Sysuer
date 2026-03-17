@@ -18,12 +18,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -31,9 +28,6 @@ import androidx.navigation.NavGraph;
 import androidx.navigation.NavInflater;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -42,43 +36,41 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
-import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ActivityMainBinding;
 import com.sysu.edu.home.HomeViewModel;
 import com.sysu.edu.widget.NextClassWidget;
-import com.sysu.edu.widget.NextClassWidgetWorker;
 import com.sysu.edu.widget.RecentClassWidget;
 import com.sysu.edu.widget.TodayClassWidget;
 import com.sysu.edu.widget.TomorrowClassWidget;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import io.noties.markwon.Markwon;
 
 public class MainActivity extends AppCompatActivity {
 
-    final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            _ -> {
-            }
-    );
+    //    final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
+//            new ActivityResultContracts.StartActivityForResult(),
+//            _ -> {
+//            }
+//    );
     long downloadId;
     //    ActivityResultLauncher<Intent> detailLauncher;
     BroadcastReceiver receiver;
     Params params;
     HttpManager http;
     String path;
-    private FirebaseAnalytics mFirebaseAnalytics;
+    FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mFirebaseAnalytics.setAnalyticsCollectionEnabled(true);
+//        mFirebaseAnalytics.
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
@@ -192,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
             }
         }
+
+//        throw new RuntimeException("Firebase Analytics 初始化");
         /*handler.postAtTime(() -> {
             ClassIsland.sendCourseNotification(
                     this,
@@ -249,12 +243,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void beginClassNotificationWorker(Date target) {
-        WorkManager.getInstance(getApplicationContext())
-                .enqueueUniqueWork("next_class_widget_update",
-                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(NextClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
-
-    }
+//    void beginClassNotificationWorker(Date target) {
+//        WorkManager.getInstance(getApplicationContext())
+//                .enqueueUniqueWork("next_class_widget_update",
+//                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(NextClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
+//
+//    }
 
     void checkUpdate() {
         http.getRequest("https://sysu-tang.github.io/latest.json", 0);
@@ -267,13 +261,13 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    View.OnClickListener browse(String url) {
-        return view -> startActivity(new Intent(this, BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(this, view, "miniapp").toBundle());
-    }
-
-    View.OnClickListener newActivity(Class<?> activity_class) {
-        return view -> launcher.launch(new Intent(this, activity_class), ActivityOptionsCompat.makeSceneTransitionAnimation(this, view, "miniapp"));
-    }
+//    View.OnClickListener browse(String url) {
+//        return view -> startActivity(new Intent(this, BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(this, view, "miniapp").toBundle());
+//    }
+//
+//    View.OnClickListener newActivity(Class<?> activity_class) {
+//        return view -> launcher.launch(new Intent(this, activity_class), ActivityOptionsCompat.makeSceneTransitionAnimation(this, view, "miniapp"));
+//    }
 
     void initActionMap(Map<Integer, View.OnClickListener> actionMap) {
         // 学术服务 (id: 1xx)
