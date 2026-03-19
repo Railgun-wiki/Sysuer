@@ -103,7 +103,6 @@ public class GymAccountFragment extends Fragment {
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
-                            http.setAuthorizationRequired(true);
                             getAccount();
                         }
                     }
@@ -114,7 +113,7 @@ public class GymAccountFragment extends Fragment {
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
 //        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
-        http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
+        http.setAuthorizationRequired(true);
 
         getAccount();
         return binding.getRoot();

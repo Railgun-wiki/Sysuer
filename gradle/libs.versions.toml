@@ -4,7 +4,7 @@ androidxAppcompat = "1.7.1"
 api = "13.1.5"
 editorBom = "0.24.4"
 editor = "0.24.4"
-fastjson2 = "2.0.61"
+fastjson2 = "2.0.61.android8"
 firebaseAnalytics = "23.0.0"
 glide = "5.0.5"
 googleServices = "4.4.4"
@@ -12,19 +12,19 @@ html = "4.6.2"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-material = "1.14.0-alpha09"
+material = "1.14.0-alpha10"
 constraintlayout = "2.2.1"
 lifecycleLivedataKtx = "2.10.0"
 lifecycleViewmodelKtx = "2.10.0"
 navigationFragment = "2.9.7"
 navigationUi = "2.9.7"
 legacySupportV4 = "1.0.0"
-activity = "1.12.4"
+activity = "1.13.0"
 okhttp = "5.3.2"
 annotation = "1.9.1"
 kotlin = "2.3.10"
-activityCompose = "1.12.4"
-composeBom = "2026.02.01"
+activityCompose = "1.13.0"
+composeBom = "2026.03.00"
 preference = "1.2.1"
 recyclerview = "1.4.0"
 workRuntime = "2.11.1"
@@ -40,9 +40,8 @@ recycler = "4.6.2"
 recyclerTable = "4.6.2"
 inlineParser = "4.6.2"
 okhttpJavaNetCookiejar = "5.3.2"
-uiManifest = "1.10.4"
+uiManifest = "1.10.5"
 languageTextmate = "0.24.4"
-coreRemoteviews = "1.0.0-beta03"
 coreRemoteviewsVersion = "1.1.0"
 
 [libraries]
@@ -101,7 +100,7 @@ recycler = { group = "io.noties.markwon", name = "recycler", version.ref = "recy
 recycler-table = { group = "io.noties.markwon", name = "recycler-table", version.ref = "recyclerTable" }
 inline-parser = { group = "io.noties.markwon", name = "inline-parser", version.ref = "inlineParser" }
 okhttp-java-net-cookiejar = { group = "com.squareup.okhttp3", name = "okhttp-java-net-cookiejar", version.ref = "okhttpJavaNetCookiejar" }
-core-remoteviews = { group = "androidx.core", name = "core-remoteviews", version.ref = "coreRemoteviews" }
+#core-remoteviews = { group = "androidx.core", name = "core-remoteviews", version.ref = "coreRemoteviews" }
 androidx-core-remoteviews = { group = "androidx.core", name = "core-remoteviews", version.ref = "coreRemoteviewsVersion" }
 
 [plugins]

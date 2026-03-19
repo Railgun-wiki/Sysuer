@@ -1,7 +1,6 @@
 package com.sysu.edu;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -13,8 +12,6 @@ import androidx.preference.PreferenceManager;
 import com.sysu.edu.preference.Language;
 import com.sysu.edu.preference.Theme;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Objects;
 import java.util.Set;
 
@@ -75,21 +72,29 @@ public class Application extends android.app.Application {
     }
 
     public void initCrash() {
-        Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
+//        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(this));
     }
 
-    class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-        @Override
-        public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-            pw.close();
-            startActivity(new Intent(Application.this, CrashActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("crash", sw.toString()));
-            uncaughtException(t, e);
-            android.os.Process.killProcess(android.os.Process.myPid());
-            System.exit(10);
-        }
-    }
+//    static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+//
+//        private final android.app.Application app;
+//        private final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+//
+//        public UncaughtExceptionHandler(android.app.Application application) {
+//            app = application;
+//        }
+//
+//        @Override
+//        public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
+//            StringWriter sw = new StringWriter();
+//            PrintWriter pw = new PrintWriter(sw);
+//            FirebaseCrashlytics.getInstance().recordException(e);
+//            e.printStackTrace(pw);
+//            pw.close();
+//            app.startActivity(new Intent(app, CrashActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("crash", sw.toString()));
+//            if (defaultHandler != null) defaultHandler.uncaughtException(t, e);
+//            android.os.Process.killProcess(android.os.Process.myPid());
+//            System.exit(10);
+//        }
+//    }
 }

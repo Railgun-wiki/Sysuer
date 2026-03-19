@@ -101,7 +101,6 @@ public class GymOrderFragment extends Fragment {
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
-                            http.setAuthorizationRequired(true);
                             getOrder();
                         }
                     }
@@ -112,7 +111,7 @@ public class GymOrderFragment extends Fragment {
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
 //        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
-        http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
+        http.setAuthorizationRequired(true);
         MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
         binding.from.setOnClickListener(_ -> {
             MaterialDatePicker<Long> datePicker = picker

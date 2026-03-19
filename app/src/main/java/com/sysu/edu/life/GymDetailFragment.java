@@ -119,11 +119,12 @@ public class GymDetailFragment extends Fragment {
                                     JSONArray timeslots = item.getJSONArray("Timeslots");
                                     if (timeslots != null) {
 //                                        System.out.println(timeslots);
-                                        gridLayoutManager.setSpanCount(timeslots.size() + 1);
                                         if (Boolean.FALSE.equals(name.getValue())) {
-                                            field.add(new JSONObject().fluentPut("Name", getString(R.string.time)).fluentPut("Type", 2));
-                                            timeslots.forEach(o -> field.add(new JSONObject().fluentPut("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End"))).fluentPut("Type", 2)));
+                                            System.out.println("timeslots" + timeslots);
+                                            field.add(JSONObject.of("Name", getString(R.string.time), "Type", 2));
+                                            timeslots.forEach(o -> field.add(JSONObject.of("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End")), "Type", 2)));
                                             name.setValue(true);
+                                            gridLayoutManager.setSpanCount(timeslots.size() + 1);
                                         }// 第一列
                                         String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll(""); // 第一行
                                         field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
@@ -181,7 +182,6 @@ public class GymDetailFragment extends Fragment {
                         params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                     } else if (!viewModel.authorizationManager.isAccessible(response)) {
                         params.toast(R.string.educational_wifi_warning);
-                        http.setAuthorizationRequired(true);
                         getInfo();
                     }
 
@@ -196,7 +196,7 @@ public class GymDetailFragment extends Fragment {
         http.setParams(params);
         http.setUA(viewModel.ua);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-        http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
+        http.setAuthorizationRequired(true);
         return binding.getRoot();
     }
 

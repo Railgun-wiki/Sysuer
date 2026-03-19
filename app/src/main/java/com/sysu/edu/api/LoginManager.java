@@ -2,6 +2,7 @@ package com.sysu.edu.api;
 
 import static android.text.TextUtils.isEmpty;
 
+import android.util.Log;
 import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
@@ -47,7 +48,7 @@ public class LoginManager {
             .followRedirects(true)
             .cookieJar(cookieJar)
             .build();
-    private final AuthorizationManager authorizationManager = new AuthorizationManager("https://cas.sysu.edu.cn", "https://cas-443.webvpn.sysu.edu.cn");
+    private final AuthorizationManager casAuthorizationManager = new AuthorizationManager("https://cas.sysu.edu.cn", "https://cas-443.webvpn.sysu.edu.cn");
     ContextUtil params;
 
     public LoginManager() {
@@ -57,7 +58,7 @@ public class LoginManager {
     private String getPublicKey() {
         try {
             return client.newCall(new Request.Builder()
-                    .url(authorizationManager.getBaseUrl() + "/esc-sso/api/v3/auth/policy").build()).execute().body().string();
+                    .url(casAuthorizationManager.getBaseUrl() + "/esc-sso/api/v3/auth/policy").build()).execute().body().string();
         } catch (IOException _) {
         }
         return "";
@@ -67,7 +68,7 @@ public class LoginManager {
         try {
             Response response = client.newCall(new Request.Builder()
                     .post(RequestBody.create("{\"authType\":\"webLocalAuth\",\"dataField\":{\"username\":\"" + username + "\",\"password\":\"" + password + "\",\"publicKeyId\":\"" + publicKeyId + "\"}}", MediaType.parse("application/json")))
-                    .url(authorizationManager.getBaseUrl() + "/esc-sso/api/v3/auth/doLogin").build()).execute();
+                    .url(casAuthorizationManager.getBaseUrl() + "/esc-sso/api/v3/auth/doLogin").build()).execute();
             return response.body().string();
         } catch (IOException _) {
 
@@ -78,7 +79,7 @@ public class LoginManager {
 
     private void login(String path) {
 //        System.out.println("Cookie " + cookieJar.loadForRequest(HttpUrl.get("https://cas.sysu.edu.cn")));
-        String url = path.startsWith("http") ? path : authorizationManager.getBaseUrl() + path;
+        String url = path.startsWith("http") ? path : casAuthorizationManager.getBaseUrl() + path;
         try {
 //            System.out.println(url);
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
@@ -100,15 +101,13 @@ public class LoginManager {
         }
     }
 
-    private String loginForGym(String path) {
+    private String loginForGym(String path) throws IOException {
 //        System.out.println("Cookie " + cookieJar.loadForRequest(HttpUrl.get("https://cas.sysu.edu.cn")));
-        String url = path.startsWith("http") ? path : authorizationManager.getBaseUrl() + path;
-        try {
-//            System.out.println(url);
-            Response response = client.newCall(new Request.Builder().header("Accept", "application/json, text/plain, */*")
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36")
-                    .url(url).build()).execute();
-            String a = response.body().string();
+        String url = path.startsWith("http") ? path : casAuthorizationManager.getBaseUrl() + path;
+        Response response = client.newCall(new Request.Builder().header("Accept", "application/json, text/plain, */*")
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36")
+                .url(url).build()).execute();
+        String a = response.body().string();
 //            System.out.println(response.headers());
 //            String location;
 //            if (response.priorResponse() != null && (location = response.priorResponse().header("location")) != null
@@ -116,16 +115,12 @@ public class LoginManager {
 //                System.out.println(HttpUrl.get(location).queryParameter("ticket"));
 //                ticket = HttpUrl.get(location).queryParameter("ticket");
 //            }
-
-            if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
+        if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
 //                System.out.println("redirect to " + redirect(a));
 //                System.out.println(a);
-                loginForGym(redirect(a));
-            }
-            return a;
-        } catch (IOException _) {
+            return loginForGym(redirect(a));
         }
-        return "";
+        return a;
     }
 
     private String redirect(String response) {
@@ -137,8 +132,9 @@ public class LoginManager {
     public boolean login(String username, String password, String service) throws ExecutionException, InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                String targetBaseUrl = HttpUrl.get(service).scheme() + "://" + HttpUrl.get(service).host() + "/";
                 if (service.contains("webvpn")) {
-                    authorizationManager.setAccessible(false);
+                    casAuthorizationManager.setAccessible(false);
                     JSONObject publicKey = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
                     login(redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId"))) + "?service=https%3A%2F%2Fwebvpn.sysu.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl");
                     login("https://webvpn.sysu.edu.cn/vpn_key/update");
@@ -146,44 +142,64 @@ public class LoginManager {
                     cookieJar.saveFromResponse(HttpUrl.get(service), webvpn);
                     cookieJar.saveFromResponse(HttpUrl.get("https://cas-443.webvpn.sysu.edu.cn"), webvpn);
 
-                    if (Objects.equals(service, TargetUrl.NEWS_WEBVPN)) {
-                        if (params != null) {
-                            String auth = "Bearer " + getNewsAuthorization(service);
+                    switch (service) {
+                        case TargetUrl.NEWS_WEBVPN -> {
+                            if (params != null) {
+                                String auth = "Bearer " + getNewsAuthorization(service);
 //                            System.out.println(auth);
-                            params.setAuthorization(auth);
+                                params.setAuthorization(auth);
+                            }
                         }
-                    } else if (Objects.equals(service, TargetUrl.GYM_WEBVPN)) {
-                        getGymToken();
-                        cookieJar.copy("https://gym-443.webvpn.sysu.edu.cn", "https://gym.webvpn.sysu.edu.cn");
-                        String auth = getGymAuthorization();
-//                        login("https://gym-443.webvpn.sysu.edu.cn/authsport/Account/Auth?response_type=token&client_id=sysu_2021&redirect_uri=https%3A%2F%2gym.sysu.edu.cn%2F%23&client_id=unnc&scope=PE");
-//                        System.out.println(auth);
-                        if (params != null)
-                            params.setAuthorization("Bearer " + auth);
-                    } else {
-                        login("/esc-sso/login?service=" + service);
+                        case TargetUrl.GYM_WEBVPN -> {
+                            getGymToken(targetBaseUrl);
+                            cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
+                            String auth = getGymAuthorization(targetBaseUrl);
+                            if (params != null)
+                                params.setAuthorization("Bearer " + auth);
+                        }
+                        default -> login("/esc-sso/login?service=" + service);
                     }
                     if (Objects.equals(service, TargetUrl.XGXT_WEBVPN))
-                        client.newCall(new Request.Builder().url("https://xgxt-443.webvpn.sysu.edu.cn/sso/login?realm=sysuRealm&ticket=" + getTicket(service) + "&service=" + service)
-                                .post(RequestBody.create("", MediaType.parse("application/x-www-form-urlencoded")))
-                                .build()).execute();
+                        getXGXTToken(service, targetBaseUrl);
+                } else {
+                    JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
 
-                    return true;
-                }
-                JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
-                login(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
-                if (Objects.equals(service, TargetUrl.PORTAL)) {
-                    login("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
-                } else if (Objects.equals(service, TargetUrl.PAY)) {
-                    String token = getPayToken(service);
-                    params.setToken(token);
-                    cookieJar.saveFromResponse(HttpUrl.get("https://pay.sysu.edu.cn/client/api/client/auth/netId/login"), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
+                    login(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
+
+                    switch (service) {
+                        case TargetUrl.GYM -> {
+                            getGymToken(targetBaseUrl);
+//                            cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
+                            if (params != null)
+                                params.setAuthorization("Bearer " + getGymAuthorization(targetBaseUrl));
+                        }
+                        case TargetUrl.PORTAL ->
+                                login("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
+                        case TargetUrl.PAY -> {
+                            String token = getPayToken(service);
+                            params.setToken(token);
+                            cookieJar.saveFromResponse(HttpUrl.get("https://pay.sysu.edu.cn/client/api/client/auth/netId/login"), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
+                        }
+                        case TargetUrl.XGXT -> getXGXTToken(service, targetBaseUrl);
+                        case TargetUrl.NEWS -> {
+                            if (params != null) {
+                                params.setAuthorization("Bearer " + getNewsAuthorization(service));
+                            }
+                        }
+                    }
                 }
                 return true;
-            } catch (Exception _) {
+            } catch (Exception e) {
+                Log.e("LoginManager", e.getMessage(), e);
             }
             return false;
         }).get();
+    }
+
+    private void getXGXTToken(String service, String targetBaseUrl) throws IOException {
+        client.newCall(new Request.Builder().url(targetBaseUrl + "sso/login?realm=sysuRealm&ticket=" + getTicket(service) + "&service=" + service)
+                .post(RequestBody.create("", MediaType.parse("application/x-www-form-urlencoded")))
+                .build()).execute();
     }
 
     private String getPayToken(String service) throws IOException {
@@ -201,7 +217,7 @@ public class LoginManager {
     }
 
     public String getTicket(String service) throws IOException {
-        String location = new OkHttpClient.Builder().followRedirects(false).cookieJar(cookieJar).build().newCall(new Request.Builder().url(authorizationManager.getBaseUrl() + "/esc-sso/login?service=" + service).build()).execute().header("Location");
+        String location = new OkHttpClient.Builder().followRedirects(false).cookieJar(cookieJar).build().newCall(new Request.Builder().url(casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + service).build()).execute().header("Location");
         return location == null ? "" : HttpUrl.get(location).queryParameter("ticket");
     }
 
@@ -209,25 +225,22 @@ public class LoginManager {
         this.params = params;
     }
 
-    public void getGymToken() {
-        Matcher re = Pattern.compile("prefix = '(.+?)'").matcher(loginForGym("https://gym-443.webvpn.sysu.edu.cn/"));
+    public void getGymToken(String targetBaseUrl) throws IOException {
+        Matcher re = Pattern.compile("prefix = '(.+?)'").matcher(loginForGym(targetBaseUrl));
         String prefix = "";
-//        System.out.println(cookieJar.loadForRequest(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn/")).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList()));
-        List<Cookie> filterChallenge = cookieJar.loadForRequest(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn/")).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList());
+//        System.out.println(cookieJar.loadForRequest(HttpUrl.get(targetBaseUrl)).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList()));
+        List<Cookie> filterChallenge = cookieJar.loadForRequest(HttpUrl.get(targetBaseUrl)).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList());
         if (re.find()) prefix = re.group(1);
-        if (!filterChallenge.isEmpty() && !isEmpty(prefix)) {
-            String s = Answer.encode(prefix, filterChallenge.get(0).value());
-//            System.out.println(s);
-            cookieJar.saveFromResponse(HttpUrl.get("https://gym-443.webvpn.sysu.edu.cn"), List.of(new Cookie.Builder().domain("gym-443.webvpn.sysu.edu.cn").name("safeline_bot_challenge_ans").value(s).build()));
-        }
+        if (!filterChallenge.isEmpty() && !isEmpty(prefix))
+            cookieJar.saveFromResponse(HttpUrl.get(targetBaseUrl), List.of(new Cookie.Builder().domain(HttpUrl.get(targetBaseUrl).host()).name("safeline_bot_challenge_ans").value(Answer.encode(prefix, filterChallenge.get(0).value())).build()));
     }
 
     public String getNewsAuthorization(String url) {
-        return getAuthorization(new Request.Builder().url(authorizationManager.getBaseUrl() + "/esc-sso/login?service=" + url).build());
+        return getAuthorization(new Request.Builder().url(casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + url).build());
     }
 
-    public String getGymAuthorization() {
-        return getAuthorization(new Request.Builder().url("https://gym-443.webvpn.sysu.edu.cn/authsport/Account/Auth?response_type=token&client_id=sysu_2021&redirect_uri=https%3A%2F%2gym.sysu.edu.cn%2F%23&client_id=unnc&scope=PE").header("Accept", "application/json, text/plain, */*")
+    public String getGymAuthorization(String targetBaseUrl) {
+        return getAuthorization(new Request.Builder().url(targetBaseUrl + "authsport/Account/Auth?response_type=token&client_id=sysu_2021&redirect_uri=https%3A%2F%2gym.sysu.edu.cn%2F%23&client_id=unnc&scope=PE").header("Accept", "application/json, text/plain, */*")
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36").build());
     }
 

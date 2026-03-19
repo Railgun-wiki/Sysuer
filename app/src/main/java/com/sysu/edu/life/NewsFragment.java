@@ -40,16 +40,15 @@ import com.sysu.edu.template.RecyclerAdapter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 public class NewsFragment extends Fragment {
 
     final int position;
+    final AuthorizationManager authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
     HttpManager http;
     RecyclerViewScrollBinding binding;
     int page = 1;
     Runnable run;
-    final AuthorizationManager authorizationManager = new AuthorizationManager("https://iportal.sysu.edu.cn/", "https://iportal-443.webvpn.sysu.edu.cn/");
 
     public NewsFragment(int pos) {
         this.position = pos;
@@ -95,7 +94,7 @@ public class NewsFragment extends Fragment {
                         }
                         return;
                     }
-                    JSONObject data = JSONObject.parseObject(json.replaceAll(Matcher.quoteReplacement("\"summary\":\".+?[^\\]\""), "\"summary\":\"\"").replaceAll(Matcher.quoteReplacement("\"html\":\".+?[^\\]\""), "\"html\":\"\""));
+                    JSONObject data = JSONObject.parseObject(json);
                     Integer code = data.getInteger("code");
                     JSONObject response = null;
                     if (msg.what != 3) response = data.getJSONObject("data");

@@ -21,6 +21,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.databinding.ItemButtonOutlineBinding;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.StaggeredFragment;
@@ -60,7 +61,7 @@ public class NetOrderFragment extends StaggeredFragment {
                                 ArrayList<String> orderDetail = new ArrayList<>();
                                 String item = matcher.group(1);
                                 if (item != null) {
-                                    boolean isStop = false;
+                                    boolean isStop;
                                     Matcher matcher2 = Pattern.compile("<td .+?>(.+?)</td>", Pattern.DOTALL).matcher(item);
                                     while (matcher2.find())
                                         orderDetail.add(Objects.requireNonNull(matcher2.group(1)).replaceAll("<.+?>", "").trim());
@@ -72,38 +73,44 @@ public class NetOrderFragment extends StaggeredFragment {
                                             if (actionMatcher.find()) {
                                                 String leftDay = actionMatcher.group(2);
                                                 orderDetail.set(9, leftDay);
+                                                String serviceId = actionMatcher.group(1);
                                                 staggeredAdapter.setListener(new AdapterListener() {
 
                                                     @Override
                                                     public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-
                                                     }
 
                                                     @Override
-                                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
-                                                        MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
+                                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding b) {
+                                                        MaterialButton button = ItemButtonOutlineBinding.inflate(inflater, ((ItemCardBinding)b).getRoot(), false).getRoot();//new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
                                                         button.setText(action.group(3));
                                                         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                                                         lp.gravity = Gravity.END;
                                                         lp.setMargins(0, 0, params.dpToPx(16), params.dpToPx(16));
                                                         button.setLayoutParams(lp);
+                                                        System.out.println(isStop);
                                                         boolean isStop = Objects.equals(action.group(1), "stop");
                                                         button.setOnClickListener(v -> {
                                                             if (leftDay != null) {
                                                                 Snackbar.make(v, isStop ? "暂停网络将即时生效，暂停最小时长：7天。是否确定要暂停？" : Integer.parseInt(leftDay) < 7 ? "网络服务已暂停" + leftDay + "天，不足暂停最小时长（7天），提前恢复本次暂停作废，过期日期不顺延！是否仍要提前恢复网络？" : "网络服务已暂停" + leftDay + "天，执行恢复将即时生效，是否确定要恢复？", Snackbar.LENGTH_SHORT).setAction(R.string.confirm, _ -> {
-                                                                    if (isStop)
-                                                                        stop(actionMatcher.group(1));
-                                                                    else
-                                                                        resume(actionMatcher.group(1));
+                                                                    if (isStop) {
+                                                                        stop(serviceId);
+                                                                    } else {
+                                                                        resume(serviceId);
+                                                                    }
                                                                 }).show();
                                                             }
                                                         });
-                                                        ((ItemCardBinding) binding).getRoot().addView(button);
+                                                        ((ItemCardBinding) b).getRoot().addView(button);
 
                                                     }
                                                 });
                                             }
+                                        } else {
+                                            isStop = false;
                                         }
+                                    } else {
+                                        isStop = false;
                                     }
                                     add(orderDetail.get(msg.what == 0 ? 4 : 0), msg.what == 0 ? List.of(
                                             "订单号",
@@ -154,10 +161,10 @@ public class NetOrderFragment extends StaggeredFragment {
     }
 
     void stop(String serviceId) {
-        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stop", "serviceId=" + serviceId, 2);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/stop", "serviceId=" + serviceId, "application/x-www-form-urlencoded", 2);
     }
 
     void resume(String serviceId) {
-        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/resume", "serviceId=" + serviceId, 3);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/resume", "serviceId=" + serviceId, "application/x-www-form-urlencoded", 3);
     }
 }

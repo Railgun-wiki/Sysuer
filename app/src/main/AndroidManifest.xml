@@ -364,5 +364,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_tomorrow_class" />
         </receiver>
+        <provider
+            android:name=".UncaughtExceptionHandlerContentProvider"
+            android:authorities="${applicationId}"
+            android:exported="false"
+            android:grantUriPermissions="false"
+            android:initOrder="101" />
     </application>
 </manifest>

@@ -75,10 +75,11 @@ public class GymListFragment extends Fragment {
                     System.out.println(msg.getData().getInt("code"));
                     switch (msg.getData().getInt("code")) {
                         case 401 -> {
-                            viewModel.authorizationManager.setAccessible(false);
-                            http.setAuthorizationRequired(true);
-                            params.toast(R.string.educational_wifi_warning);
-                            getInfo();
+                            params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+//                            viewModel.authorizationManager.setAccessible(false);
+//                            http.setAuthorizationRequired(true);
+//                            params.toast(R.string.educational_wifi_warning);
+//                            getInfo();
                         }
                         case 200 -> {
                             if (!msg.getData().getBoolean("isJSON")) {
@@ -93,7 +94,6 @@ public class GymListFragment extends Fragment {
                                 }
                                 if (!viewModel.authorizationManager.isAccessible(response)) {
                                     params.toast(R.string.educational_wifi_warning);
-                                    http.setAuthorizationRequired(true);
                                     getInfo();
                                 }
                             } else {
@@ -115,7 +115,7 @@ public class GymListFragment extends Fragment {
                 }
             });
             http.setParams(params);
-            http.setAuthorizationRequired(!viewModel.authorizationManager.isAccessible());
+            http.setAuthorizationRequired(true);
             http.setHeader(Map.of("Accept", "application/json, text/plain, */*", "User-Agent", viewModel.ua));
             getInfo();
         }

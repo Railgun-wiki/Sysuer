@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> startService(new Intent(this, e)));
         ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
 //        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
 //        });
@@ -225,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException _) {
         }
 //        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> startService(new Intent(this, e)));
 //                .forEach(e -> appWidgetManager.updateAppWidget(new ComponentName(this, e), new RemoteViews(getPackageName(), R.layout.widget_next_class)));
 //        appWidgetManager.updateAppWidget(new ComponentName(this, NextClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_next_class));
 //        appWidgetManager.updateAppWidget(new ComponentName(this, TodayClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));

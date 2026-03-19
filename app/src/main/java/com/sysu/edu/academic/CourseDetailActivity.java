@@ -45,6 +45,7 @@ public class CourseDetailActivity extends AppCompatActivity {
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
+                System.out.println(msg.obj);
                 JSONObject response = JSONObject.parseObject((String) msg.obj);
                 if (response.getInteger("code").equals(200)) {
                     switch (msg.what) {
