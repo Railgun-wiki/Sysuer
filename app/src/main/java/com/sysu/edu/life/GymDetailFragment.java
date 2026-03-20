@@ -33,19 +33,21 @@ import com.sysu.edu.template.RecyclerAdapter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 
 public class GymDetailFragment extends Fragment {
@@ -58,22 +60,20 @@ public class GymDetailFragment extends Fragment {
     DateAdapter date;
     String userId;
     String type;
+    FragmentGymDetailBinding binding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        FragmentGymDetailBinding binding = FragmentGymDetailBinding.inflate(inflater, container, false);
+        binding = FragmentGymDetailBinding.inflate(inflater, container, false);
         DialogGymReservationBinding dialogBinding = DialogGymReservationBinding.inflate(inflater, container, false);
         binding.date.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        date = new DateAdapter(requireContext());
+        date = new DateAdapter();
 
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         dialog.setContentView(dialogBinding.getRoot());
         initReservationDialog(dialogBinding);
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-        if (viewModel.position.getValue() == null) {
-            viewModel.position.postValue(0);
-        }
         date.setAction(viewModel.position::setValue);
         Params params = new Params(this);
         binding.date.recyclerView.setAdapter(date);
@@ -89,12 +89,14 @@ public class GymDetailFragment extends Fragment {
         FieldAdapter field = new FieldAdapter();
         binding.field.recyclerView.setAdapter(field);
         id = requireArguments().getString("id");
-        field.setAction((JSONObject p) -> {
-            JSONObject studentFee = fee.get("学生");
-            if (studentFee != null)
-                updateReservationDialog(dialogBinding, p, studentFee);
-            dialog.show();
+        field.setAction(_ -> {
+            viewModel.selected.setValue(field.getSelected());
+//                updateReservationDialog(dialogBinding, p, studentFee);
+//            dialog.show();
         });
+        if (viewModel.position.getValue() == null) {
+            viewModel.position.postValue(0);
+        }
         viewModel.position.observe(getViewLifecycleOwner(), p -> {
             if (p != null) getInfo();
         });
@@ -110,36 +112,39 @@ public class GymDetailFragment extends Fragment {
                     if (msg.getData().getBoolean("isJSON")) {
                         switch (msg.what) {
                             case 0:
-                                field.clear();
+                                reset(field);
                                 hash = md5(response);
                                 AtomicInteger availableCapacity = new AtomicInteger();
+                                AtomicInteger rows = new AtomicInteger(-1);
                                 MutableLiveData<Boolean> name = new MutableLiveData<>(false);
                                 JSONArray.parse(response).forEach(e -> {
                                     JSONObject item = (JSONObject) e;
                                     JSONArray timeslots = item.getJSONArray("Timeslots");
                                     if (timeslots != null) {
-//                                        System.out.println(timeslots);
-                                        if (Boolean.FALSE.equals(name.getValue())) {
+                                        if (rows.get() == -1) {
                                             System.out.println("timeslots" + timeslots);
                                             field.add(JSONObject.of("Name", getString(R.string.time), "Type", 2));
                                             timeslots.forEach(o -> field.add(JSONObject.of("Name", String.format("%s\n%s", ((JSONObject) o).getString("Start"), ((JSONObject) o).getString("End")), "Type", 2)));
                                             name.setValue(true);
-                                            gridLayoutManager.setSpanCount(timeslots.size() + 1);
+                                            rows.set(timeslots.size() + 1);
+                                            gridLayoutManager.setSpanCount(rows.get());
                                         }// 第一列
                                         String fieldName = Pattern.compile("(.+)-").matcher(item.getString("VenueName")).replaceAll(""); // 第一行
                                         field.add(new JSONObject().fluentPut("VenueName", fieldName).fluentPut("Type", 0));
                                         timeslots.forEach(o -> {
-
                                             JSONObject jsonObject = (JSONObject) o;
-                                            field.add(jsonObject.clone().fluentPut("VenueBooking", item.fluentPut("Timeslots", JSONArray.of(jsonObject))).fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
-                                            int capacity = Integer.parseInt(jsonObject.getString("AvailableCapacity"));
+                                            field.add(jsonObject.clone().fluentPut("VenueBooking", item.clone().fluentPut("Timeslots", JSONArray.of(jsonObject))).fluentPut("Type", 1).fluentPut("Venue", fieldName).fluentPut("Duration", String.format(Locale.getDefault(), "%s~%s", jsonObject.getString("Start"), jsonObject.getString("End"))));
+                                            int capacity = jsonObject.getInteger("AvailableCapacity");
                                             if (capacity > 0)
                                                 availableCapacity.addAndGet(capacity);
                                         });
-                                        if (viewModel.position.getValue() != null)
-                                            date.setAvailableCapacity(viewModel.position.getValue(), availableCapacity.get());
+                                        if (field.getItemCount() % rows.get() != 0)
+                                            IntStream.range(0, rows.get() - field.getItemCount() % rows.get()).forEach(_ -> field.add(JSONObject.of("Type", 3)));
+
                                     }
                                 });
+                                if (viewModel.position.getValue() != null)
+                                    date.setAvailableCapacity(viewModel.position.getValue(), availableCapacity.get());
                                 getFee(id);
                                 break;
                             case 1:
@@ -164,7 +169,7 @@ public class GymDetailFragment extends Fragment {
                                 }
                                 break;
                             case 4:
-                                System.out.println(response);
+//                                System.out.println(response);
                                 JSONObject result = JSONObject.parse(response);
                                 if (result.getInteger("Code") == 200) {
                                     params.toast(R.string.reserve_success);
@@ -188,16 +193,42 @@ public class GymDetailFragment extends Fragment {
                 }
             }
         });
-
-        /*viewModel.loginRequired.observe(requireActivity(), b -> {
-            if (!b)
-
-        });*/
         http.setParams(params);
         http.setUA(viewModel.ua);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
         http.setAuthorizationRequired(true);
+        date.select(viewModel.position.getValue() == null ? 0 : viewModel.position.getValue());
+//        System.out.println(viewModel.selected.getValue());
+        viewModel.selected.observe(getViewLifecycleOwner(), selected -> {
+//            System.out.println("selected:"+selected);
+            field.setSelected(selected);
+            JSONObject studentFee = fee.get("学生");
+            if (studentFee != null) {
+                binding.submit.setEnabled(!field.getSelected().isEmpty());
+                if (field.getSelected().isEmpty()) {
+                    binding.info.setText(getString(R.string.unselected));
+                } else {
+                    StringBuilder info = new StringBuilder();
+                    JSONArray items = new JSONArray();
+//                        System.out.println(field.getSelected());
+                    field.getSelected().forEach(e -> {
+                        info.append(field.get(e).getString("Venue")).append(" ").append(field.get(e).getString("Duration")).append("+");
+                        items.add(field.get(e).getJSONObject("VenueBooking"));
+                    });
+                    String venueName = field.get(new ArrayList<>(field.getSelected()).get(0)).getString("VenueName");
+                    int creditFee = studentFee.getInteger("CreditFee") * field.getSelected().size();
+                    binding.submit.setOnClickListener(_ -> reserve(items, venueName, creditFee));
+                    binding.info.setText(String.format(Locale.getDefault(), "%s=%d元", info.deleteCharAt(info.length() - 1), creditFee));
+                }
+            }
+        });
         return binding.getRoot();
+    }
+
+    void reset(FieldAdapter field) {
+        field.clear();
+        field.clearSelected();
+        viewModel.selected.setValue(new HashSet<>());
     }
 
     void getInfo() {
@@ -274,7 +305,6 @@ public class GymDetailFragment extends Fragment {
         binding.time.key.setText(R.string.time);
         binding.fee.key.setText(R.string.fee);
         binding.type.key.setText(R.string.type);
-
     }
 
     void updateReservationDialog(DialogGymReservationBinding binding, JSONObject item, JSONObject studentFee) {
@@ -285,48 +315,52 @@ public class GymDetailFragment extends Fragment {
         Integer cashFee = studentFee.getInteger("CashFee");
         binding.fee.value.setText(String.format(Locale.getDefault(), "运动时￥%d或现金￥%d", creditFee, cashFee));
         binding.type.value.setText(item.getString("Type"));
-        binding.reserve.setOnClickListener(_ -> {
-            String uuid = generateUUID();
-            String time = LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC).toString();
+        binding.reserve.setOnClickListener(_ -> reserve(item.getJSONArray("VenueBooking"), item.getString("VenueName"), creditFee));
+    }
+
+    private void reserve(JSONArray items, String venueName, Integer creditFee) {
+        String uuid = generateUUID();
+        String time = LocalDateTime.now().atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC).toString();
 //            {"Identity":"561e14e8-1f6d-44d4-89e9-e9cbe0b5bb81","BookingId":"e59ec78d1b4b06f72f6860d10e0fe7d2.1773708652.b268e04b7b07d45673fdf4ad2f14c914","VenueTypeId":"802fbfda-f9f6-41c8-9c72-685247f07c73","VenueBookings":[{"VenueId":"d2c4c59a-1d00-4c44-9a6a-24f26390227e","VenueName":"东校园游泳池","TimeSlots":[{"Date":"2026-03-17T00:00:00.000Z","Start":"16:30","End":"18:00"}]}],"Participants":[],"Status":"Accepted","Description":"东校园游泳池","CreatedAt":"2026-03-17T00:50:52.552Z","UpdatedAt":"2026-03-17T00:50:52.552Z","ActionedBy":"tangxb6","IsCash":false,"Charge":5}
-            JSONObject payload = JSONObject.of(
-                    "Identity", uuid,
-                    "BookingId", genToken(uuid, hash),
-                    "VenueTypeId", type,
-                    "VenueBookings", JSONArray.of(item.getJSONObject("VenueBooking")),
-                    "Participants", JSONArray.of(),
-                    "Status", "Accepted",
-                    "Description", item.getString("VenueName"),
-                    "CreatedAt", time,
-                    "UpdatedAt", time,
-                    "ActionedBy", userId,/*NetID*/
-                    "IsCash", false,
-                    "Charge", creditFee
-            );
-            System.out.println(payload);
-            reserve(payload.toJSONString());
-        });
+        JSONObject payload = JSONObject.of(
+                "Identity", uuid,
+                "BookingId", genToken(uuid, hash),
+                "VenueTypeId", type,
+                "VenueBookings", items,
+                "Participants", JSONArray.of(),
+                "Status", "Accepted",
+                "Description", venueName,
+                "CreatedAt", time,
+                "UpdatedAt", time,
+                "ActionedBy", userId,/*NetID*/
+                "IsCash", false,
+                "Charge", creditFee
+        );
+        System.out.println(payload);
+        reserve(payload.toJSONString());
     }
 
 
     static class DateAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        final Context context;
+
         final HashMap<Integer, Integer> availableCapacity = new HashMap<>();
-        final Calendar calendar = Calendar.getInstance();
         Consumer<Integer> action;
         int page = 7;
-
-        public DateAdapter(Context context) {
-            super();
-            this.context = context;
-        }
+        int selected = -1;
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(
-                    ItemDateBinding.inflate(LayoutInflater.from(context), parent, false).getRoot()) {
+            return new RecyclerView.ViewHolder(ItemDateBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
             };
+        }
+
+        void select(int position) {
+            int tmp = selected;
+            selected = position;
+            action.accept(position);
+            notifyItemChanged(position);
+            notifyItemChanged(tmp);
         }
 
         public void setAction(Consumer<Integer> action) {
@@ -336,10 +370,12 @@ public class GymDetailFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ItemDateBinding binding = ItemDateBinding.bind(holder.itemView);
+            Context context = holder.itemView.getContext();
             binding.date.setText(getDate(position));
-            binding.week.setText(String.format("星期%s", getWeek(position)));
-            binding.getRoot().setOnClickListener(_ -> action.accept(position));
+            binding.week.setText(getWeek(context, position));
+            binding.getRoot().setOnClickListener(_ -> select(position));
             Integer capacity = availableCapacity.getOrDefault(position, -1);
+            binding.getRoot().setChecked(position == selected);
             binding.availableCapacity.setText(capacity != null && capacity >= 0 ? String.format(Locale.getDefault(), "%d", capacity) : "");
         }
 
@@ -358,30 +394,29 @@ public class GymDetailFragment extends Fragment {
             notifyItemRangeInserted(page - 1, offset);
         }
 
+        private String getDate(int distanceDay, String pattern) {
+            return LocalDate.now().plusDays(distanceDay).format(DateTimeFormatter.ofPattern(pattern));
+        }
+
         public String getDate(int distanceDay) {
-            calendar.setTime(new Date());
-            calendar.add(Calendar.DATE, distanceDay);
-            return new SimpleDateFormat("MM月dd日", Locale.getDefault()).format(calendar.getTime());
+            return getDate(distanceDay, "M月dd日");
         }
 
         public String getFormattedDate(int distanceDay) {
-            calendar.setTime(new Date());
-            calendar.add(Calendar.DATE, distanceDay);
-            return new SimpleDateFormat("MM-dd", Locale.getDefault()).format(calendar.getTime());
+            return getDate(distanceDay, "M-dd");
         }
 
-        String getWeek(int distanceDay) {
-            calendar.setTime(new Date());
-            calendar.add(Calendar.DATE, distanceDay);
-            int week = calendar.get(Calendar.DAY_OF_WEEK);
-//            week = (week == 1) ? 6 : week - 1;
+        String getWeek(Context context, int distanceDay) {
+            int week = LocalDate.now().plusDays(distanceDay).getDayOfWeek().getValue();
             return context.getResources().getStringArray(R.array.weeks)[week - 1];
         }
+
     }
 
     static class FieldAdapter extends RecyclerAdapter<JSONObject> {
 
-        Consumer<JSONObject> action;
+        Consumer<Integer> action;
+        HashSet<Integer> selected = new HashSet<>();
 
         @NonNull
         @Override
@@ -390,8 +425,25 @@ public class GymDetailFragment extends Fragment {
             };
         }
 
-        void setAction(Consumer<JSONObject> action) {
+        void setAction(Consumer<Integer> action) {
             this.action = action;
+        }
+
+        void clearSelected() {
+            HashSet<Integer> s = new HashSet<>(selected);
+            selected.clear();
+            s.forEach(this::notifyItemChanged);
+        }
+
+        HashSet<Integer> getSelected() {
+            return selected;
+        }
+
+        public void setSelected(HashSet<Integer> selected) {
+            if (!this.selected.equals(selected)) {
+                this.selected = selected;
+                selected.forEach(this::notifyItemChanged);
+            }
         }
 
         @Override
@@ -402,8 +454,15 @@ public class GymDetailFragment extends Fragment {
             JSONObject item = get(position);
             Context context = holder.itemView.getContext();
             binding.getRoot().setOnClickListener(_ -> {
-                if (item.getInteger("Type") == 1 && item.getInteger("AvailableCapacity") > 0)
-                    action.accept(item);
+                if (item.getInteger("Type") == 1 && item.getInteger("AvailableCapacity") > 0) {
+                    if (selected.contains(position)) {
+                        selected.remove(position);
+                    } else {
+                        selected.add(position);
+                    }
+                    action.accept(position);
+                    notifyItemChanged(position);
+                }
             });
             switch (item.getInteger("Type")) {
                 case 0 ->
@@ -411,15 +470,16 @@ public class GymDetailFragment extends Fragment {
                 case 2 ->
                         binding.fieldDetail.setText(String.format(Locale.getDefault(), "%s", item.getString("Name")));
                 case 1 -> {
-                    if (item.getInteger("AvailableCapacity") == 0) {
+                    if (item.getInteger("AvailableCapacity") > 0) {
+                        binding.fieldDetail.setText(context.getString(R.string.reservable));
+                    } else {
                         binding.fieldDetail.setText(context.getString(R.string.reserved));
                         binding.fieldDetail.setAlpha(0.5f);
-                    } else {
-                        binding.fieldDetail.setText(context.getString(R.string.reservable));
                     }
+                    binding.getRoot().setChecked(selected.contains(position));
                 }
+                default -> binding.fieldDetail.setText("");
             }
         }
-
     }
 }

@@ -27,6 +27,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -36,6 +37,11 @@ import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.ButtonAdapter;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +53,7 @@ public class GymReservationFragment extends Fragment {
     GymReservationViewModel viewModel;
     private ConcatAdapter concatAdapter;
     private FragmentGymOrderBinding binding;
+    Handler handler;
 
     @Nullable
     @Override
@@ -54,140 +61,130 @@ public class GymReservationFragment extends Fragment {
         binding = FragmentGymOrderBinding.inflate(inflater, container, false);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         viewModel = new ViewModelProvider(requireActivity()).get(GymReservationViewModel.class);
-
         concatAdapter = new ConcatAdapter(new ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build());
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
         params.setCallback(this::reset);
-        http = new HttpManager(new Handler(Looper.getMainLooper()) {
+        handler= new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
-                    // 处理错误
                 } else {
                     String response = (String) msg.obj;
+//                    System.out.println(response);
                     if (msg.getData().getBoolean("isJSON")) {
                         switch (msg.what) {
-                            case 0 -> /*
-                             response = """
-                                        [{
-                                                "Identity": "e9157771-796d-43ca-b36c-d7f12989c407",
-                                                "Name": "xx",
-                                                "BookingId": "#RB-ASLIGUX4F1",
-                                                "UserId": "xx",
-                                                "HostKey": "xx",
-                                                "VenueTypeId": "802fbfda-f9f6-41c8-9c72-685247f07c73",
-                                                "VenueId": "d2c4c59a-1d00-4c44-9a6a-24f26390227e",
-                                                "VenueName": "东校园游泳池",
-                                                "StartDateTime": "2026-03-18T11:30:00Z",
-                                                "EndDateTime": "2026-03-18T13:00:00Z",
-                                                "Participants": [],
-                                                "Status": "Accepted",
-                                                "Description": "东校园游泳池",
-                                                "CreatedAt": "2026-03-17T13:38:33.311Z",
-                                                "UpdatedAt": "2026-03-17T13:38:33.164Z",
-                                                "ActionedBy": "xx",
-                                                "Charge": 5,
-                                                "IsCash": false
-                                            }]
-                                        """;*/ JSONArray.parseArray(response).forEach((i) -> {
-                                            JSONObject item = (JSONObject) i;
-                                            GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
-                                            TitleAdapter titleAdapter = new TitleAdapter(item.getString("Description"));
-                                            titleAdapter.setHeader(1);
-                                            ButtonAdapter buttonAdapter = new ButtonAdapter();
-                                            buttonAdapter.add(getString(R.string.cancel_reservation));
-                                            buttonAdapter.setListener(new AdapterListener() {
-                                                @Override
-                                                public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-                                                }
+                            case 0 -> JSONArray.parseArray(response).forEach((i) -> {
+                                JSONObject item = (JSONObject) i;
+                                GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                TitleAdapter titleAdapter = new TitleAdapter(item.getString("Description"));
+                                titleAdapter.setHeader(1);
+                                ButtonAdapter buttonAdapter = new ButtonAdapter();
+                                buttonAdapter.add(getString(R.string.cancel_reservation));
+                                buttonAdapter.setListener(new AdapterListener() {
+                                    @Override
+                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                                    }
 
-                                                @Override
-                                                public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
-                                                    binding.getRoot().setOnClickListener(_ -> deleteReservation(item.getString("Identity")));
-                                                }
-                                            });
-                                            concatAdapter.addAdapter(titleAdapter);
-                                            concatAdapter.addAdapter(preferenceAdapter);
-                                            concatAdapter.addAdapter(buttonAdapter);
-                                            preferenceAdapter.set(List.of(getString(R.string.venue), getString(R.string.start_time), getString(R.string.end_time), getString(R.string.money)),
-                                                    extractValue(item, new String[]{"VenueName", "StartDateTime", "EndDateTime", "Charge"}),
-                                                    List.of(R.drawable.location, R.drawable.time, R.drawable.alarm, R.drawable.money));
-                                            preferenceAdapter.add(getString(R.string.pay_way), item.getBoolean("IsCash") ? getString(R.string.cash) : getString(R.string.pe_credit), R.drawable.money);
+                                    @Override
+                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
+                                        binding.getRoot().setOnClickListener(_ -> deleteReservation(item.getString("Identity")));
+                                        handler.sendEmptyMessage(1);
+                                    }
+                                });
+                                concatAdapter.addAdapter(titleAdapter);
+                                concatAdapter.addAdapter(preferenceAdapter);
+                                concatAdapter.addAdapter(buttonAdapter);
+                                ArrayList<String> value = extractValue(item, new String[]{"VenueName", "StartDateTime", "EndDateTime", "Charge", "CreatedAt"});
+//                                System.out.println(value.get(1).substring(0, 19));
+                                try {
+                                    DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                                    value.set(1, LocalDateTime.parse(value.get(1), FORMATTER).atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).format(FORMATTER));
+//                                    value.set(4, LocalDateTime.parse(value.get(4), FORMATTER).atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).format(FORMATTER));
+                                    value.set(2, LocalDateTime.parse(value.get(2), FORMATTER).atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).format(FORMATTER));
+                                } catch (DateTimeParseException e) {
+                                    throw new IllegalArgumentException("时间格式错误，应为 yyyy-MM-dd'T'HH:mm:ss'Z'", e);
+                                }
+                                preferenceAdapter.set(List.of(getString(R.string.venue), getString(R.string.start_time), getString(R.string.end_time), getString(R.string.money), getString(R.string.order_time)),
+                                        value,
+                                        List.of(R.drawable.location, R.drawable.time, R.drawable.alarm, R.drawable.money));
+                                preferenceAdapter.add(getString(R.string.pay_way), item.getBoolean("IsCash") ? getString(R.string.cash) : getString(R.string.pe_credit), R.drawable.money);
 
-                                        });
+                            });
                             case 1 -> regetReservation();
                         }
-                        /*{
-        "Identity": "e9157771-796d-43ca-b36c-d7f12989c407",
-        "Name": "xx",
-        "BookingId": "#RB-ASLIGUX4F1",
-        "UserId": "xx",
-        "HostKey": "xx",
-        "VenueTypeId": "802fbfda-f9f6-41c8-9c72-685247f07c73",
-        "VenueId": "d2c4c59a-1d00-4c44-9a6a-24f26390227e",
-        "VenueName": "东校园游泳池",
-        "StartDateTime": "2026-03-18T11:30:00Z",
-        "EndDateTime": "2026-03-18T13:00:00Z",
-        "Participants": [],
-        "Status": "Accepted",
-        "Description": "东校园游泳池",
-        "CreatedAt": "2026-03-17T13:38:33.311Z",
-        "UpdatedAt": "2026-03-17T13:38:33.164Z",
-        "ActionedBy": "xx",
-        "Charge": 5,
-        "IsCash": false
-    }*/
                     } else {
                         if (!viewModel.authorizationManager.isAuthorized(response)) {
                             params.toast(R.string.login_warning);
-//                            viewModel.loginRequired.setValue(true);
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
-                            getReservation();
+                            regetReservation();
                         }
                     }
                 }
             }
-        });
+        };
+        http = new HttpManager(handler);
         http.setParams(params);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
-//        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
         http.setAuthorizationRequired(true);
         MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
         binding.from.setOnClickListener(_ -> {
-            MaterialDatePicker<Long> datePicker = picker
-                    .setSelection(viewModel.reservationFrom)
-                    .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(viewModel.to)))).build())
-                    .build();
-            datePicker.show(getParentFragmentManager(), "datePicker");
-            datePicker.addOnPositiveButtonClickListener(selection -> {
-                viewModel.reservationFrom = selection;
-                binding.from.setText(datePicker.getHeaderText());
-                regetReservation();
-            });
+            Long value = viewModel.reservationFromTo.getValue().getSecond();
+            if (value != null) {
+                MaterialDatePicker<Long> datePicker = picker
+                        .setSelection(viewModel.reservationFromTo.getValue().getFirst())
+                        .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(value)))).build())
+                        .build();
+                datePicker.show(getParentFragmentManager(), "datePicker");
+                datePicker.addOnPositiveButtonClickListener(selection -> viewModel.reservationFromTo.setValue(new CommonUtil.Tuple2<>(selection, value)));
+            }
         });
-        binding.from.setText(dateFormat.format(viewModel.reservationFrom));
-        binding.to.setText(dateFormat.format(viewModel.reservationTo));
+//        System.out.println(viewModel.reservationFromTo.getValue().getFirst());
+//        System.out.println(viewModel.reservationFromTo.getValue().getSecond());
+
+//        viewModel.reservationTo.observe(getViewLifecycleOwner(), l -> {
+//            binding.to.setText(dateFormat.format(l));
+//            regetReservation();
+//        });
+//        viewModel.reservationFrom.observe(getViewLifecycleOwner(), l -> {
+//            binding.from.setText(dateFormat.format(l));
+//            regetReservation();
+//        });
+//        MediatorLiveData<CommonUtil.Tuple2<Long, Long>> fromTo = new MediatorLiveData<>();
+//        fromTo.addSource(viewModel.reservationFrom, l -> {
+//            binding.from.setText(dateFormat.format(l));
+//            fromTo.setValue(new CommonUtil.Tuple2<>(l, viewModel.reservationTo.getValue()));
+//        });
+//        fromTo.addSource(viewModel.reservationTo, l -> {
+//            binding.to.setText(dateFormat.format(l));
+//            fromTo.setValue(new CommonUtil.Tuple2<>(viewModel.reservationFromTo.getValue().getFirst(), l));
+//        });
+        viewModel.reservationFromTo.observe(getViewLifecycleOwner(), o -> {
+            System.out.println(o);
+            if (o != null && o.getSecond() != null && o.getFirst() != null) {
+                binding.from.setText(dateFormat.format(o.getFirst()));
+                binding.to.setText(dateFormat.format(o.getSecond()));
+                regetReservation();
+            }
+        });
         binding.to.setOnClickListener(_ -> {
-            MaterialDatePicker<Long> datePicker = picker
-                    .setSelection(viewModel.reservationTo)
-                    .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(viewModel.reservationFrom)))).build())
-                    .build();
-            datePicker.show(getParentFragmentManager(), "datePicker");
-            datePicker.addOnPositiveButtonClickListener(selection -> {
-                viewModel.reservationTo = selection;
-                binding.to.setText(datePicker.getHeaderText());
-                regetReservation();
-            });
+            Long value = viewModel.reservationFromTo.getValue().getFirst();
+            if (value != null) {
+                MaterialDatePicker<Long> datePicker = picker
+                        .setSelection(viewModel.reservationFromTo.getValue().getSecond())
+                        .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(value)))).build())
+                        .build();
+                datePicker.show(getParentFragmentManager(), "datePicker");
+                datePicker.addOnPositiveButtonClickListener(selection -> viewModel.reservationFromTo.setValue(new CommonUtil.Tuple2<>(value, selection)));
+            }
         });
-        getReservation();
         return binding.getRoot();
     }
 
@@ -201,8 +198,9 @@ public class GymReservationFragment extends Fragment {
     }
 
     void getReservation() {
-        http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/BookingRequestVenue?all=false&startDate=%s&endDate=%s&waitingList=true", dateFormat.format(viewModel.reservationFrom), dateFormat.format(viewModel.reservationTo)), 0);
+        http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/BookingRequestVenue?all=false&startDate=%s&endDate=%s&waitingList=false", dateFormat.format(viewModel.reservationFromTo.getValue().getFirst()), dateFormat.format(viewModel.reservationFromTo.getValue().getSecond())), 0);
     }
+
     void deleteReservation(String bookingId) {
         http.deleteRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/BookingRequestVenue/%s", bookingId), 1);
     }
