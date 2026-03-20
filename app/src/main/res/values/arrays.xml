@@ -24,13 +24,13 @@
         <item>@string/account</item>
     </string-array>
     <string-array name="weeks">
-        <item>一</item>
-        <item>二</item>
-        <item>三</item>
-        <item>四</item>
-        <item>五</item>
-        <item>六</item>
-        <item>日</item>
+        <item>星期一</item>
+        <item>星期二</item>
+        <item>星期三</item>
+        <item>星期四</item>
+        <item>星期五</item>
+        <item>星期六</item>
+        <item>星期日</item>
     </string-array>
     <string-array name="duration">
         <item>08:00~08:45</item>
@@ -213,7 +213,7 @@
         <item>研究生排考</item>
     </string-array>
     <string-array name="occupy_source_values">
-        <item/>
+        <item />
         <item>2</item>
         <item>3</item>
         <item>4</item>
@@ -251,5 +251,14 @@
     <string-array name="run">
         <item>手动运行</item>
         <item>自动运行</item>
+    </string-array>
+    <string-array name="weeks_simple" >
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+        <item>日</item>
     </string-array>
 </resources>

@@ -5,13 +5,13 @@
         <item>@string/account</item>
     </string-array>
     <string-array name="weeks">
-        <item>Mon</item>
-        <item>Tue</item>
-        <item>Wed</item>
-        <item>Thu</item>
-        <item>Fri</item>
-        <item>Sat</item>
-        <item>Sun</item>
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
     </string-array>
     <string-array name="months">
         <item>Jan</item>
@@ -117,5 +117,14 @@
     <string-array name="run">
         <item>Manual Run</item>
         <item>Automatic Run</item>
+    </string-array>
+    <string-array name="weeks_simple">
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+        <item>Sun</item>
     </string-array>
 </resources>

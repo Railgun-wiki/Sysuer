@@ -4,8 +4,15 @@
     style="@style/Widget.Material3.CardView.Elevated"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:checkable="true"
+    app:checkedIcon="@null"
     android:layout_margin="4dp"
-    app:contentPadding="8dp">
+    app:contentPaddingBottom="4dp"
+    app:contentPaddingEnd="8dp"
+    app:contentPaddingLeft="8dp"
+    app:contentPaddingRight="8dp"
+    app:contentPaddingStart="8dp"
+    app:contentPaddingTop="4dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -23,7 +30,6 @@
             android:id="@+id/week"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/week1"
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
 
         <com.google.android.material.textview.MaterialTextView

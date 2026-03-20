@@ -1,7 +1,7 @@
 package com.sysu.edu.life;
 
-import android.app.Activity;
-import android.content.Context;
+import static com.sysu.edu.api.CommonUtil.trim;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewbinding.ViewBinding;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -30,6 +31,7 @@ import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ActivityNewsBinding;
 import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.Pager2Adapter;
 
 import java.util.Objects;
@@ -52,6 +54,18 @@ public class NewsActivity extends AppCompatActivity {
         binding.pager.setAdapter(adapter);
         new TabLayoutMediator(binding.tabLayout, binding.pager, (tab, position) -> tab.setText(new String[]{"资讯", "公众号", "通知", "今日中大"}[position])).attach();
         SuggestionAdapter suggestionAdapter = new SuggestionAdapter();
+
+        suggestionAdapter.setListener(new AdapterListener() {
+            @Override
+            public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                holder.itemView.setOnClickListener(v -> startActivity(new Intent(NewsActivity.this, BrowserActivity.class).setData(Uri.parse(String.format("https://iportal.sysu.edu.cn/searchWeb/#/index?searchWord=%s&module=default&size=10&current=1&sortType=score&searchType=3", suggestionAdapter.get(position)))), ActivityOptionsCompat.makeSceneTransitionAnimation(NewsActivity.this, v, "miniapp").toBundle()));
+            }
+
+            @Override
+            public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
+
+            }
+        });
         Params params = new Params(this);
         params.setCallback(this::getSuggestions);
         binding.sugs.setAdapter(suggestionAdapter);
@@ -134,15 +148,15 @@ public class NewsActivity extends AppCompatActivity {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sug, parent, false)) {};
+            return new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sug, parent, false)) {
+            };
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            ((TextView) holder.itemView).setText(data.get(position));
-            Context context = holder.itemView.getContext();
-            holder.itemView.setOnClickListener(v -> context.startActivity(new Intent(context, BrowserActivity.class).setData(Uri.parse(String.format("https://iportal.sysu.edu.cn/searchWeb/#/index?searchWord=%s&module=default&size=10&current=1&sortType=score&searchType=3", data.get(position)))), ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) context, v, "miniapp").toBundle()));
+            ((TextView) holder.itemView).setText(trim(get(position)));
             super.onBindViewHolder(holder, position);
         }
+
     }
 }

@@ -102,7 +102,7 @@ public class CourseScheduleActivity extends AppCompatActivity {
         } // 初始化课程时间
         for (int i = 0; i < 7; i++) {
             ItemWeekdayBinding itemBinding = ItemWeekdayBinding.inflate(getLayoutInflater(), binding.week, false);
-            itemBinding.courseWeek.setText(getResources().getStringArray(R.array.weeks)[i]);
+            itemBinding.courseWeek.setText(getResources().getStringArray(R.array.weeks_simple)[i]);
             itemBinding.courseDate.setText(getOldDate(i + 2 - weekday));
             View column = new View(this);
             if (i + 2 == weekday) {

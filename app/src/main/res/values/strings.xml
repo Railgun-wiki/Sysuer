@@ -605,5 +605,12 @@
     <string name="pe_credit">体育积分</string>
     <string name="pay_way">支付方式</string>
     <string name="cancel_reservation">取消预约</string>
+    <string name="old_out_date">原过期时间</string>
+    <string name="new_out_date">新过期时间</string>
+    <string name="month">月份</string>
+    <string name="order_success">下单成功</string>
+    <string name="order_fail">下单失败</string>
+    <string name="order_timr">下单时间</string>
+    <string name="order_time">下单时间</string>
 
 </resources>

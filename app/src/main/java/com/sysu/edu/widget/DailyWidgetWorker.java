@@ -1,5 +1,7 @@
 package com.sysu.edu.widget;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
@@ -18,7 +20,10 @@ public class DailyWidgetWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        List.of(TodayClassWidget.class, TomorrowClassWidget.class).forEach(c -> getApplicationContext().startService(new Intent(getApplicationContext(), c)));
+        List.of(TodayClassWidget.class, TomorrowClassWidget.class).forEach(c -> getApplicationContext().startService(new Intent(getApplicationContext(), c)
+                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, AppWidgetManager.getInstance(getApplicationContext())
+                        .getAppWidgetIds(new ComponentName(getApplicationContext(), c)))));
         return Result.success();
     }
 }

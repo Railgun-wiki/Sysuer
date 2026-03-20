@@ -1,5 +1,7 @@
 package com.sysu.edu.widget;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
@@ -16,7 +18,9 @@ public class NextClassWidgetWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        getApplicationContext().startService(new Intent(getApplicationContext(), NextClassWidget.class));
+        getApplicationContext().startService(new Intent(getApplicationContext(), NextClassWidget.class).setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, AppWidgetManager.getInstance(getApplicationContext())
+                        .getAppWidgetIds(new ComponentName(getApplicationContext(), NextClassWidget.class))));
         return Result.success();
     }
 }
