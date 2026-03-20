@@ -112,6 +112,12 @@
         "name": "Library",
         "url": "https://library.sysu.edu.cn/",
         "description": "Sun Yat-sen University Library, providing book borrowing, research services, academic exchange, etc."
+      },
+      {
+        "id": 1203,
+        "name": "DCXT",
+        "url": "https://dcxt.sysu.edu.cn/",
+        "description": "DCXT project management system platform"
       }
     ]
   },

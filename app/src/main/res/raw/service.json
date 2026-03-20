@@ -112,6 +112,12 @@
         "name": "图书馆",
         "url": "https://library.sysu.edu.cn/",
         "description": "中山大学图书馆，提供图书借阅、研究服务、学术交流等功能"
+      },
+      {
+        "id": 1203,
+        "name": "大创系统",
+        "url": "https://dcxt.sysu.edu.cn/",
+        "description": "大创项目管理系统平台"
       }
     ]
   },

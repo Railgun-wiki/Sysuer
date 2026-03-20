@@ -4,8 +4,10 @@ import static com.sysu.edu.api.DownloadManager.downloadFile;
 import static com.sysu.edu.api.DownloadManager.openFile;
 
 import android.app.DownloadManager;
+import android.appwidget.AppWidgetManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -163,7 +165,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> startService(new Intent(this, e)));
+        List.of(NextClassWidget.class, TodayClassWidget.class, TomorrowClassWidget.class, RecentClassWidget.class).forEach(e -> sendBroadcast(new Intent(this, e)
+                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, AppWidgetManager.getInstance(this)
+                        .getAppWidgetIds(new ComponentName(this, e)))));
         ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
 //        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
 //        });
