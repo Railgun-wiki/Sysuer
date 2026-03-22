@@ -591,4 +591,25 @@
     <string name="physical_exam_date">Physical Examination Date</string>
     <string name="approved">Approved</string>
     <string name="disapproved">Disapproved</string>
+    <string name="redo">Redo</string>
+    <string name="undo">Undo</string>
+    <string name="today_class">Today Class</string>
+    <string name="recent_class">Recent Class</string>
+    <string name="add_to_launcher">Add to Launcher</string>
+    <string name="tomorrow_class">Tomorrow Class</string>
+    <string name="fail_to_add_shortcut">Fail to add to the launcher. Please enable the perssion in the system setting</string>
+    <string name="reserve_success">Succeed Reserving</string>
+    <string name="venue">Venue</string>
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string>
+    <string name="cash">Cash</string>
+    <string name="pe_credit">Sports Credit</string>
+    <string name="pay_way">Pay Way</string>
+    <string name="cancel_reservation">Cancel Reservation</string>
+    <string name="old_out_date">Old Expiration Date</string>
+    <string name="new_out_date">New Expiration Date</string>
+    <string name="month">Month</string>
+    <string name="order_success">Order Placed Successfully</string>
+    <string name="order_fail">Order Failed</string>
+    <string name="order_time">Order Time</string>
 </resources>

@@ -29,6 +29,7 @@ import com.sysu.edu.api.TargetUrl;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class TomorrowClassWidget extends AppWidgetProvider {
@@ -36,9 +37,8 @@ public class TomorrowClassWidget extends AppWidgetProvider {
     HttpManager http;
 
     private static void update(AppWidgetManager appWidgetManager, int[] appWidgetIds, RemoteViews remoteViews) {
-        for (int appWidgetId : appWidgetIds) {
+        for (int appWidgetId : appWidgetIds)
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
-        }
     }
 
     @Override
@@ -50,30 +50,32 @@ public class TomorrowClassWidget extends AppWidgetProvider {
                 RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_today_class);
                 if (msg.what != -1 && msg.getData().getBoolean("isJSON")) {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
-                    if (response.getJSONObject("meta").getInteger("statusCode").equals(200)) {
+                    if (Objects.equals(response.getJSONObject("meta").getInteger("statusCode"), 200)) {
                         JSONObject data = response.getJSONObject("data");
                         if (msg.what == 5) {
                             remoteViews.setTextViewText(R.id.day, data.getString("chooseTime"));
                             RemoteViewsCompat.RemoteCollectionItems.Builder items = new RemoteViewsCompat.RemoteCollectionItems.Builder();
-                            JSONArray list = data.getJSONArray("list");
-                            list.forEach(e -> {
-                                JSONObject item = (JSONObject) e;
-                                var view = new RemoteViews(context.getPackageName(), R.layout.widget_item);
-                                view.setTextViewText(R.id.content, String.format("%s：%s\n%s：%s",
-                                        context.getString(R.string.location), item.getString("place"),
-                                        context.getString(R.string.time), item.getString("timeZone")));
-                                view.setTextViewText(R.id.title, item.getString("title"));
-                                items.addItem(View.generateViewId(), view);
-                            });
-                            RemoteViewsCompat.setRemoteAdapter(context, remoteViews, R.layout.widget_item, R.id.list, items.build());
-                            OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(DailyWidgetWorker.class)
-                                    .setConstraints(new Constraints.Builder()
-                                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                                            .build())
-                                    .setInitialDelay(24 - LocalTime.now().getHour(), TimeUnit.HOURS)
-                                    .build();
-                            WorkManager.getInstance(context).enqueue(workRequest);
-                            remoteViews.setTextViewText(R.id.week, String.format(Locale.getDefault(), "共%d节", list.size()));
+                            if (data.containsKey("list")) {
+                                JSONArray list = data.getJSONArray("list");
+                                list.forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    var view = new RemoteViews(context.getPackageName(), R.layout.widget_item);
+                                    view.setTextViewText(R.id.content, String.format("%s：%s\n%s：%s",
+                                            context.getString(R.string.location), item.getString("place"),
+                                            context.getString(R.string.time), item.getString("timeZone")));
+                                    view.setTextViewText(R.id.title, item.getString("title"));
+                                    items.addItem(View.generateViewId(), view);
+                                });
+                                RemoteViewsCompat.setRemoteAdapter(context, remoteViews, R.layout.widget_item, R.id.list, items.build());
+                                OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(DailyWidgetWorker.class)
+                                        .setConstraints(new Constraints.Builder()
+                                                .setRequiredNetworkType(NetworkType.CONNECTED)
+                                                .build())
+                                        .setInitialDelay(24 - LocalTime.now().getHour(), TimeUnit.HOURS)
+                                        .build();
+                                WorkManager.getInstance(context).enqueue(workRequest);
+                                remoteViews.setTextViewText(R.id.week, String.format(Locale.getDefault(), "共%d节", list.size()));
+                            }
                         }
 
                         remoteViews.setOnClickPendingIntent(android.R.id.background, PendingIntent.getActivity(context, 0, new Intent(context, AgendaActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));

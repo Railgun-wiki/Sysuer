@@ -610,7 +610,9 @@
     <string name="month">月份</string>
     <string name="order_success">下单成功</string>
     <string name="order_fail">下单失败</string>
-    <string name="order_timr">下单时间</string>
     <string name="order_time">下单时间</string>
+    <string name="water_electricity_fee">水电费</string>
+    <string name="electricity_fee">电费</string>
+    <string name="water_fee">水费</string>
 
 </resources>

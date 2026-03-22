@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.BIND_SHORTCUT"/>
+    <uses-permission android:name="android.permission.BIND_SHORTCUT" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> <!-- <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> -->
@@ -32,6 +32,10 @@
         android:theme="@style/Theme.SYSU"
         android:usesCleartextTraffic="true"
         tools:targetApi="36">
+        <activity
+            android:name=".life.WaterElectricityFeeActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="true" />
         <activity
             android:name=".academic.AgendaActivity"
             android:configChanges="orientation|screenSize"
@@ -225,8 +229,7 @@
             android:name=".academic.CourseScheduleActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
-        </activity>
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity
             android:name=".browser.BrowserActivity"
             android:configChanges="orientation|screenSize"
@@ -252,24 +255,30 @@
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts"
+
+            <meta-data
+                android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
 
         <activity-alias
-            android:name=".MainActivityDark"
+            android:name=".MainActivityDefault"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/icon_dark"
+            android:icon="@mipmap/icon"
             android:label="@string/app_name"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts"
+
+            <meta-data
+                android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
@@ -281,23 +290,29 @@
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts"
+
+            <meta-data
+                android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
-            android:name=".MainActivityDefault"
+            android:name=".MainActivityDark"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/icon"
+            android:icon="@mipmap/icon_dark"
             android:label="@string/app_name"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <meta-data android:name="android.app.shortcuts"
+
+            <meta-data
+                android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity-alias>
 
@@ -327,6 +342,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_next_class" />
@@ -338,6 +354,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_today_class" />
@@ -349,6 +366,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_recent_class" />
@@ -360,10 +378,12 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_tomorrow_class" />
         </receiver>
+
         <provider
             android:name=".UncaughtExceptionHandlerContentProvider"
             android:authorities="${applicationId}"
@@ -371,4 +391,5 @@
             android:grantUriPermissions="false"
             android:initOrder="101" />
     </application>
+
 </manifest>

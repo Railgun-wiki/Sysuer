@@ -185,7 +185,7 @@
       {
         "id": 406,
         "name": "财务信息系统",
-        "url": "https://cwxt.webvpn.sysu.edu.cn/#/home/index",
+        "url": "https://cwxt.sysu.edu.cn/#/home/index",
         "description": "校园财务管理系统，学费缴纳、奖助学金发放、财务查询等功能"
       }
     ]
@@ -479,7 +479,7 @@
       {
         "id": 906,
         "name": "水电费",
-        "url": "https://zhny.sysu.edu.cn/h5/#/",
+        "url": "https://cas.sysu.edu.cn/esc-sso/login?service=https://zhny.sysu.edu.cn/h5",
         "description": "水电费查询缴纳系统，宿舍水电使用情况查询和在线缴费"
       },
       {

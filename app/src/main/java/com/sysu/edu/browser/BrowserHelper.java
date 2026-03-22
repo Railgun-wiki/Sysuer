@@ -14,7 +14,7 @@ public class BrowserHelper extends SQLiteOpenHelper {
     private final Context context;
 
     public BrowserHelper(Context context) {
-        super(context, "browser.db", null, 10);
+        super(context, "browser.db", null, 11);
         this.context = context;
     }
 
@@ -68,6 +68,16 @@ public class BrowserHelper extends SQLiteOpenHelper {
             ContentValues value = new ContentValues();
             value.put("script", "['.sys-header','.sys-footer','.ant-breadcrumb','.ant-tabs-bar'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelectorAll('col').forEach(element=>{element.style.minWidth = \"0px\";});document.querySelector('.stu-con').style.padding='0px';");
             db.update("js", value, "matches LIKE  ?", new String[]{"%personalTrainingProgramView%"});
+        }
+        if (oldVersion < 11) {
+            ContentValues value = new ContentValues();
+            value.put("run", 0);
+            value.put("author", "SYSU-Tang");
+            value.put("title", "新心理健康视频速通");
+            value.put("description", "在线教学平台，视频一键通关");
+            value.put("matches", "[\"://lms.sysu.edu.cn/mod/fsresource/view.php\"]");
+            value.put("script", "var sourceData = playerdata && playerdata.source ? JSON.parse(playerdata.source) : {};\nvar sources = {};\nif (sourceData?.FD) {\n    sources.FD = [{\n        src: sourceData.FD\n    }];\n}\nif (sourceData?.LD) {\n    sources.LD = [{\n        src: sourceData.LD\n    }];\n}\nif (sourceData?.SD) {\n    sources.SD = [{\n        src: sourceData.SD\n    }];\n    defaultRes = 'SD';\n}\nif (sourceData?.HD) {\n    sources.HD = [{\n        src: sourceData.HD\n    }];\n}\nif (sourceData?.OD) {\n    sources.FHD = [{\n        src: sourceData.OD\n    }];\n}\nvar playerWrapper = new TCPlayerWrapper(\n    \"fsplayer-container-id_html5_api\",\n    sources,\n    playerdata.siteUrl + \"/lib/ajax/service.php?sesskey=\" + playerdata.sesskey,\n    `fs_${playerdata.userid}_${playerdata.fsresourceid || 0}`,\n    15 * 1000,\n    playerdata.progress == 1\n);\nfor (let i = 0; i < playerWrapper.player.duration()/4+1 ; i++){setTimeout(()=>{playerWrapper.viewTotalTime = 4000 ;playerWrapper.ajaxOrder()},i*10);\n}");
+            db.insert("js", null, value);
         }
 
     }
