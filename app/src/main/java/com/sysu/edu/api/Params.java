@@ -1,39 +1,24 @@
 package com.sysu.edu.api;
 
 
-import static com.sysu.edu.login.LoginManager.initLoginModel;
-import static com.sysu.edu.login.LoginManager.initLoginWebView;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.webkit.WebView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.sysu.edu.MainActivity;
-import com.sysu.edu.R;
 import com.sysu.edu.browser.BrowserActivity;
-import com.sysu.edu.login.LoginActivity;
-import com.sysu.edu.login.LoginViewModel;
-
-import java.util.List;
 
 public class Params {
 
     final SharedPreferences sharedPreferences; // SharedPreferences 对象
     final FragmentActivity activity; // 关联的 FragmentActivity 对象
     Fragment fragment; // 关联的 Fragment 对象
-    ActivityResultLauncher<Intent> launcher; // 用于启动登录 Activity 的 ActivityResultLauncher 对象
+//    ActivityResultLauncher<Intent> launcher; // 用于启动登录 Activity 的 ActivityResultLauncher 对象
     Runnable afterLogin; // 登录成功后的回调 Runnable 对象
     private ContextUtil contextUtil;
 
@@ -66,9 +51,9 @@ public class Params {
      */
     public void setCallback(Runnable afterLogin) {
         this.afterLogin = afterLogin;
-        this.launcher = (fragment == null ? activity : fragment).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
-            if (o.getResultCode() == FragmentActivity.RESULT_OK) afterLogin.run();
-        });
+//        this.launcher = (fragment == null ? activity : fragment).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
+//            if (o.getResultCode() == FragmentActivity.RESULT_OK) afterLogin.run();
+//        });
     }
 
     /**
@@ -120,9 +105,9 @@ public class Params {
         return contextUtil.getAuthorization();
     }
 
-    public void setAuthorization(String auth) {
-        contextUtil.setAuthorization(auth);
-    }
+//    public void setAuthorization(String auth) {
+//        contextUtil.setAuthorization(auth);
+//    }
 
     /**
      * 获取用户名
@@ -169,14 +154,14 @@ public class Params {
         return contextUtil.getSharedPreferences();
     }
 
-    /**
-     * 获取 Token
-     *
-     * @return Token
-     */
-    public String getToken() {
-        return contextUtil.getToken();
-    }
+//    /**
+//     * 获取 Token
+//     *
+//     * @return Token
+//     */
+//    public String getToken() {
+//        return contextUtil.getToken();
+//    }
 
     /**
      * 获取是否为开发者
@@ -234,14 +219,14 @@ public class Params {
         contextUtil.toast(toast);
     }
 
-    /**
-     * 获取登录模式
-     *
-     * @return 登录模式（"0"：弹窗登录；"1"：主页弹窗、其他跳转登录；"2"：跳转登录；"3"：自动登录）
-     */
-    public String getLoginMode() {
-        return contextUtil.getLoginMode();
-    }
+//    /**
+//     * 获取登录模式
+//     *
+//     * @return 登录模式（"0"：弹窗登录；"1"：主页弹窗、其他跳转登录；"2"：跳转登录；"3"：自动登录）
+//     */
+//    public String getLoginMode() {
+//        return contextUtil.getLoginMode();
+//    }
 
     /**
      * 跳转登录页面
@@ -250,51 +235,49 @@ public class Params {
      * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
      */
     public void gotoLogin(View view, String url) {
-        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN,
-                TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS, TargetUrl.GYM_WEBVPN, TargetUrl.GYM, TargetUrl.PAY, TargetUrl.PJXT).contains(url)) {
-            contextUtil.login(url, afterLogin);
-            return;
-        }
-        Intent intent = new Intent(activity, LoginActivity.class);
-        if (url != null) intent.putExtra("url", url);
-        switch (getLoginMode()) {
-            case "0" ->
-                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
-            case "1" -> {
-                if (activity instanceof MainActivity)
-                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
-                else gotoLogin(view, intent);
-            }
-            case "3" -> {
-                String account = getUserName();
-                String password = getPassword();
-                if (account.isEmpty() || password.isEmpty()) {
-                    toast(R.string.require_netid_password);
-                    gotoLogin(view, intent);
-                    break;
-                }
-                toast(R.string.logging_in);
-                LoginViewModel model = new ViewModelProvider(activity).get(LoginViewModel.class);
-                WebView web = initLoginWebView(activity, model, true);
-                initLoginModel(activity, model, url, () -> {
-                    afterLogin.run();
-//                    System.out.println("Login Successfully");
-                    web.destroy();
-                    toast(R.string.login_successfully);
-                });
-//                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
-            }
-            default -> gotoLogin(view, intent);
-        }
+//        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN,
+//                TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS, TargetUrl.GYM_WEBVPN, TargetUrl.GYM, TargetUrl.PAY, TargetUrl.PJXT,TargetUrl.ZHNY).contains(url))
+        contextUtil.login(url, afterLogin);
+//        Intent intent = new Intent(activity, LoginActivity.class);
+//        if (url != null) intent.putExtra("url", url);
+//        switch (getLoginMode()) {
+//            case "0" ->
+//                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
+//            case "1" -> {
+//                if (activity instanceof MainActivity)
+//                    Snackbar.make(view, R.string.login_warning, Snackbar.LENGTH_LONG).setAction(R.string.login, _ -> launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"))).show();
+//                else gotoLogin(view, intent);
+//            }
+//            case "3" -> {
+//                String account = getUserName();
+//                String password = getPassword();
+//                if (account.isEmpty() || password.isEmpty()) {
+//                    toast(R.string.require_netid_password);
+//                    gotoLogin(view, intent);
+//                    break;
+//                }
+//                toast(R.string.logging_in);
+//                LoginViewModel model = new ViewModelProvider(activity).get(LoginViewModel.class);
+//                WebView web = initLoginWebView(activity, model, true);
+//                initLoginModel(activity, model, url, () -> {
+//                    afterLogin.run();
+////                    System.out.println("Login Successfully");
+//                    web.destroy();
+//                    toast(R.string.login_successfully);
+//                });
+////                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
+//            }
+//            default -> gotoLogin(view, intent);
+//        }
     }
 
-    /**
-     * 跳转登录页面
-     *
-     * @param view   触发跳转的视图
-     * @param intent 登录 Intent
-     */
-    private void gotoLogin(View view, Intent intent) {
-        launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
-    }
+//    /**
+//     * 跳转登录页面
+//     *
+//     * @param view   触发跳转的视图
+//     * @param intent 登录 Intent
+//     */
+//    private void gotoLogin(View view, Intent intent) {
+//        launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
+//    }
 }

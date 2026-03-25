@@ -33,7 +33,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="36">
         <activity
-            android:name=".life.WaterElectricityFeeActivity"
+            android:name=".life.EnergyFeeActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true" />
         <activity

@@ -25,6 +25,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -97,7 +98,7 @@ public class GymOrderFragment extends Fragment {
                             params.toast(R.string.login_warning);
 //                            viewModel.loginRequired.setValue(true);
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-                        }else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                        } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
@@ -112,6 +113,7 @@ public class GymOrderFragment extends Fragment {
 //        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
         http.setAuthorizationRequired(true);
+        http.setAuthorizationJar(new AuthorizationJar(requireContext()));
         MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
         binding.from.setOnClickListener(_ -> {
             MaterialDatePicker<Long> datePicker = picker

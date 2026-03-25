@@ -71,7 +71,7 @@
     "script": "['.sys-header','.sys-footer','.invest2'].forEach(function(v){if(document.querySelector(v)!=null)document.querySelector(v).style.display='none';});document.querySelectorAll('.noPaddingTd col').forEach(element=>{element.style.minWidth = \"0px\";});document.querySelector('.ant-layout-content').style.paddingTop='0px';"
   },
   {
-    "title": "新心理健康视频速通",
+    "title": "在线教学平台视频速通",
     "description": "在线教学平台，视频一键通关",
     "author": "SYSU-Tang",
     "matches": [

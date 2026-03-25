@@ -27,6 +27,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -51,9 +52,9 @@ public class GymReservationFragment extends Fragment {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     HttpManager http;
     GymReservationViewModel viewModel;
+    Handler handler;
     private ConcatAdapter concatAdapter;
     private FragmentGymOrderBinding binding;
-    Handler handler;
 
     @Nullable
     @Override
@@ -65,7 +66,7 @@ public class GymReservationFragment extends Fragment {
         binding.recyclerView.setAdapter(concatAdapter);
         Params params = new Params(this);
         params.setCallback(this::reset);
-        handler= new Handler(Looper.getMainLooper()) {
+        handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
@@ -105,7 +106,7 @@ public class GymReservationFragment extends Fragment {
 //                                    value.set(4, LocalDateTime.parse(value.get(4), FORMATTER).atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).format(FORMATTER));
                                     value.set(2, LocalDateTime.parse(value.get(2), FORMATTER).atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).format(FORMATTER));
                                 } catch (DateTimeParseException e) {
-                                    throw new IllegalArgumentException("时间格式错误，应为 yyyy-MM-dd'T'HH:mm:ss'Z'", e);
+                                    throw new IllegalArgumentException("Invalid Time, which is required to format as yyyy-MM-dd'T'HH:mm:ss'Z'", e);
                                 }
                                 preferenceAdapter.set(List.of(getString(R.string.venue), getString(R.string.start_time), getString(R.string.end_time), getString(R.string.money), getString(R.string.order_time)),
                                         value,
@@ -134,10 +135,11 @@ public class GymReservationFragment extends Fragment {
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
         http.setUA(viewModel.ua);
         http.setAuthorizationRequired(true);
+        http.setAuthorizationJar(new AuthorizationJar(requireContext()));
         MaterialDatePicker.Builder<Long> picker = MaterialDatePicker.Builder.datePicker();
         binding.from.setOnClickListener(_ -> {
-            Long value = viewModel.reservationFromTo.getValue().getSecond();
-            if (value != null) {
+            Long value;
+            if (viewModel.reservationFromTo.getValue() != null && (value = viewModel.reservationFromTo.getValue().getSecond()) != null) {
                 MaterialDatePicker<Long> datePicker = picker
                         .setSelection(viewModel.reservationFromTo.getValue().getFirst())
                         .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointBackward.before(value)))).build())
@@ -146,28 +148,7 @@ public class GymReservationFragment extends Fragment {
                 datePicker.addOnPositiveButtonClickListener(selection -> viewModel.reservationFromTo.setValue(new CommonUtil.Tuple2<>(selection, value)));
             }
         });
-//        System.out.println(viewModel.reservationFromTo.getValue().getFirst());
-//        System.out.println(viewModel.reservationFromTo.getValue().getSecond());
-
-//        viewModel.reservationTo.observe(getViewLifecycleOwner(), l -> {
-//            binding.to.setText(dateFormat.format(l));
-//            regetReservation();
-//        });
-//        viewModel.reservationFrom.observe(getViewLifecycleOwner(), l -> {
-//            binding.from.setText(dateFormat.format(l));
-//            regetReservation();
-//        });
-//        MediatorLiveData<CommonUtil.Tuple2<Long, Long>> fromTo = new MediatorLiveData<>();
-//        fromTo.addSource(viewModel.reservationFrom, l -> {
-//            binding.from.setText(dateFormat.format(l));
-//            fromTo.setValue(new CommonUtil.Tuple2<>(l, viewModel.reservationTo.getValue()));
-//        });
-//        fromTo.addSource(viewModel.reservationTo, l -> {
-//            binding.to.setText(dateFormat.format(l));
-//            fromTo.setValue(new CommonUtil.Tuple2<>(viewModel.reservationFromTo.getValue().getFirst(), l));
-//        });
         viewModel.reservationFromTo.observe(getViewLifecycleOwner(), o -> {
-            System.out.println(o);
             if (o != null && o.getSecond() != null && o.getFirst() != null) {
                 binding.from.setText(dateFormat.format(o.getFirst()));
                 binding.to.setText(dateFormat.format(o.getSecond()));
@@ -175,8 +156,8 @@ public class GymReservationFragment extends Fragment {
             }
         });
         binding.to.setOnClickListener(_ -> {
-            Long value = viewModel.reservationFromTo.getValue().getFirst();
-            if (value != null) {
+            Long value;
+            if (viewModel.reservationFromTo.getValue() != null && (value = viewModel.reservationFromTo.getValue().getFirst()) != null) {
                 MaterialDatePicker<Long> datePicker = picker
                         .setSelection(viewModel.reservationFromTo.getValue().getSecond())
                         .setCalendarConstraints(new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(List.of(DateValidatorPointForward.from(value)))).build())
@@ -198,7 +179,8 @@ public class GymReservationFragment extends Fragment {
     }
 
     void getReservation() {
-        http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/BookingRequestVenue?all=false&startDate=%s&endDate=%s&waitingList=false", dateFormat.format(viewModel.reservationFromTo.getValue().getFirst()), dateFormat.format(viewModel.reservationFromTo.getValue().getSecond())), 0);
+        if (viewModel.reservationFromTo.getValue() != null && viewModel.reservationFromTo.getValue().getSecond() != null && viewModel.reservationFromTo.getValue().getFirst() != null)
+            http.getRequest(viewModel.authorizationManager.getBaseUrl() + String.format("api/BookingRequestVenue?all=false&startDate=%s&endDate=%s&waitingList=false", dateFormat.format(viewModel.reservationFromTo.getValue().getFirst()), dateFormat.format(viewModel.reservationFromTo.getValue().getSecond())), 0);
     }
 
     void deleteReservation(String bookingId) {

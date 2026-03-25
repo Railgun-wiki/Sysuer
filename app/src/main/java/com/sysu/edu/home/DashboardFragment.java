@@ -125,7 +125,6 @@ public class DashboardFragment extends Fragment {
         if (isRefreshRequired) {
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
             CalendarManager calendar = new CalendarManager();
-
             db = new HomeCollectionHelper(requireContext());
             viewModel = new ViewModelProvider(requireActivity()).get(HomeViewModel.class);
             viewModel.updateDashboardShortcut.observe(requireActivity(), _ -> getShortcutCollection());
@@ -566,7 +565,6 @@ public class DashboardFragment extends Fragment {
 
 class CourseAdapter extends RecyclerAdapter<JSONObject> {
     BiConsumer<JSONObject, View> onClick;
-
 
     @NonNull
     @Override

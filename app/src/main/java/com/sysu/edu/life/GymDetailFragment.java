@@ -21,6 +21,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -197,6 +198,7 @@ public class GymDetailFragment extends Fragment {
         http.setUA(viewModel.ua);
         http.setHeader(Map.of("Accept", "application/json, text/plain, */*"));
         http.setAuthorizationRequired(true);
+        http.setAuthorizationJar(new AuthorizationJar(requireContext()));
         date.select(viewModel.position.getValue() == null ? 0 : viewModel.position.getValue());
 //        System.out.println(viewModel.selected.getValue());
         viewModel.selected.observe(getViewLifecycleOwner(), selected -> {

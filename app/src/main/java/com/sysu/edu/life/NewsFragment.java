@@ -28,6 +28,7 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -88,7 +89,6 @@ public class NewsFragment extends Fragment {
                         }
                         if (!authorizationManager.isAccessible(json)) {
                             params.toast(R.string.educational_wifi_warning);
-                            http.setTarget(TargetUrl.NEWS_WEBVPN);
                             run.run();
                             return;
                         }
@@ -167,6 +167,7 @@ public class NewsFragment extends Fragment {
                 } //今日中大
             });
             http.setAuthorizationRequired(true);
+            http.setAuthorizationJar(new AuthorizationJar(requireContext()));
             http.setParams(params);
         }
         run = List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position);

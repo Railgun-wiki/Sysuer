@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     app:startDestination="@id/navigation_dashboard">
-
     <fragment
         android:id="@+id/navigation_dashboard"
         android:name="com.sysu.edu.home.DashboardFragment"
@@ -17,5 +16,5 @@
     <fragment
         android:id="@+id/navigation_account"
         android:name="com.sysu.edu.home.AccountFragment"
-        android:label="@string/account"/>
+        android:label="@string/account" />
 </navigation>

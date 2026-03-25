@@ -24,6 +24,7 @@ import com.google.android.material.datepicker.DateValidatorPointBackward;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.CalendarManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -176,6 +177,7 @@ public class PayFragment extends StaggeredFragment {
         });
         http.setParams(params);
         http.setReferrer("https://pay.sysu.edu.cn/");
+        http.setAuthorizationJar(new AuthorizationJar(requireContext()));
         http.setTokenRequired(true);
         getPage();
         return view;

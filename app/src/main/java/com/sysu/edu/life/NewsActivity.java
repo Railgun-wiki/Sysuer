@@ -24,6 +24,7 @@ import androidx.viewbinding.ViewBinding;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.AuthorizationManager;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -112,6 +113,7 @@ public class NewsActivity extends AppCompatActivity {
         });
         http.setParams(params);
         http.setAuthorizationRequired(true);
+        http.setAuthorizationJar(new AuthorizationJar(this));
         edit = binding.searchView.getEditText();
         edit.setOnEditorActionListener((_, _, _) -> {
             binding.searchView.hide();

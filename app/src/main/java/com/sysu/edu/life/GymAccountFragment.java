@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
+import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
@@ -99,7 +100,7 @@ public class GymAccountFragment extends Fragment {
                         if (!viewModel.authorizationManager.isAuthorized(response)) {
                             params.toast(R.string.login_warning);
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-                        }else if (Pattern.compile("人机识别检测").matcher(response).find()) {
+                        } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
                             params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
@@ -114,6 +115,7 @@ public class GymAccountFragment extends Fragment {
 //        http.setCookie(viewModel.cookie);
         http.setUA(viewModel.ua);
         http.setAuthorizationRequired(true);
+        http.setAuthorizationJar(new AuthorizationJar(requireContext()));
 
         getAccount();
         return binding.getRoot();

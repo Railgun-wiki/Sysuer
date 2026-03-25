@@ -12,6 +12,7 @@ import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -34,6 +35,7 @@ public class HttpManager {
     boolean isAuthorizationRequired; // 是否需要 Authorization 头字段
     boolean isTokenRequired; // 是否需要 token 头字段
     Map<String, String> header;
+    AuthorizationJar authorizationJar;
 
     /**
      * 构造函数
@@ -52,6 +54,15 @@ public class HttpManager {
     public void setParams(Params params) {
         this.params = params;
     }
+
+//    /**
+//     * 设置 AuthorizationJar 对象
+//     *
+//     * @param authorizationJar AuthorizationJar 对象
+//     */
+//    public void setAuthorizationJar(AuthorizationJar authorizationJar) {
+//        this.authorizationJar = authorizationJar;
+//    }
 
     /**
      * 设置处理消息的 Handler 对象
@@ -80,14 +91,14 @@ public class HttpManager {
         this.cookie = cookie;
     }
 
-    /**
-     * 设置 Authorization 头字段
-     *
-     * @param authorization Authorization 头字段值
-     */
-    public void setAuthorization(String authorization) {
-        this.authorization = authorization;
-    }
+//    /**
+//     * 设置 Authorization 头字段
+//     *
+//     * @param authorization Authorization 头字段值
+//     */
+//    public void setAuthorization(String authorization) {
+//        this.authorization = authorization;
+//    }
 
     /**
      * 设置是否需要 Authorization 头字段
@@ -129,6 +140,11 @@ public class HttpManager {
         this.header = header;
     }
 
+    public void setAuthorizationJar(AuthorizationJar authorizationJar) {
+        this.authorizationJar = authorizationJar;
+    }
+
+
     /**
      * 发送网络请求
      *
@@ -140,6 +156,7 @@ public class HttpManager {
     private void sendRequest(@NonNull String url, String data, String type, int what, String method) {
         Request.Builder request = new Request.Builder().url(url);
         //(cookieManager);
+        String host = HttpUrl.get(url).host();
         if (params != null) request.header("Cookie", params.getCookie());
 //        System.out.println("target: " + target);
         cookieManager.flush();
@@ -150,13 +167,13 @@ public class HttpManager {
             request.header("Cookie", cookieManager.getCookie(url));
         }
         if (cookie != null) request.header("Cookie", cookie);
-        if (isAuthorizationRequired && params != null)
-            request.header("Authorization", params.getAuthorization());
+        if (isAuthorizationRequired && authorizationJar != null)
+            request.header("Authorization", authorizationJar.getAuthorization(host));
         if (authorization != null) request.header("Authorization", authorization);
         if (referrer != null) request.header("Referer", referrer);
         if (ua != null) request.header("User-Agent", ua);
         if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
-        if (isTokenRequired && params != null) request.header("token", params.getToken());
+        if (isTokenRequired && authorizationJar != null) request.header("token", authorizationJar.getToken(host));
         if (header != null) header.forEach(request::header);
         if ("DELETE".equals(method)) {
             request.delete();

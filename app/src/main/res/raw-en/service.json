@@ -188,6 +188,12 @@
         "name": "Financial Information System",
         "url": "https://cwxt.sysu.edu.cn/#/home/index",
         "description": "Campus financial management system, with functions such as tuition payment, scholarship and grant distribution, and financial inquiries"
+      },
+      {
+        "id": 407,
+        "name": "Energy Management System",
+        "url": "https://cas.sysu.edu.cn/esc-sso/login?service=https://zhny.sysu.edu.cn/h5",
+        "description": "Campus energy management system, with functions such as water and electricity consumption inquiry"
       }
     ]
   },
@@ -481,6 +487,7 @@
       {
         "id": 906,
         "name": "Utility Bill",
+        "activity": ".life.EnergyFeeActivity",
         "url": "https://cas.sysu.edu.cn/esc-sso/login?service=https://zhny.sysu.edu.cn/h5",
         "description": "Utility bill inquiry and payment system, for inquiring about dormitory water and electricity usage and making online payments"
       },

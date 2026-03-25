@@ -30,4 +30,5 @@ public class TargetUrl {
     public static final String XGXT_WEBVPN = "https://xgxt-443.webvpn.sysu.edu.cn/?hash_route=%23%2F"; // 学工系统 WebVPN URL
     public static final String TICE = "https://tice.sysu.edu.cn/caslogin"; // 体测 URL
     public static final String PJXT = "https://pjxt.sysu.edu.cn/casLogin"; // 评教系统 URL
+    public static final String ZHNY = "https://zhny.sysu.edu.cn/h5"; // 评教系统 WebVPN URL
 }

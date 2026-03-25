@@ -49,9 +49,7 @@
             app:summary="1063579244"
             app:title="@string/qq_group">
             <intent
-                android:data="mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3Di4M0YfNzHskNiXgiYTAvA1EAWZh7HNQx"
-                android:targetClass="com.sysu.edu.browser.BrowserActivity"
-                android:targetPackage="com.sysu.edu" />
+                android:data="mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3Di4M0YfNzHskNiXgiYTAvA1EAWZh7HNQx" />
         </Preference>
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/feedback">

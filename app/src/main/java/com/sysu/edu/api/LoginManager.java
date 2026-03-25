@@ -49,11 +49,7 @@ public class LoginManager {
             .cookieJar(cookieJar)
             .build();
     private final AuthorizationManager casAuthorizationManager = new AuthorizationManager("https://cas.sysu.edu.cn", "https://cas-443.webvpn.sysu.edu.cn");
-    ContextUtil params;
-
-    public LoginManager() {
-    }
-
+    AuthorizationJar authorizationJar;
 
     private String getPublicKey() {
         try {
@@ -77,47 +73,25 @@ public class LoginManager {
     }
 
 
-    private void login(String path) {
-//        System.out.println("Cookie " + cookieJar.loadForRequest(HttpUrl.get("https://cas.sysu.edu.cn")));
+    private void request(String path) {
         String url = path.startsWith("http") ? path : casAuthorizationManager.getBaseUrl() + path;
         try {
-//            System.out.println(url);
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
             String a = response.body().string();
-//            System.out.println(response.headers());
-//            String location;
-//            if (response.priorResponse() != null && (location = response.priorResponse().header("location")) != null
-//                    && location.contains("ticket")) {
-//                System.out.println(HttpUrl.get(location).queryParameter("ticket"));
-//                ticket = HttpUrl.get(location).queryParameter("ticket");
-//            }
-
-            if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
-//                System.out.println("redirect to " + redirect(a));
-//                System.out.println(a);
-                login(redirect(a));
-            }
+//            System.out.println(a);
+            if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json"))
+                request(redirect(a));
         } catch (IOException _) {
         }
     }
 
     private String loginForGym(String path) throws IOException {
-//        System.out.println("Cookie " + cookieJar.loadForRequest(HttpUrl.get("https://cas.sysu.edu.cn")));
         String url = path.startsWith("http") ? path : casAuthorizationManager.getBaseUrl() + path;
         Response response = client.newCall(new Request.Builder().header("Accept", "application/json, text/plain, */*")
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36")
                 .url(url).build()).execute();
         String a = response.body().string();
-//            System.out.println(response.headers());
-//            String location;
-//            if (response.priorResponse() != null && (location = response.priorResponse().header("location")) != null
-//                    && location.contains("ticket")) {
-//                System.out.println(HttpUrl.get(location).queryParameter("ticket"));
-//                ticket = HttpUrl.get(location).queryParameter("ticket");
-//            }
         if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
-//                System.out.println("redirect to " + redirect(a));
-//                System.out.println(a);
             return loginForGym(redirect(a));
         }
         return a;
@@ -129,62 +103,75 @@ public class LoginManager {
         else return json.getString("redirect");
     }
 
+//    public boolean login(String service) {
+//        try {
+//            return authorizationJar != null && login(authorizationJar.getUserName(), authorizationJar.getPassword(), service);
+//        } catch (ExecutionException | InterruptedException e) {
+//            Log.e("LoginManager", "login: ", e);
+//            return false;
+//        }
+//    }
+
     public boolean login(String username, String password, String service) throws ExecutionException, InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                String targetBaseUrl = HttpUrl.get(service).scheme() + "://" + HttpUrl.get(service).host() + "/";
+                String host = HttpUrl.get(service).host();
+                String targetBaseUrl = HttpUrl.get(service).scheme() + "://" + host + "/";
                 if (service.contains("webvpn")) {
                     casAuthorizationManager.setAccessible(false);
                     JSONObject publicKey = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
-                    login(redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId"))) + "?service=https%3A%2F%2Fwebvpn.sysu.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl");
-                    login("https://webvpn.sysu.edu.cn/vpn_key/update");
+                    request(redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId"))) + "?service=https%3A%2F%2Fwebvpn.sysu.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl");
+                    request("https://webvpn.sysu.edu.cn/vpn_key/update");
                     List<Cookie> webvpn = cookieJar.loadForRequest(HttpUrl.get("https://webvpn.sysu.edu.cn/vpn_key/update")).stream().filter(e -> "_webvpn_key".equals(e.name())).collect(Collectors.toList());
                     cookieJar.saveFromResponse(HttpUrl.get(service), webvpn);
                     cookieJar.saveFromResponse(HttpUrl.get("https://cas-443.webvpn.sysu.edu.cn"), webvpn);
 
                     switch (service) {
                         case TargetUrl.NEWS_WEBVPN -> {
-                            if (params != null) {
+                            if (authorizationJar != null) {
                                 String auth = "Bearer " + getNewsAuthorization(service);
 //                            System.out.println(auth);
-                                params.setAuthorization(auth);
+                                authorizationJar.setAuthorization(host, auth);
                             }
                         }
                         case TargetUrl.GYM_WEBVPN -> {
                             getGymToken(targetBaseUrl);
                             cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
                             String auth = getGymAuthorization(targetBaseUrl);
-                            if (params != null)
-                                params.setAuthorization("Bearer " + auth);
+                            if (authorizationJar != null)
+                                authorizationJar.setAuthorization(host, "Bearer " + auth);
                         }
-                        default -> login("/esc-sso/login?service=" + service);
+                        default -> request("/esc-sso/login?service=" + service);
                     }
                     if (Objects.equals(service, TargetUrl.XGXT_WEBVPN))
                         getXGXTToken(service, targetBaseUrl);
                 } else {
                     JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
-
-                    login(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
+                    request(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
 
                     switch (service) {
                         case TargetUrl.GYM -> {
                             getGymToken(targetBaseUrl);
 //                            cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
-                            if (params != null)
-                                params.setAuthorization("Bearer " + getGymAuthorization(targetBaseUrl));
+                            if (authorizationJar != null)
+                                authorizationJar.setAuthorization(host, "Bearer " + getGymAuthorization(targetBaseUrl));
                         }
                         case TargetUrl.PORTAL ->
-                                login("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
+                                request("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
                         case TargetUrl.PAY -> {
                             String token = getPayToken(service);
-                            params.setToken(token);
-                            cookieJar.saveFromResponse(HttpUrl.get("https://pay.sysu.edu.cn/client/api/client/auth/netId/login"), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
+                            if (authorizationJar != null)
+                                authorizationJar.setToken(host, token);
+                            cookieJar.saveFromResponse(HttpUrl.get(service), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
+                        }
+                        case TargetUrl.ZHNY -> {
+                            if (authorizationJar != null)
+                                authorizationJar.setAuthorization(host, getZHNYAuthoritarian(service));
                         }
                         case TargetUrl.XGXT -> getXGXTToken(service, targetBaseUrl);
                         case TargetUrl.NEWS -> {
-                            if (params != null) {
-                                params.setAuthorization("Bearer " + getNewsAuthorization(service));
-                            }
+                            if (authorizationJar != null)
+                                authorizationJar.setAuthorization(host, "Bearer " + getNewsAuthorization(service));
                         }
                     }
                 }
@@ -205,7 +192,12 @@ public class LoginManager {
     private String getPayToken(String service) throws IOException {
         return JSONObject.parse(client.newCall(new Request.Builder().url("https://pay.sysu.edu.cn/client/api/client/auth/netId/login")
                 .header("Referer", "https://pay.sysu.edu.cn/")
-                .post(RequestBody.create("{\"key\":\"https://cas.sysu.edu.cn/cas/serviceValidate?service=https://pay.sysu.edu.cn/sso&ticket=" + getTicket(service) + "\"}\n", MediaType.parse("application/json")))
+                .post(RequestBody.create("{\"key\":\"https://cas.sysu.edu.cn/cas/serviceValidate?service=https://pay.sysu.edu.cn/sso&ticket=" + getTicket(service) + "\"}", MediaType.parse("application/json")))
+                .build()).execute().body().string()).getString("data");
+    }
+
+    private String getZHNYAuthoritarian(String service) throws IOException {
+        return JSONObject.parse(client.newCall(new Request.Builder().url("https://zhny.sysu.edu.cn/kbp/auth/third/h5/casLogin/" + getTicket(service))
                 .build()).execute().body().string()).getString("data");
     }
 
@@ -221,29 +213,27 @@ public class LoginManager {
         return location == null ? "" : HttpUrl.get(location).queryParameter("ticket");
     }
 
-    public void setContextUtil(ContextUtil params) {
-        this.params = params;
+    public void setAuthorization(AuthorizationJar authorizationJar) {
+        this.authorizationJar = authorizationJar;
     }
 
     public void getGymToken(String targetBaseUrl) throws IOException {
         Matcher re = Pattern.compile("prefix = '(.+?)'").matcher(loginForGym(targetBaseUrl));
         String prefix = "";
-//        System.out.println(cookieJar.loadForRequest(HttpUrl.get(targetBaseUrl)).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList()));
-        List<Cookie> filterChallenge = cookieJar.loadForRequest(HttpUrl.get(targetBaseUrl)).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toList());
+        List<Cookie> filterChallenge = cookieJar.loadForRequest(HttpUrl.get(targetBaseUrl)).stream().filter(e -> "safeline_bot_challenge".equals(e.name())).collect(Collectors.toCollection(ArrayList::new));
         if (re.find()) prefix = re.group(1);
         if (!filterChallenge.isEmpty() && !isEmpty(prefix))
             cookieJar.saveFromResponse(HttpUrl.get(targetBaseUrl), List.of(new Cookie.Builder().domain(HttpUrl.get(targetBaseUrl).host()).name("safeline_bot_challenge_ans").value(Answer.encode(prefix, filterChallenge.get(0).value())).build()));
     }
 
     public String getNewsAuthorization(String url) {
-        return getAuthorization(new Request.Builder().url(casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + url).build());
+        return getAuthorization(new Request.Builder().url(/*casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + */url).build());
     }
 
     public String getGymAuthorization(String targetBaseUrl) {
         return getAuthorization(new Request.Builder().url(targetBaseUrl + "authsport/Account/Auth?response_type=token&client_id=sysu_2021&redirect_uri=https%3A%2F%2gym.sysu.edu.cn%2F%23&client_id=unnc&scope=PE").header("Accept", "application/json, text/plain, */*")
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36").build());
     }
-
 
     public String getAuthorization(Request request) {
         try {
@@ -271,29 +261,25 @@ public class LoginManager {
 
         @Override
         public void saveFromResponse(HttpUrl url, @NonNull List<Cookie> cookies) {
-//            String add = url.queryParameter("service");
-            String host = url.host();//add == null ? url.host() : HttpUrl.get(add).host();
+            String host = url.host();
             List<Cookie> currentCookies = _cookieStore.get(host);
             List<Cookie> responseCookies = new ArrayList<>(cookies);
-            List<String> keys = responseCookies.stream().map(Cookie::name).collect(Collectors.toList());
+            List<String> keys = responseCookies.stream().map(Cookie::name).collect(Collectors.toCollection(ArrayList::new));
             if (currentCookies != null && !responseCookies.isEmpty()
                     && !currentCookies.isEmpty())
                 currentCookies.stream().filter(currentCookie -> !responseCookies.contains(currentCookie) && (!currentCookie.value().isEmpty()) && (!keys.contains(currentCookie.name()))).forEach(responseCookies::add);
             _cookieStore.put(host, responseCookies);
             responseCookies.forEach(e -> cookieManager.setCookie(url.toString(), e.toString()));
-//            System.out.println("add " + url.toString() + " to " + responseCookies);
-//            cookieManager.setCookie(url.scheme() + "://" + url.host(), responseCookies.stream().map(Cookie::toString).collect(Collectors.joining(";")), value -> System.out.println("setCookie " + url.scheme() + "://" + url.host() + " " + value));
-//            System.out.println("saveFromResponse " + url + " " + responseCookies);
         }
 
         @NonNull
         @Override
         public List<Cookie> loadForRequest(HttpUrl url) {
             List<Cookie> cookies = _cookieStore.get(url.host());
-            List<Cookie> requestCookies = new ArrayList<>();
+            List<Cookie> loginCookies = new ArrayList<>();
             if (cookies != null && !cookies.isEmpty())
-                requestCookies = cookies.stream().filter(currentCookie -> !currentCookie.value().isEmpty()).collect(Collectors.toList());
-            return requestCookies;
+                loginCookies = cookies.stream().filter(currentCookie -> !currentCookie.value().isEmpty()).collect(Collectors.toList());
+            return loginCookies;
         }
 
         public void copy(String from, String to) {
@@ -303,11 +289,6 @@ public class LoginManager {
         public String toString(String url) {
             return loadForRequest(HttpUrl.get(url)).stream().map(Cookie::toString).collect(Collectors.joining("; "));
         }
-
-//
-//        public CookieManager getCookieManager() {
-//            return cookieManager;
-//        }
     }
 
     static class Answer {

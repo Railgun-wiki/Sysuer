@@ -5,6 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.util.TypedValue;
 import android.widget.Toast;
 
@@ -219,16 +220,15 @@ public class ContextUtil {
             password.show();
             return;
         }
+        LoginManager loginManager = new LoginManager();
+        loginManager.setAuthorization(new AuthorizationJar(context));
+        boolean login = false;
         try {
-            LoginManager loginManager = new LoginManager();
-            loginManager.setContextUtil(this);
-            boolean login = loginManager.login(getUserName(), getPassword(), url);
-            System.out.println("Login result: " + login);
-            if (login && afterLogin != null) {
-                afterLogin.run();
-            }
-        } catch (ExecutionException | InterruptedException _) {
+            login = loginManager.login(getUserName(), getPassword(), url);
+        } catch (ExecutionException | InterruptedException e) {
+            Log.e("ContextUtil", "login: ", e);
         }
+        System.out.println("Login result: " + login);
+        if (login && afterLogin != null) afterLogin.run();
     }
-
 }

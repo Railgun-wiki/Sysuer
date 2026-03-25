@@ -614,5 +614,6 @@
     <string name="water_electricity_fee">水电费</string>
     <string name="electricity_fee">电费</string>
     <string name="water_fee">水费</string>
+    <string name="room_name">宿舍名</string>
 
 </resources>

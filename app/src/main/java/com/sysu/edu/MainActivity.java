@@ -34,7 +34,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationBarView;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.PreferenceViewModel;
@@ -54,25 +53,15 @@ import io.noties.markwon.Markwon;
 
 public class MainActivity extends AppCompatActivity {
 
-    //    final ActivityResultLauncher<Intent> launcher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            _ -> {
-//            }
-//    );
     long downloadId;
-    //    ActivityResultLauncher<Intent> detailLauncher;
     BroadcastReceiver receiver;
     Params params;
     HttpManager http;
     String path;
-    FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        mFirebaseAnalytics.setAnalyticsCollectionEnabled(true);
-//        mFirebaseAnalytics.
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
@@ -190,8 +179,6 @@ public class MainActivity extends AppCompatActivity {
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
             }
         }
-
-//        throw new RuntimeException("Firebase Analytics 初始化");
         /*handler.postAtTime(() -> {
             ClassIsland.sendCourseNotification(
                     this,
@@ -230,12 +217,6 @@ public class MainActivity extends AppCompatActivity {
             }*/
         } catch (PackageManager.NameNotFoundException _) {
         }
-//        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-//                .forEach(e -> appWidgetManager.updateAppWidget(new ComponentName(this, e), new RemoteViews(getPackageName(), R.layout.widget_next_class)));
-//        appWidgetManager.updateAppWidget(new ComponentName(this, NextClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_next_class));
-//        appWidgetManager.updateAppWidget(new ComponentName(this, TodayClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
-//        appWidgetManager.updateAppWidget(new ComponentName(this, TomorrowClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
-//        appWidgetManager.updateAppWidget(new ComponentName(this, RecentClassWidget.class), new RemoteViews(getPackageName(), R.layout.widget_today_class));
     }
 
     @Override
