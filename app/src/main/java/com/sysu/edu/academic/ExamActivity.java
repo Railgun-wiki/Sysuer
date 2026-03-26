@@ -108,7 +108,7 @@ public class ExamActivity extends AppCompatActivity {
                         }
                     } else if (response.getInteger("code").equals(53000007)) {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

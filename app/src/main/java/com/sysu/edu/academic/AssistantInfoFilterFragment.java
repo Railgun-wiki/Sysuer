@@ -89,7 +89,7 @@ public class AssistantInfoFilterFragment extends Fragment {
                             }
                         } else {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.filter, TargetUrl.JWXT);
+                            params.gotoLogin(TargetUrl.JWXT);
                         }
                     }
                 }

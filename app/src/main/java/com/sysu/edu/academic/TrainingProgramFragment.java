@@ -94,7 +94,7 @@ public class TrainingProgramFragment extends Fragment {
                             deal(msg.what, data, inflater);
                         } else {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                            params.gotoLogin(TargetUrl.JWXT);
                         }
                     }
                 }

@@ -14,8 +14,5 @@
         android:id="@+id/electricity_fee_fragment"
         android:name="com.sysu.edu.life.EnergyElectricityFeeFragment"
         android:label="@string/electricity_fee" />
-    <fragment
-        android:id="@+id/order_fragment"
-        android:name="com.sysu.edu.life.EnergyOrderFragment"
-        android:label="@string/order" />
+    <include app:graph="@navigation/order_nav" />
 </navigation>

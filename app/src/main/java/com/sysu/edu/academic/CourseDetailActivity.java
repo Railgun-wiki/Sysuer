@@ -79,7 +79,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                     params.toast(response.getString("message"));
                 } else if (response.getInteger("code").equals(53000007)) {
                     params.toast(R.string.login_warning);
-                    params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                    params.gotoLogin(TargetUrl.JWXT);
                 } else {
                     params.toast(response.getString("message"));
                 }

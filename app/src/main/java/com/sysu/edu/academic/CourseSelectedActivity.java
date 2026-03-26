@@ -89,7 +89,7 @@ public class CourseSelectedActivity extends AppCompatActivity {
                     getSelectedCourses(binding.search.getQuery().toString());
             } else {
                 params.toast(R.string.login_warning);
-                params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                params.gotoLogin(TargetUrl.JWXT);
             }
         });
         http = new HttpManager(new Handler(getMainLooper()) {

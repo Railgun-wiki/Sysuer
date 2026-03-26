@@ -26,9 +26,9 @@ public class ClassIsland {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID);
         builder.setSmallIcon(R.drawable.book)
                 .setContentTitle(className)
-                .setContentText(timeRemaining + "开始，" + classroom)
+                .setContentText(timeRemaining + "，" + classroom)
                 .setStyle(new NotificationCompat.BigTextStyle()
-                        .bigText(timeRemaining + "开始，" + classroom))
+                        .bigText(timeRemaining + "，" + classroom))
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)

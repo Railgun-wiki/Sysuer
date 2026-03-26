@@ -28,7 +28,10 @@ import com.sysu.edu.todo.info.TitleAdapter;
 
 import java.util.List;
 
-public class EnergyOrderFragment extends Fragment {
+import dev.enro.annotations.NavigationDestination;
+
+@NavigationDestination(key = HomeKey.class)
+public class EnergyOrderFragment extends Fragment{
 
     HttpManager http;
     String roomCode;
@@ -99,4 +102,36 @@ public class EnergyOrderFragment extends Fragment {
     void getRoom(String username) {
         http.postRequest("https://zhny.sysu.edu.cn/kbp/admin/sys/personRoom/list", "{\"username\":\"" + username + "\"}", 1);
     }
+
+
 }
+//
+//class EnergyOrder implements NavigationKey.SupportsPush {
+//
+//    String date;
+//
+//    public EnergyOrder(String date) {
+//        this.date = date;
+//    }
+//
+//    static final Creator<String> CREATOR = new Creator<>() {
+//
+//        @Override
+//        public String createFromParcel(Parcel source) {
+//            return source.readString();
+//        }
+//
+//        @Override
+//        public String[] newArray(int size) {
+//            return new String[size];
+//        }
+//    };
+//    @Override
+//    public int describeContents() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public void writeToParcel(@NonNull Parcel dest, int flags) {
+//    }
+//}

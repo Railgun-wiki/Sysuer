@@ -87,7 +87,7 @@ public class CourseSelectionFilterFragment extends Fragment {
                             params.toast(response.getString("message"));
                         } else if (response.getInteger("code").equals(53000007)) {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                            params.gotoLogin(TargetUrl.JWXT);
                         }
                     }
                     super.handleMessage(msg);

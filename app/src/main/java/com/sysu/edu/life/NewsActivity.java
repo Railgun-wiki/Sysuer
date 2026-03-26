@@ -85,7 +85,7 @@ public class NewsActivity extends AppCompatActivity {
                 if (!isJSON) {
                     if (!authorizationManager.isAuthorized(json)) {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(binding.searchView, authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                         return;
                     }
                     if (!authorizationManager.isAccessible(json)) {
@@ -103,7 +103,7 @@ public class NewsActivity extends AppCompatActivity {
                         data.getJSONObject("data").getJSONArray("suggests").forEach(e -> suggestionAdapter.add((String) e));
                     } else if (Objects.equals(code, 496)) {
                         params.toast(data.getString("message"));
-                        params.gotoLogin(binding.searchView, authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                     }
                     //suggestion
                 } else {

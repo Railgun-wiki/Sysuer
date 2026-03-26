@@ -74,7 +74,7 @@ public class MajorInfoFragment extends StaggeredFragment {
                         }
                     } else {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(getView(), TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

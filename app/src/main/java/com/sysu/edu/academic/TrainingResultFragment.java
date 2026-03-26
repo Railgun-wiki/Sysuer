@@ -60,7 +60,7 @@ public class TrainingResultFragment extends Fragment {
                                     extractValue((JSONObject) o, new String[]{"professionName", "grade", "manageUnitName", "trainTypeName", "educationalSystem", "disciplineCateName", "degreeGrantName", "professionCode", "professionId"})));
                         } else {
                             params.toast(response.getString("msg"));
-                            params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                            params.gotoLogin(TargetUrl.JWXT);
                         }
                         break;
                 }

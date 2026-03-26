@@ -85,7 +85,7 @@ public class AssistantEvaluationQueryFragment extends PreferenceFragmentCompat {
                             }
                         } else {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                            params.gotoLogin(TargetUrl.JWXT);
                         }
                     }
                 }

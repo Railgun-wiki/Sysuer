@@ -72,7 +72,7 @@ public class CourseSelectionPreviewFragment extends Fragment {
                             total = data.getInteger("total");
                             data.getJSONArray("rows").forEach(e -> previewAdapter.add((JSONObject) e));
                         } else {
-                            params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                            params.gotoLogin( TargetUrl.JWXT);
                         }
                     }
                 }

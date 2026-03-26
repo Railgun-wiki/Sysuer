@@ -15,7 +15,12 @@ import com.sysu.edu.preference.Theme;
 import java.util.Objects;
 import java.util.Set;
 
-public class Application extends android.app.Application {
+import dev.enro.annotations.NavigationComponent;
+import dev.enro.core.controller.NavigationApplication;
+import dev.enro.core.controller.NavigationController;
+
+@NavigationComponent
+public class Application extends android.app.Application implements NavigationApplication {
     float defaultFontSize;
 
     @Override
@@ -24,7 +29,6 @@ public class Application extends android.app.Application {
         Theme.setTheme(this);
         Language.setLanguage(this);
         SharedPreferences pm = PreferenceManager.getDefaultSharedPreferences(this);
-        initCrash();
         if ((!pm.contains("dashboard")) || Objects.requireNonNull(pm.getStringSet("dashboard", null)).isEmpty())
             pm.edit().putStringSet("dashboard", Set.of(getResources().getStringArray(R.array.values_6))).apply();
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
@@ -71,8 +75,10 @@ public class Application extends android.app.Application {
         });
     }
 
-    public void initCrash() {
-//        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(this));
+    @NonNull
+    @Override
+    public NavigationController getNavigationController() {
+        return new NavApp().getNavigationController();
     }
 
 //    static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {

@@ -84,7 +84,7 @@ public class NewsFragment extends Fragment {
                     if (!isJSON) {
                         if (!authorizationManager.isAuthorized(json)) {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(binding.getRoot(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                            params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                             return;
                         }
                         if (!authorizationManager.isAccessible(json)) {
@@ -159,10 +159,10 @@ public class NewsFragment extends Fragment {
                         }
                     } else if (code == 10003) {
                         params.toast(code + " " + data.getString("message"));
-                        params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                     } else if (code == 496 || code == 497) {
                         params.toast(data.getString("message"));
-                        params.gotoLogin(getView(), authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                     }
                 } //今日中大
             });

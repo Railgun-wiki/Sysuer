@@ -61,14 +61,14 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
                         } else {
                             if (!authorizationManager.isAuthorized(response)) {
                                 params.toast(R.string.login_warning);
-                                params.gotoLogin(binding.toolbar, authorizationManager.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
+                                params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                             } else if (!authorizationManager.isAccessible(response)) {
                                 params.toast(R.string.educational_wifi_warning);
                                 getYears();
                             }
                         }
                     } else if (code == 302) {
-                        params.gotoLogin(binding.toolbar, authorizationManager.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
+                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                     } else {
                         params.toast(R.string.educational_wifi_warning);
                     }

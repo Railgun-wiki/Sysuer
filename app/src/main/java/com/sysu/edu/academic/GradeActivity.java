@@ -249,7 +249,7 @@ public class GradeActivity extends AppCompatActivity {
                     params.toast(dataString.getString("message"));
                 } else {
                     params.toast(R.string.login_warning);
-                    params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                    params.gotoLogin(TargetUrl.JWXT);
                 }
             }
         });

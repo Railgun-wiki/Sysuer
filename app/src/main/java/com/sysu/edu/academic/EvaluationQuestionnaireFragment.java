@@ -131,7 +131,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                         });
                                     }));
                         } else {
-                            params.gotoLogin(getView(), TargetUrl.PJXT);
+                            params.gotoLogin(TargetUrl.PJXT);
                         }
                         break;
                     }
@@ -155,7 +155,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                     }
                     case -1:
                         params.toast(R.string.no_wifi_warning);
-                        params.gotoLogin(getView(), "https://pjxt.sysu.edu.cn");
+                        params.gotoLogin("https://pjxt.sysu.edu.cn");
                         break;
                 }
             }

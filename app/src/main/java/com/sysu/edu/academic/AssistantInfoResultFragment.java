@@ -60,7 +60,7 @@ public class AssistantInfoResultFragment extends StaggeredFragment {
                         params.toast(response.getString("message"));
                     } else {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(view, TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

@@ -56,7 +56,7 @@ public class AgendaActivity extends AppCompatActivity {
                     params.toast(R.string.no_wifi_warning);
                 } else if (!msg.getData().getBoolean("isJSON")) {
                     params.toast(R.string.login_warning);
-                    params.gotoLogin(binding.toolbar, TargetUrl.PORTAL);
+                    params.gotoLogin(TargetUrl.PORTAL);
                 } else {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response != null && response.getJSONObject("meta").getInteger("statusCode").equals(200) && response.get("data") != null) {
@@ -74,7 +74,7 @@ public class AgendaActivity extends AppCompatActivity {
                         }
                     } else {
                         params.toast(getString(R.string.login_warning));
-                        params.gotoLogin(binding.toolbar, TargetUrl.PORTAL);
+                        params.gotoLogin(TargetUrl.PORTAL);
                     }
                 }
             }

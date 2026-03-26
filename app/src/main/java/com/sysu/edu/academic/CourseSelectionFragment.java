@@ -168,7 +168,7 @@ public class CourseSelectionFragment extends Fragment {
                         params.toast(response.getString("message"));
                     } else {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(getView(), TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                     super.handleMessage(msg);
                 }

@@ -231,10 +231,9 @@ public class Params {
     /**
      * 跳转登录页面
      *
-     * @param view 触发跳转的视图
      * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
      */
-    public void gotoLogin(View view, String url) {
+    public void gotoLogin(String url) {
 //        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN,
 //                TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS, TargetUrl.GYM_WEBVPN, TargetUrl.GYM, TargetUrl.PAY, TargetUrl.PJXT,TargetUrl.ZHNY).contains(url))
         contextUtil.login(url, afterLogin);

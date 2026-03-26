@@ -60,7 +60,7 @@ public class CETActivity extends AppCompatActivity {
                         }
                     } else {
                         params.toast(getString(R.string.login_warning));
-                        params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

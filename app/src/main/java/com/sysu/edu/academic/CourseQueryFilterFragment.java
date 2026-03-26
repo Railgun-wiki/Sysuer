@@ -103,7 +103,7 @@ public class CourseQueryFilterFragment extends PreferenceFragmentCompat {
                         }
                     } else if (code == 53000007) {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(getView(), TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     } else {
                         params.toast(response.getString("message"));
                     }

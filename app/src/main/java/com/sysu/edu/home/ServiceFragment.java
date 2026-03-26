@@ -72,7 +72,10 @@ public class ServiceFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        System.out.println("ServiceFragment onCreateView:" + binding);
+        System.out.println("ServiceFragment onCreateView:" + savedInstanceState);
         if (binding == null) {
+
             binding = FragmentServiceBinding.inflate(inflater);
             params = new Params(this);
             // 初始化 actions HashMap

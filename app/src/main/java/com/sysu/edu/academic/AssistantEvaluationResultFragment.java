@@ -57,7 +57,7 @@ public class AssistantEvaluationResultFragment extends StaggeredFragment {
                         }
                     } else {
                         params.toast(response.getString("msg"));
-                        params.gotoLogin(binding.getRoot(), TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

@@ -238,9 +238,10 @@ public class CourseScheduleActivity extends AppCompatActivity {
                         }
                         case -1 -> params.toast(R.string.no_wifi_warning);
                     }
+                } else if (response.get("code").equals(50043000)) {
+                    params.toast(response.getString("message"));
                 } else {
-                    params.toast(R.string.login_warning);
-                    params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                    params.gotoLogin(TargetUrl.JWXT);
                 }
             }
         });

@@ -75,7 +75,7 @@ public class CourseCompletionFragment extends StaggeredFragment {
                         params.toast(response.getString("message"));
                     } else {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(getView(), TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

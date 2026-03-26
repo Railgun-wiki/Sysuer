@@ -170,7 +170,7 @@ public class PayFragment extends StaggeredFragment {
                         params.toast(response.getString("message"));
                     } else {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(finalView, TargetUrl.PAY);
+                        params.gotoLogin(TargetUrl.PAY);
                     }
                 }
             }

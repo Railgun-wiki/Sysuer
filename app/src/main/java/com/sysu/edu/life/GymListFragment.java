@@ -76,7 +76,7 @@ public class GymListFragment extends Fragment {
                     System.out.println(msg.getData().getInt("code"));
                     switch (msg.getData().getInt("code")) {
                         case 401 -> {
-                            params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                            params.gotoLogin(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
 //                            viewModel.authorizationManager.setAccessible(false);
 //                            http.setAuthorizationRequired(true);
 //                            params.toast(R.string.educational_wifi_warning);
@@ -86,11 +86,11 @@ public class GymListFragment extends Fragment {
                             if (!msg.getData().getBoolean("isJSON")) {
                                 if (!viewModel.authorizationManager.isAuthorized(response)) {
                                     params.toast(R.string.login_warning);
-                                    params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                                    params.gotoLogin( viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                                     return;
                                 }
                                 if (Pattern.compile("人机识别检测").matcher(response).find()) {
-                                    params.gotoLogin(binding.getRoot(), viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                                    params.gotoLogin( viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                                     return;
                                 }
                                 if (!viewModel.authorizationManager.isAccessible(response)) {

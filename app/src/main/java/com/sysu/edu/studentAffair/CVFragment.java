@@ -55,7 +55,7 @@ public class CVFragment extends StaggeredFragment {
                     if (!isJSON) {
                         if (!auth.isAuthorized(response)) {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(view, auth.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
+                            params.gotoLogin(auth.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                             return;
                         }
                         if (!auth.isAccessible(response)) {
@@ -78,7 +78,7 @@ public class CVFragment extends StaggeredFragment {
                                         extractValue((JSONObject) i, new String[]{"gzdw", "gzksny", "gzjsny", "gzzw", "zmr", "zmrdwhzw"})));
                             } else if (data.getJSONObject("meta").getInteger("statusCode") == 302) {
                                 params.toast(R.string.login_warning);
-                                params.gotoLogin(view, auth.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
+                                params.gotoLogin(auth.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
                             }
                         }
                     }

@@ -58,10 +58,10 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                 } else {
                     if (msg.getData().getInt("code") == 302) {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(binding.getRoot(), TargetUrl.TICE);
+                        params.gotoLogin( TargetUrl.TICE);
                     } else if (Pattern.compile("window\\.location\\.href.+?\"/caslogin\"", Pattern.DOTALL).matcher((String) msg.obj).find()) {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(binding.getRoot(), TargetUrl.TICE);
+                        params.gotoLogin(TargetUrl.TICE);
                     } else {
                         switch (msg.what) {
                             case 0:

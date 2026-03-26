@@ -94,7 +94,7 @@ public class LeaveReturnListFragment extends StaggeredFragment {
                             }
                         } else {
                             params.toast(R.string.login_warning);
-                            params.gotoLogin(getView(), TargetUrl.XGXT);
+                            params.gotoLogin(TargetUrl.XGXT);
                         }
                     } else {
                         params.toast(R.string.educational_wifi_warning);

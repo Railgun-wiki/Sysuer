@@ -158,7 +158,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
                         }
                     } else if (code == 53000007) {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     } else {
                         params.toast(response.getString("message"));
                     }

@@ -75,7 +75,7 @@ public class SchoolWorkWarning extends AppCompatActivity {
                         }
                     } else {
                         params.toast(R.string.login_warning);
-                        params.gotoLogin(binding.toolbar, TargetUrl.JWXT);
+                        params.gotoLogin(TargetUrl.JWXT);
                     }
                 }
             }

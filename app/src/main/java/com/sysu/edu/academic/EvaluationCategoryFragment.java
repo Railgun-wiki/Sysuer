@@ -59,11 +59,11 @@ public class EvaluationCategoryFragment extends Fragment {
                     if (data != null && Objects.equals(data.get("code"), "200")) {
                         data.getJSONObject("result").getJSONArray("list").forEach(e -> categoryAdapter.add((JSONObject) e));
                     } else {
-                        params.gotoLogin(getView(), TargetUrl.PJXT);
+                        params.gotoLogin(TargetUrl.PJXT);
                     }
                 } else if (msg.what == -1) {
                     params.toast(R.string.no_wifi_warning);
-                    params.gotoLogin(getView(), TargetUrl.PJXT);
+                    params.gotoLogin(TargetUrl.PJXT);
                 }
             }
         });
