@@ -48,7 +48,9 @@ public class LoginManager {
             .followRedirects(true)
             .cookieJar(cookieJar)
             .build();
-    private final AuthorizationManager casAuthorizationManager = new AuthorizationManager("https://cas.sysu.edu.cn", "https://cas-443.webvpn.sysu.edu.cn");
+
+    private final OkHttpClient directClient = new OkHttpClient.Builder().followRedirects(false).cookieJar(cookieJar).build();
+    private final AuthorizationManager casAuthorizationManager = new AuthorizationManager("https://cas.sysu.edu.cn", "https://cas.sysu.edu.cn");
     AuthorizationJar authorizationJar;
 
     private String getPublicKey() {
@@ -64,7 +66,7 @@ public class LoginManager {
         try {
             Response response = client.newCall(new Request.Builder()
                     .post(RequestBody.create("{\"authType\":\"webLocalAuth\",\"dataField\":{\"username\":\"" + username + "\",\"password\":\"" + password + "\",\"publicKeyId\":\"" + publicKeyId + "\"}}", MediaType.parse("application/json")))
-                    .url(casAuthorizationManager.getBaseUrl() + "/esc-sso/api/v3/auth/doLogin").build()).execute();
+                    .url("https://cas.sysu.edu.cn/esc-sso/api/v3/auth/doLogin").build()).execute();
             return response.body().string();
         } catch (IOException _) {
 
@@ -78,7 +80,7 @@ public class LoginManager {
         try {
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
             String a = response.body().string();
-//            System.out.println(a);
+            System.out.println(a);
             if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json"))
                 request(redirect(a));
         } catch (IOException _) {
@@ -103,14 +105,14 @@ public class LoginManager {
         else return json.getString("redirect");
     }
 
-//    public boolean login(String service) {
-//        try {
-//            return authorizationJar != null && login(authorizationJar.getUserName(), authorizationJar.getPassword(), service);
-//        } catch (ExecutionException | InterruptedException e) {
-//            Log.e("LoginManager", "login: ", e);
-//            return false;
-//        }
-//    }
+    public boolean login(String service) {
+        try {
+            return authorizationJar != null && login(authorizationJar.getUserName(), authorizationJar.getPassword(), service);
+        } catch (ExecutionException | InterruptedException e) {
+            Log.e("LoginManager", "login: ", e);
+            return false;
+        }
+    }
 
     public boolean login(String username, String password, String service) throws ExecutionException, InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
@@ -124,22 +126,14 @@ public class LoginManager {
                     request("https://webvpn.sysu.edu.cn/vpn_key/update");
                     List<Cookie> webvpn = cookieJar.loadForRequest(HttpUrl.get("https://webvpn.sysu.edu.cn/vpn_key/update")).stream().filter(e -> "_webvpn_key".equals(e.name())).collect(Collectors.toList());
                     cookieJar.saveFromResponse(HttpUrl.get(service), webvpn);
-                    cookieJar.saveFromResponse(HttpUrl.get("https://cas-443.webvpn.sysu.edu.cn"), webvpn);
-
+                    cookieJar.saveFromResponse(HttpUrl.get(casAuthorizationManager.getBaseUrl()), webvpn);
                     switch (service) {
-                        case TargetUrl.NEWS_WEBVPN -> {
-                            if (authorizationJar != null) {
-                                String auth = "Bearer " + getNewsAuthorization(service);
-//                            System.out.println(auth);
-                                authorizationJar.setAuthorization(host, auth);
-                            }
-                        }
+                        case TargetUrl.NEWS_WEBVPN ->
+                                setAuthorization(host, getNewsAuthorization(service));
                         case TargetUrl.GYM_WEBVPN -> {
                             getGymToken(targetBaseUrl);
                             cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
-                            String auth = getGymAuthorization(targetBaseUrl);
-                            if (authorizationJar != null)
-                                authorizationJar.setAuthorization(host, "Bearer " + auth);
+                            setAuthorization(host, getGymAuthorization(targetBaseUrl));
                         }
                         default -> request("/esc-sso/login?service=" + service);
                     }
@@ -148,13 +142,11 @@ public class LoginManager {
                 } else {
                     JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
                     request(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
-
                     switch (service) {
                         case TargetUrl.GYM -> {
                             getGymToken(targetBaseUrl);
 //                            cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
-                            if (authorizationJar != null)
-                                authorizationJar.setAuthorization(host, "Bearer " + getGymAuthorization(targetBaseUrl));
+                            setAuthorization(host, getGymAuthorization(targetBaseUrl));
                         }
                         case TargetUrl.PORTAL ->
                                 request("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
@@ -164,15 +156,11 @@ public class LoginManager {
                                 authorizationJar.setToken(host, token);
                             cookieJar.saveFromResponse(HttpUrl.get(service), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
                         }
-                        case TargetUrl.ZHNY -> {
-                            if (authorizationJar != null)
-                                authorizationJar.setAuthorization(host, getZHNYAuthoritarian(service));
-                        }
+                        case TargetUrl.ZHNY ->
+                                setAuthorization(host, getZHNYAuthoritarian(service));
                         case TargetUrl.XGXT -> getXGXTToken(service, targetBaseUrl);
-                        case TargetUrl.NEWS -> {
-                            if (authorizationJar != null)
-                                authorizationJar.setAuthorization(host, "Bearer " + getNewsAuthorization(service));
-                        }
+                        case TargetUrl.NEWS ->
+                                setAuthorization(host, getNewsAuthorization(service));
                     }
                 }
                 return true;
@@ -181,6 +169,17 @@ public class LoginManager {
             }
             return false;
         }).get();
+    }
+
+    /*
+     * 设置认证
+     * @param host 主机
+     * @param auth 认证
+     * */
+    private void setAuthorization(String host, String auth) {
+        if (authorizationJar != null) {
+            authorizationJar.setAuthorization(host, "Bearer " + auth);
+        }
     }
 
     private void getXGXTToken(String service, String targetBaseUrl) throws IOException {
@@ -209,7 +208,7 @@ public class LoginManager {
     }
 
     public String getTicket(String service) throws IOException {
-        String location = new OkHttpClient.Builder().followRedirects(false).cookieJar(cookieJar).build().newCall(new Request.Builder().url(casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + service).build()).execute().header("Location");
+        String location = directClient.newCall(new Request.Builder().url(casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + service).build()).execute().header("Location");
         return location == null ? "" : HttpUrl.get(location).queryParameter("ticket");
     }
 

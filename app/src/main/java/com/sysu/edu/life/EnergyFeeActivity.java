@@ -13,7 +13,6 @@ import com.sysu.edu.databinding.ActivityWaterEletricityFeeBinding;
 
 public class EnergyFeeActivity extends AppCompatActivity {
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
