@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:startDestination="@id/dorm_fragment">
+    app:startDestination="@id/dashboard_fragment">
     <fragment
-        android:id="@+id/dorm_fragment"
-        android:name="com.sysu.edu.life.EnergyDormFragment"
-        android:label="@string/dorm" />
+        android:id="@+id/dashboard_fragment"
+        android:name="com.sysu.edu.life.EnergyDashboardFragment"
+        android:label="@string/dashboard" />
     <fragment
         android:id="@+id/water_fee_fragment"
         android:name="com.sysu.edu.life.EnergyWaterFeeFragment"
@@ -14,5 +14,8 @@
         android:id="@+id/electricity_fee_fragment"
         android:name="com.sysu.edu.life.EnergyElectricityFeeFragment"
         android:label="@string/electricity_fee" />
-    <include app:graph="@navigation/order_nav" />
+    <fragment
+        android:id="@+id/account_fragment"
+        android:name="com.sysu.edu.life.EnergyAccountFragment"
+        android:label="@string/account" />
 </navigation>

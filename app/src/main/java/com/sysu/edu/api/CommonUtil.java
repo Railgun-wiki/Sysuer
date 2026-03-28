@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import okhttp3.HttpUrl;
+
 /**
  * 通用工具类
  */
@@ -157,6 +159,27 @@ public class CommonUtil {
         return bool ? 1 : 0;
     }
 
+    /**
+    * 将对象转换为字符串，若对象为空则返回空字符串
+    *
+    * @param t 要转换的对象
+    * @return 转换后的字符串，若对象为空则返回空字符串
+    *
+    */
+    public static <T> String toStringOrEmpty(T t) {
+        return t == null ? "" : t.toString();
+    }
+
+    /**
+     * 从 URL 中提取主机名
+     *
+     * @param url 要提取主机名的 URL
+     * @return 提取的主机名
+     *
+     */
+    public static String getHost(String url) {
+        return HttpUrl.get(url).host();
+    }
 
     /**
      * 简单的元组类，用于存储两个值
@@ -199,9 +222,5 @@ public class CommonUtil {
             this.second = second;
         }
     }
-    public static <T> String toStringOrEmpty(T t) {
-        return t == null ? "" : t.toString();
-    }
-
 
 }

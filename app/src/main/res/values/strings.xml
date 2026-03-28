@@ -615,5 +615,17 @@
     <string name="electricity_fee">电费</string>
     <string name="water_fee">水费</string>
     <string name="room_name">宿舍名</string>
+    <string name="no_data_available">暂无数据</string>
+    <string name="electricity_consumption">用电量</string>
+    <string name="bill_period">账单区间</string>
+    <string name="payer">支付人</string>
+    <string name="price">价格</string>
+    <string name="paid_fee">支付费用</string>
+    <string name="pay_time">支付时间</string>
+    <string name="remark">备注</string>
+    <string name="paid">已支付</string>
+    <string name="unpaid">未支付</string>
+    <string name="default_remark">余额充值</string>
+    <string name="recharge">充值</string>
 
 </resources>

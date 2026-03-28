@@ -2,6 +2,7 @@ package com.sysu.edu.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 
@@ -10,6 +11,7 @@ public class AuthorizationJar {
     private final SharedPreferences authPreferences;
     private final SharedPreferences tokenPreferences;
     private final SharedPreferences privacyPreferences;
+    private final CookieManager cookieManager = CookieManager.getInstance();
 
     public AuthorizationJar(Context context) {
         this.context = context;
@@ -48,6 +50,14 @@ public class AuthorizationJar {
 
     public void setPassword(String password) {
         privacyPreferences.edit().putString("password", password).apply();
+    }
+
+    public String getCookie(String host) {
+        return cookieManager.getCookie(host);
+    }
+
+    public void setCookie(String host, String cookie) {
+        cookieManager.setCookie(host, cookie);
     }
 
     public Context getContext() {

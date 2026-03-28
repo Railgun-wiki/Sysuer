@@ -22,8 +22,6 @@ import okhttp3.Response;
 public class HttpManager {
     final CookieManager cookieManager = CookieManager.getInstance(); // 全局 CookieManager 实例
     final OkHttpClient http = new OkHttpClient.Builder()
-//            .cookieJar(new JavaNetCookieJar(new java.net.CookieManager()))
-//            .authenticator(new JavaNetAuthenticator())
             .build(); // 全局 OkHttpClient 实例
     Handler handler; // 处理消息的 Handler 对象
     String referrer; // Referer 头字段值
@@ -34,8 +32,8 @@ public class HttpManager {
     String target; // 目标 URL
     boolean isAuthorizationRequired; // 是否需要 Authorization 头字段
     boolean isTokenRequired; // 是否需要 token 头字段
-    Map<String, String> header;
-    AuthorizationJar authorizationJar;
+    Map<String, String> header;// 自定义请求头字段
+    AuthorizationJar authorizationJar;// 自定义 Authorization 头字段
 
     /**
      * 构造函数
@@ -47,22 +45,13 @@ public class HttpManager {
     }
 
     /**
-     * 设置请求参数
+     * 获取处理消息的 Handler 对象
      *
-     * @param params 请求参数对象
+     * @return 处理消息的 Handler 对象
      */
-    public void setParams(Params params) {
-        this.params = params;
+    public Handler getHandler() {
+        return handler;
     }
-
-//    /**
-//     * 设置 AuthorizationJar 对象
-//     *
-//     * @param authorizationJar AuthorizationJar 对象
-//     */
-//    public void setAuthorizationJar(AuthorizationJar authorizationJar) {
-//        this.authorizationJar = authorizationJar;
-//    }
 
     /**
      * 设置处理消息的 Handler 对象
@@ -71,6 +60,15 @@ public class HttpManager {
      */
     public void setHandler(Handler handler) {
         this.handler = handler;
+    }
+
+    /**
+     * 设置请求参数
+     *
+     * @param params 请求参数对象
+     */
+    public void setParams(Params params) {
+        this.params = params;
     }
 
     /**
@@ -90,15 +88,6 @@ public class HttpManager {
     public void setCookie(String cookie) {
         this.cookie = cookie;
     }
-
-//    /**
-//     * 设置 Authorization 头字段
-//     *
-//     * @param authorization Authorization 头字段值
-//     */
-//    public void setAuthorization(String authorization) {
-//        this.authorization = authorization;
-//    }
 
     /**
      * 设置是否需要 Authorization 头字段
@@ -136,10 +125,22 @@ public class HttpManager {
         this.target = target;
     }
 
+    /**
+     * 设置请求头字段
+     *
+     * @param header 请求头字段映射
+     *
+     */
     public void setHeader(Map<String, String> header) {
         this.header = header;
     }
 
+    /**
+     * 设置 AuthorizationJar 对象
+     *
+     * @param authorizationJar AuthorizationJar 对象
+     *
+     */
     public void setAuthorizationJar(AuthorizationJar authorizationJar) {
         this.authorizationJar = authorizationJar;
     }
@@ -154,35 +155,12 @@ public class HttpManager {
      * @param what 消息标识
      */
     private void sendRequest(@NonNull String url, String data, String type, int what, String method) {
-        Request.Builder request = new Request.Builder().url(url);
-        //(cookieManager);
-        String host = HttpUrl.get(url).host();
-        if (params != null) request.header("Cookie", params.getCookie());
-//        System.out.println("target: " + target);
-        cookieManager.flush();
-        if (target != null && cookieManager.getCookie(target) != null) {
-            request.header("Cookie", cookieManager.getCookie(target));
-//            System.out.println("sendRequest: " + cookieManager.getCookie(target));
-        } else if (cookieManager.getCookie(url) != null) {
-            request.header("Cookie", cookieManager.getCookie(url));
-        }
-        if (cookie != null) request.header("Cookie", cookie);
-        if (isAuthorizationRequired && authorizationJar != null)
-            request.header("Authorization", authorizationJar.getAuthorization(host));
-        if (authorization != null) request.header("Authorization", authorization);
-        if (referrer != null) request.header("Referer", referrer);
-        if (ua != null) request.header("User-Agent", ua);
-        if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
-        if (isTokenRequired && authorizationJar != null) request.header("token", authorizationJar.getToken(host));
-        if (header != null) header.forEach(request::header);
-        if ("DELETE".equals(method)) {
-            request.delete();
-        }
+        Request.Builder request = getRequest(url, data, type, method);
         http.newCall(request.build()).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 System.out.println(url);
-                handler.sendEmptyMessage(-1);
+                sendFailure();
             }
 
             @Override
@@ -199,6 +177,45 @@ public class HttpManager {
                 handler.sendMessage(msg);
             }
         });
+    }
+
+    /**
+     * 发送失败消息
+     */
+    public void sendFailure() {
+        handler.sendEmptyMessage(-1);
+    }
+
+    /**
+     * 获取请求构建器
+     *
+     * @param url    请求 URL
+     * @param data   请求数据
+     * @param type   请求数据类型
+     * @param method 请求方法
+     * @return 请求构建器
+     */
+    public Request.Builder getRequest(@NonNull String url, String data, String type, String method) {
+        Request.Builder request = new Request.Builder().url(url);
+        String host = HttpUrl.get(url).host();
+        if (params != null) request.header("Cookie", params.getCookie());
+        if (target != null && cookieManager.getCookie(target) != null) {
+            request.header("Cookie", cookieManager.getCookie(target));
+        } else if (cookieManager.getCookie(url) != null) {
+            request.header("Cookie", cookieManager.getCookie(url));
+        }
+        if (cookie != null) request.header("Cookie", cookie);
+        if (isAuthorizationRequired && authorizationJar != null)
+            request.header("Authorization", authorizationJar.getAuthorization(host));
+        if (authorization != null) request.header("Authorization", authorization);
+        if (referrer != null) request.header("Referer", referrer);
+        if (ua != null) request.header("User-Agent", ua);
+        if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
+        if (isTokenRequired && authorizationJar != null)
+            request.header("token", authorizationJar.getToken(host));
+        if (header != null) header.forEach(request::header);
+        if ("DELETE".equals(method)) request.delete();
+        return request;
     }
 
     /**
@@ -234,6 +251,12 @@ public class HttpManager {
         sendRequest(url, null, null, what, "GET");
     }
 
+    /**
+     * 发送 DELETE 请求
+     *
+     * @param url  请求 URL
+     * @param what 消息标识
+     */
     public void deleteRequest(@NonNull String url, int what) {
         sendRequest(url, null, null, what, "DELETE");
     }

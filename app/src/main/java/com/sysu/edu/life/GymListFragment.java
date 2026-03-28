@@ -10,7 +10,6 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +27,7 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.sysu.edu.R;
 import com.sysu.edu.api.AuthorizationJar;
+import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -75,13 +75,11 @@ public class GymListFragment extends Fragment {
                     System.out.println(response);
                     System.out.println(msg.getData().getInt("code"));
                     switch (msg.getData().getInt("code")) {
-                        case 401 -> {
-                            params.gotoLogin(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
-//                            viewModel.authorizationManager.setAccessible(false);
-//                            http.setAuthorizationRequired(true);
-//                            params.toast(R.string.educational_wifi_warning);
-//                            getInfo();
-                        }
+                        case 401 -> //                            viewModel.authorizationManager.setAccessible(false);
+                            //                            http.setAuthorizationRequired(true);
+                            //                            params.toast(R.string.educational_wifi_warning);
+                            //                            getInfo();
+                                params.gotoLogin(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         case 200 -> {
                             if (!msg.getData().getBoolean("isJSON")) {
                                 if (!viewModel.authorizationManager.isAuthorized(response)) {
@@ -145,47 +143,6 @@ public class GymListFragment extends Fragment {
         http.getRequest(viewModel.authorizationManager.getBaseUrl() + "api/venuetype/all", 2);
     }
 
-    /*public void send() {
-        new OkHttpClient().newCall(new Request.Builder()
-                        .header("Cookie", viewModel.token)
-                        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-                        .header("Authorization", Objects.requireNonNull(viewModel.authorization.getValue()))
-                        .url("https://gym.sysu.edu.cn/api/Campus/active").build())
-                .enqueue(new Callback() {
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    }
-
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        Matcher prefixMatcher = Pattern.compile("prefix = '(.+)'").matcher(response.body().string());
-                        String prefix = null;
-                        String safelineBotChallenge = null;
-                        if (prefixMatcher.find()) {
-                            prefix = prefixMatcher.group(1);
-                        }
-                        List<String> cookie = response.headers("Set-Cookie");
-                        //response.headers().forEach(System.out::println);
-                        String cookies = String.join("", cookie);
-                        Matcher safelineBotChallengeMatcher = Pattern.compile("safeline_bot_challenge=(.+?);").matcher(cookies);
-                        if (safelineBotChallengeMatcher.find()) {
-                            safelineBotChallenge = safelineBotChallengeMatcher.group(1);
-                        }
-                        if (!Pattern.compile("safeline_bot_token=[^0]").matcher(cookies).find()) {
-                            viewModel.token = (cookies + "; safeline_bot_challenge_ans=" + encode(prefix, safelineBotChallenge));
-                            send();
-                        } else {
-                            Matcher safelineBotTokenMatcher = Pattern.compile("(safeline_bot_token=.+?);").matcher(cookies);
-                            if (safelineBotTokenMatcher.find()) {
-                                viewModel.token = cookies;
-                                getInfo();
-                            }
-                        }
-                    }
-                });
-
-    }*/
-
     private static class FieldAdapter extends RecyclerAdapter<JSONObject> {
 
         Consumer<String> action;
@@ -208,11 +165,12 @@ public class GymListFragment extends Fragment {
             binding.title.setText(item.getString("Name"));
             binding.getRoot().setOnClickListener(_ -> action.accept(item.getString("Identity")));
             String imageUrl = item.getString("ImageUrl");
+            AuthorizationJar authorizationJar = new AuthorizationJar(holder.itemView.getContext());
             if (!isEmpty(imageUrl))
                 Glide.with(holder.itemView.getContext()).load(new GlideUrl(imageUrl, new LazyHeaders.Builder().addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
                         .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
-                        .addHeader("Cookie", CookieManager.getInstance().getCookie(imageUrl))
-                        .addHeader("Authorization", params.getAuthorization())
+                        .addHeader("Cookie", authorizationJar.getCookie(imageUrl))
+                        .addHeader("Authorization", authorizationJar.getAuthorization(CommonUtil.getHost(imageUrl)))
                         .build())).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(binding.image);
         }
     }

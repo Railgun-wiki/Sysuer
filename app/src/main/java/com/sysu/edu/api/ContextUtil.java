@@ -54,18 +54,18 @@ public class ContextUtil {
         return sharedPreferences.getString("Cookie", "");
     }
 
-    /**
-     * 获取 Authorization
-     *
-     * @return Authorization
-     */
-    public String getAuthorization() {
-        return sharedPreferences.getString("authorization", "");
-    }
+//    /**
+//     * 获取 Authorization
+//     *
+//     * @return Authorization
+//     */
+//    public String getAuthorization() {
+//        return sharedPreferences.getString("authorization", "");
+//    }
 
-    public void setAuthorization(String auth) {
-        sharedPreferences.edit().putString("authorization", auth).apply();
-    }
+//    public void setAuthorization(String auth) {
+//        sharedPreferences.edit().putString("authorization", auth).apply();
+//    }
 
     /**
      * 获取用户名
@@ -201,7 +201,6 @@ public class ContextUtil {
             username.setTitle(R.string.username);
             username.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.confirm), (_, _) -> {
                 setUserName(username.getText());
-                System.out.println("Login with " + username.getText());
                 login(url, afterLogin);
             });
             username.show();

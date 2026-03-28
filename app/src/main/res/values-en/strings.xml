@@ -612,4 +612,20 @@
     <string name="order_success">Order Placed Successfully</string>
     <string name="order_fail">Order Failed</string>
     <string name="order_time">Order Time</string>
+    <string name="water_electricity_fee">Water Electricity Fee</string>
+    <string name="electricity_fee">Electricity Fee</string>
+    <string name="water_fee">Water Fee</string>
+    <string name="room_name">Dorm Name</string>
+    <string name="no_data_available">No Data Available</string>
+    <string name="electricity_consumption">Electricity consumption</string>
+    <string name="bill_period">Bill Period</string>
+    <string name="payer">Payer</string>
+    <string name="price">Price</string>
+    <string name="paid_fee">Paid Fee</string>
+    <string name="pay_time">Pay Time</string>
+    <string name="remark">Remark</string>
+    <string name="paid">Paid</string>
+    <string name="unpaid">Unpaid</string>
+    <string name="default_remark">Balance Top-up</string>
+    <string name="recharge">Recharge</string>
 </resources>

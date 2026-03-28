@@ -30,6 +30,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.sysu.edu.R;
 import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.AuthorizationManager;
+import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
@@ -210,10 +211,11 @@ public class NewsFragment extends Fragment {
             binding.title.setText(item.getOrDefault("title", ""));
             binding.content.setText(String.format("#%s #%s", item.getOrDefault("source", ""), item.getOrDefault("time", "")));
             String img = trim(item.get("image"));
+            AuthorizationJar authorizationJar = new AuthorizationJar(context);
             if (!img.isEmpty())
                 Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
-                                .addHeader("Cookie", params.getCookie())
-                                .addHeader("Authorization", params.getAuthorization())
+                                .addHeader("Cookie", authorizationJar.getCookie(img))
+                                .addHeader("Authorization", authorizationJar.getAuthorization(CommonUtil.getHost(img)))
                                 .build()))
                         .timeout(30000)
                         .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))

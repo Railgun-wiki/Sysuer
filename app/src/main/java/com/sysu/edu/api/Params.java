@@ -1,7 +1,6 @@
 package com.sysu.edu.api;
 
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -15,10 +14,8 @@ import com.sysu.edu.browser.BrowserActivity;
 
 public class Params {
 
-    final SharedPreferences sharedPreferences; // SharedPreferences 对象
     final FragmentActivity activity; // 关联的 FragmentActivity 对象
     Fragment fragment; // 关联的 Fragment 对象
-//    ActivityResultLauncher<Intent> launcher; // 用于启动登录 Activity 的 ActivityResultLauncher 对象
     Runnable afterLogin; // 登录成功后的回调 Runnable 对象
     private ContextUtil contextUtil;
 
@@ -30,7 +27,6 @@ public class Params {
     public Params(FragmentActivity activity) {
         this.activity = activity;
         contextUtil = new ContextUtil(activity);
-        sharedPreferences = activity.getSharedPreferences("privacy", Context.MODE_PRIVATE);
     }
 
     /**
@@ -51,9 +47,6 @@ public class Params {
      */
     public void setCallback(Runnable afterLogin) {
         this.afterLogin = afterLogin;
-//        this.launcher = (fragment == null ? activity : fragment).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), o -> {
-//            if (o.getResultCode() == FragmentActivity.RESULT_OK) afterLogin.run();
-//        });
     }
 
     /**
@@ -96,14 +89,14 @@ public class Params {
         return contextUtil.getCookie();
     }
 
-    /**
-     * 获取 Authorization
-     *
-     * @return Authorization
-     */
-    public String getAuthorization() {
-        return contextUtil.getAuthorization();
-    }
+//    /**
+//     * 获取 Authorization
+//     *
+//     * @return Authorization
+//     */
+//    public String getAuthorization() {
+//        return contextUtil.getAuthorization();
+//    }
 
 //    public void setAuthorization(String auth) {
 //        contextUtil.setAuthorization(auth);
@@ -231,11 +224,9 @@ public class Params {
     /**
      * 跳转登录页面
      *
-     * @param url  登录 URL，建议使用 TargeterURL 中的默认登录 URL
+     * @param url 登录 URL，建议使用 TargeterURL 中的默认登录 URL
      */
     public void gotoLogin(String url) {
-//        if (List.of(TargetUrl.JWXT, TargetUrl.PORTAL, TargetUrl.TICE, TargetUrl.NETPAY, TargetUrl.XGXT, TargetUrl.XGXT_WEBVPN,
-//                TargetUrl.NEWS_WEBVPN, TargetUrl.NEWS, TargetUrl.GYM_WEBVPN, TargetUrl.GYM, TargetUrl.PAY, TargetUrl.PJXT,TargetUrl.ZHNY).contains(url))
         contextUtil.login(url, afterLogin);
 //        Intent intent = new Intent(activity, LoginActivity.class);
 //        if (url != null) intent.putExtra("url", url);
@@ -269,14 +260,4 @@ public class Params {
 //            default -> gotoLogin(view, intent);
 //        }
     }
-
-//    /**
-//     * 跳转登录页面
-//     *
-//     * @param view   触发跳转的视图
-//     * @param intent 登录 Intent
-//     */
-//    private void gotoLogin(View view, Intent intent) {
-//        launcher.launch(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(activity, view, "miniapp"));
-//    }
 }

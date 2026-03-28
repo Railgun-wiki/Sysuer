@@ -125,7 +125,6 @@ public class DashboardFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        System.out.println("DashboardFragment onCreateView:" + binding);
         if (isRefreshRequired) {
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
             CalendarManager calendar = new CalendarManager();
@@ -198,8 +197,6 @@ public class DashboardFragment extends Fragment {
                         binding.nextClass.setText(R.string.no_wifi_warning);
                         return;
                     }
-                    System.out.println("getTerm handleMessage:" + msg.what);
-                    System.out.println("getTerm handleMessage:" + msg.obj);
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response.get("code").equals(200)) {
                         switch (msg.what) {

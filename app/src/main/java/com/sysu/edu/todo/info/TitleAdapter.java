@@ -14,11 +14,10 @@ public class TitleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     int n = 0;
 
     public TitleAdapter() {
-        super();
+
     }
 
     public TitleAdapter(String title) {
-        super();
         setTitle(title);
     }
 
@@ -34,7 +33,8 @@ public class TitleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+        return new RecyclerView.ViewHolder(ItemTitleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+        };
     }
 
     public void setHeader(int n) {

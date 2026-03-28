@@ -252,7 +252,7 @@
         <item>手动运行</item>
         <item>自动运行</item>
     </string-array>
-    <string-array name="weeks_simple" >
+    <string-array name="weeks_simple">
         <item>一</item>
         <item>二</item>
         <item>三</item>
@@ -260,5 +260,12 @@
         <item>五</item>
         <item>六</item>
         <item>日</item>
+    </string-array>
+    <string-array name="payment_status">
+        <item>Pending</item>
+        <item>Processing</item>
+        <item>Paid</item>
+        <item>Failed</item>
+        <item>Unpaid</item>
     </string-array>
 </resources>

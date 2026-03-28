@@ -156,8 +156,10 @@ public class LoginManager {
                                 authorizationJar.setToken(host, token);
                             cookieJar.saveFromResponse(HttpUrl.get(service), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
                         }
-                        case TargetUrl.ZHNY ->
-                                setAuthorization(host, getZHNYAuthoritarian(service));
+                        case TargetUrl.ZHNY -> {
+                            if (authorizationJar != null)
+                                authorizationJar.setAuthorization(host, getZHNYAuthoritarian(service));
+                        }
                         case TargetUrl.XGXT -> getXGXTToken(service, targetBaseUrl);
                         case TargetUrl.NEWS ->
                                 setAuthorization(host, getNewsAuthorization(service));
@@ -177,9 +179,7 @@ public class LoginManager {
      * @param auth 认证
      * */
     private void setAuthorization(String host, String auth) {
-        if (authorizationJar != null) {
-            authorizationJar.setAuthorization(host, "Bearer " + auth);
-        }
+        if (authorizationJar != null) authorizationJar.setAuthorization(host, "Bearer " + auth);
     }
 
     private void getXGXTToken(String service, String targetBaseUrl) throws IOException {
@@ -226,7 +226,7 @@ public class LoginManager {
     }
 
     public String getNewsAuthorization(String url) {
-        return getAuthorization(new Request.Builder().url(/*casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + */url).build());
+        return getAuthorization(new Request.Builder().url(casAuthorizationManager.getBaseUrl() + "/esc-sso/login?service=" + url).build());
     }
 
     public String getGymAuthorization(String targetBaseUrl) {

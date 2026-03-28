@@ -1,48 +1,172 @@
 package com.sysu.edu.life;
 
+import static com.sysu.edu.api.CommonUtil.extractValue;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
+import androidx.recyclerview.widget.ConcatAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.alibaba.fastjson2.JSONObject;
+import com.haibin.calendarview.Calendar;
 import com.sysu.edu.R;
 import com.sysu.edu.api.AuthorizationJar;
+import com.sysu.edu.api.CommonUtil;
+import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
-import com.sysu.edu.databinding.RecyclerViewScrollBinding;
+import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.databinding.FragmentWaterFeeBinding;
+import com.sysu.edu.todo.info.TitleAdapter;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class EnergyElectricityFeeFragment extends Fragment {
 
     HttpManager http;
+    String name = "";
+    LinkedList<Runnable> request = new LinkedList<>();
+    ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
+    MutableLiveData<String> roomCode = new MutableLiveData<>();
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Params params = new Params(this);
+        ContextUtil contextUtil = new ContextUtil(requireContext());
+        FragmentWaterFeeBinding binding = FragmentWaterFeeBinding.inflate(inflater, container, false);
+        ConcatAdapter adapter = new ConcatAdapter();
+        String[] paymentStatus = getResources().getStringArray(R.array.payment_status);
+        binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.list.setAdapter(adapter);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1)
                     params.toast(R.string.no_wifi_warning);
                 else if (msg.getData().getBoolean("isJSON")) {
-//                    switch (msg.what) {
-//                        case 0 -> params.toast(R.string.dorm_info_success);
-//                        case 1 -> params.toast(R.string.dorm_info_failed);
-//                    }
+                    JSONObject response = JSONObject.parse((String) msg.obj);
+                    if (response.getInteger("code") == 200) {
+                        switch (msg.what) {
+                            case 0 -> name = response.getJSONObject("data").getString("username");
+                            case 1 -> {
+                                ArrayAdapter<Object> items = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1);
+                                binding.spinner.setAdapter(items);
+                                response.getJSONArray("data").forEach(e -> {
+                                    JSONObject roomInfo = (JSONObject) e;
+                                    rooms.add(new CommonUtil.Tuple2<>(roomInfo.getString("roomName"), roomInfo.getString("roomCode")));
+                                    items.add(roomInfo.getString("roomName"));
+                                });
+                            }
+                            case 2 ->
+                                    response.getJSONObject("data").getJSONArray("useEleByDayList").forEach(e -> {
+                                        JSONObject item = (JSONObject) e;
+                                        Object useElectric = item.get("useElectric");
+                                        String content = useElectric == null ? "暂无数据" : useElectric.toString();
+                                        Calendar calendar = new Calendar();
+                                        LocalDate date = LocalDate.parse(item.getString("date"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                                        calendar.setScheme(content);
+                                        calendar.setYear(date.getYear());
+                                        calendar.setMonth(date.getMonthValue());
+                                        calendar.setDay(date.getDayOfMonth());
+                                        binding.calendarView.addSchemeDate(calendar);
+                                        //                                    preferenceAdapter.add(item.getString("date"), content, R.drawable.flash);
+                                    });
+                            case 3 ->
+                                    response.getJSONObject("data").getJSONArray("list").forEach(e -> {
+                                        JSONObject item = (JSONObject) e;
+                                        adapter.addAdapter(new TitleAdapter(item.getString("billPeriod")));
+                                        GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                        ArrayList<String> value = extractValue(item, new String[]{"billPeriod", "billStatus", "remark", "useElectric", "name", "campusName", "areaInfo", "unitPrice", "totalUseAmount", "payedUseAmount", "billTime"});
+                                        Integer billStatus = item.getInteger("billStatus");
+                                        value.set(1, paymentStatus[billStatus - 1]);
+                                        value.set(3, String.format("%s-%s=%s", item.getString("currReportElectric"), item.getString("lastReportElectric"), item.getString("useElectric")));
+                                        preferenceAdapter.set(List.of(R.string.bill_period, R.string.status, R.string.remark, R.string.electricity_consumption, R.string.payer, R.string.campus, R.string.dorm, R.string.price, R.string.fee, R.string.paid_fee, R.string.pay_time),
+                                                value,
+                                                List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.flash, R.drawable.flash, R.drawable.account, R.drawable.location, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.time), requireContext());
+                                        preferenceAdapter.setHideNull(true);
+                                        adapter.addAdapter(preferenceAdapter);
+                                    });
+                        }
+                        nextRequest();
+                    } else contextUtil.login(TargetUrl.ZHNY, () -> nextRequest());
                 }
                 super.handleMessage(msg);
             }
         });
         http.setAuthorizationRequired(true);
         http.setAuthorizationJar(new AuthorizationJar(requireContext()));
-        RecyclerViewScrollBinding binding = RecyclerViewScrollBinding.inflate(inflater, container, false);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        request.add(this::getUserInfo);
+        request.add(() -> getRoom(name));
+        request.add(() -> {
+            if (!rooms.isEmpty())
+                roomCode.setValue(rooms.valueAt(0).getSecond());
+        });
+        roomCode.observe(getViewLifecycleOwner(), v -> {
+            if (v != null) {
+                LocalDate date = LocalDate.of(binding.calendarView.getSelectedCalendar().getYear(), binding.calendarView.getSelectedCalendar().getMonth(), 1);
+                getElectricityConsumption(v, date.with(TemporalAdjusters.firstDayOfMonth()).format(formatter), date.with(TemporalAdjusters.lastDayOfMonth()).format(formatter));
+                getElectricityBill(v);
+            }
+        });
+        nextRequest();
+        binding.calendarView.setOnMonthChangeListener((year, month) -> {
+            getElectricityConsumption(roomCode.getValue(), LocalDate.of(year, month, 1).with(TemporalAdjusters.firstDayOfMonth()).format(formatter), LocalDate.of(year, month, 1).with(TemporalAdjusters.lastDayOfMonth()).format(formatter));
+            binding.date.setText(LocalDate.of(year, month, 1).format(formatter));
+        });
+        binding.date.setText(LocalDate.now().format(formatter));
+        binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                roomCode.setValue(rooms.valueAt(position).getSecond());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         return binding.getRoot();
+    }
+
+    void nextRequest() {
+        if (!request.isEmpty())
+            request.pop().run();
+    }
+
+    void getUserInfo() {
+        http.getRequest("https://zhny.sysu.edu.cn/kbp/auth/userInfo", 0);
+    }
+
+    void getRoom(String username) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/admin/sys/personRoom/list", "{\"username\":\"" + username + "\"}", 1);
+    }
+
+    void getElectricityConsumption(String roomCode, String startDate, String endDate) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/ele/wechat/eleConsume", String.format("{\"roomCode\":\"%s\",\"startDate\":\"%s\",\"endDate\":\"%s\"}", roomCode, startDate, endDate), 2);
+    }
+
+    void getElectricityBill(String roomCode) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/ele/mobile/billRecord", String.format("{\"roomCode\":\"%s\",\"billType\":1}", roomCode), 3);
     }
 }

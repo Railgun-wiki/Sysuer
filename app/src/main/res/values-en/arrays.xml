@@ -127,4 +127,11 @@
         <item>Sat</item>
         <item>Sun</item>
     </string-array>
+    <string-array name="payment_status">
+        <item><Pending></Pending></item>
+        <item>缴费中</item>
+        <item>已缴费</item>
+        <item>缴费失败</item>
+        <item>无需缴费</item>
+    </string-array>
 </resources>

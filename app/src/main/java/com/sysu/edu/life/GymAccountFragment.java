@@ -1,5 +1,6 @@
 package com.sysu.edu.life;
 
+import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.extractValue;
 
 import android.content.Context;
@@ -134,12 +135,7 @@ public class GymAccountFragment extends Fragment {
         final ArrayList<String> titles = new ArrayList<>();
         final ArrayList<String> contents = new ArrayList<>();
         final ArrayList<Integer> icons = new ArrayList<>();
-
-//        final Context context;
-
-        public PreferenceAdapter() {
-            super();
-        }
+        boolean hideNull = false;
 
         @NonNull
         @Override
@@ -153,10 +149,11 @@ public class GymAccountFragment extends Fragment {
             int pos = holder.getBindingAdapterPosition();
             ItemPreferenceBinding binding = ItemPreferenceBinding.bind(holder.itemView);
             binding.itemTitle.setText(titles.get(pos));
-            binding.itemContent.setText(contents.get(pos));
+            binding.itemContent.setText(isEmpty(contents.get(pos)) ? holder.itemView.getContext().getString(R.string.none) : contents.get(pos));
             binding.getRoot().setOnClickListener(_ -> {
                 // params.toast(titles.get(pos) + ": " + contents.get(pos));
             });
+            binding.itemContent.setVisibility(hideNull && isEmpty(contents.get(pos)) ? View.GONE : View.VISIBLE);
             if (icons.size() > pos && icons.get(pos) != null) {
                 binding.itemIcon.setImageResource(icons.get(pos));
             } else {
@@ -170,6 +167,10 @@ public class GymAccountFragment extends Fragment {
             contents.add(content);
             icons.add(icon);
             notifyItemInserted(titles.size() - 1);
+        }
+
+        public void setHideNull(boolean hideNull) {
+            this.hideNull = hideNull;
         }
 
         /*void add(String title, String content) {

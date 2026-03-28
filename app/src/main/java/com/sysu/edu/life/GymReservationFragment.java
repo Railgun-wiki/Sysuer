@@ -16,8 +16,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewbinding.ViewBinding;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -34,7 +32,6 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentGymOrderBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
-import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.ButtonAdapter;
 
 import java.text.SimpleDateFormat;
@@ -84,16 +81,9 @@ public class GymReservationFragment extends Fragment {
                                 titleAdapter.setHeader(1);
                                 ButtonAdapter buttonAdapter = new ButtonAdapter();
                                 buttonAdapter.add(getString(R.string.cancel_reservation));
-                                buttonAdapter.setListener(new AdapterListener() {
-                                    @Override
-                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-                                    }
-
-                                    @Override
-                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
-                                        binding.getRoot().setOnClickListener(_ -> deleteReservation(item.getString("Identity")));
-                                        handler.sendEmptyMessage(1);
-                                    }
+                                buttonAdapter.setListener((button, _) -> {
+                                    button.setOnClickListener(_ -> deleteReservation(item.getString("Identity")));
+                                    handler.sendEmptyMessage(1);
                                 });
                                 concatAdapter.addAdapter(titleAdapter);
                                 concatAdapter.addAdapter(preferenceAdapter);
