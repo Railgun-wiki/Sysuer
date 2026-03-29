@@ -1,5 +1,8 @@
 package com.sysu.edu.life;
 
+import static android.text.TextUtils.isEmpty;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,6 +34,7 @@ import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.StaggeredFragment;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -40,6 +44,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
 
 public class NetOrderFragment extends StaggeredFragment {
 
@@ -88,6 +97,11 @@ public class NetOrderFragment extends StaggeredFragment {
                     String response = (String) msg.obj;
                     if (msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
+                    } else if (msg.what == 5) {
+                        params.copy("recharge", (String) msg.obj);
+                        Intent intent = Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, (String) msg.obj).putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recharge)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), getString(R.string.share));
+                        if (intent.resolveActivity(requireContext().getPackageManager()) != null)
+                            startActivity(intent);
                     } else if (msg.what == 0 || msg.what == 1) {
                         try {
                             JSONObject json = JSONObject.parse(response);
@@ -201,10 +215,14 @@ public class NetOrderFragment extends StaggeredFragment {
                                 params.toast(R.string.order_fail);
                             }
                         } catch (JSONException _) {
-
+                            params.toast(R.string.order_success);
+                            JSONObject data = new JSONObject();
+                            Matcher matcher = Pattern.compile("<input.*?name='(.*?)' value='(.*?)'/>", Pattern.DOTALL).matcher(response);
+                            while (matcher.find()) data.put(matcher.group(1), matcher.group(2));
+                            gotoWechat(data);
+                            clear();
+                            getInfo();
                         }
-
-
                     }
                 }
             });
@@ -236,7 +254,28 @@ public class NetOrderFragment extends StaggeredFragment {
     }
 
     void order(Number time, int fee, String serviceId) {
-//        System.out.println(String.format(Locale.getDefault(), "type=web&months=%d&moneys=%d&serviceId=%s", time.intValue(), fee, serviceId));
-        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/prepareOrder", String.format(Locale.getDefault(), "type=web&months=%d&moneys=%d&serviceId=%s", time.intValue(), fee, serviceId), "application/x-www-form-urlencoded", 4);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/prepareOrder", String.format(Locale.getDefault(), "type=web&months=%d&moneys=%d&serviceIds=%s", time.intValue(), fee, serviceId), "application/x-www-form-urlencoded", 4);
+    }
+
+    void gotoWechat(JSONObject data) {
+        StringBuilder info = new StringBuilder();
+        data.forEach((key, value) -> info.append(key).append("=").append(value).append("&"));
+        new OkHttpClient.Builder().followRedirects(false).build().newCall(http.getRequest("https://fee.sysu.edu.cn/gateway/unifiedorder/pagepay", info.toString(), "application/x-www-form-urlencoded", "POST").build()).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                http.sendFailure();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                response.header("Location");
+                if (!isEmpty(response.header("Location"))) {
+                    Message message = new Message();
+                    message.what = 5;
+                    message.obj = response.header("Location");
+                    http.getHandler().sendMessage(message);
+                }
+            }
+        });
     }
 }

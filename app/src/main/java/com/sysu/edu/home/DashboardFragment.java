@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -121,7 +122,6 @@ public class DashboardFragment extends Fragment {
     DialogServiceActionBinding actionBinding;
     private TodoManager todoManager;
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -138,7 +138,8 @@ public class DashboardFragment extends Fragment {
                     intent.putExtra("LauncherUI.From.Scaner.Shortcut", true);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setAction("android.intent.initActionDialog.VIEW");
-                    startActivity(intent);
+                    if (intent.resolveActivity(requireContext().getPackageManager()) != null)
+                        startActivity(intent);
                 } catch (ActivityNotFoundException _) {
                 }
             });
@@ -146,7 +147,9 @@ public class DashboardFragment extends Fragment {
                 String linking = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext()).getString("qrcode", "");
                 if (!linking.isEmpty()) {
                     try {
-                        startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(linking)));
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linking));
+                        if (intent.resolveActivity(requireContext().getPackageManager()) != null)
+                            startActivity(intent);
                     } catch (ActivityNotFoundException e) {
                         // Toast.makeText(requireContext(), R.string.no_app, Toast.LENGTH_LONG).show();
                     }
@@ -428,8 +431,20 @@ public class DashboardFragment extends Fragment {
                     MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
                     button.setText(shortcut.getString("name"));
                     binding.shortcutGroup.addView(button);
+
+                    String url = shortcut.getString("url");
+                    String activity = shortcut.getString("activity");
                     if (viewModel.actionMap.containsKey(id))
                         button.setOnClickListener(viewModel.actionMap.get(id));
+                     button.setOnClickListener(viewModel.actionMap.containsKey(id) ? viewModel.actionMap.get(id) : TextUtils.isEmpty(activity) ? TextUtils.isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()) : v -> {
+                        try {
+                            Intent intent = new Intent(requireContext(), Class.forName(requireContext().getPackageName() + activity));
+                            if (intent.resolveActivity(requireContext().getPackageManager()) != null)
+                                startActivity(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle());
+                        } catch (ClassNotFoundException _) {
+                            params.toast("未找到对应活动");
+                        }
+                    });
                     button.setOnLongClickListener(_ -> action(shortcut));
                     collectionAdapter.add(shortcut);
                 } while (cursor.moveToNext());
@@ -559,11 +574,12 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemCourseBinding binding = ItemCourseBinding.bind(holder.itemView);
-        holder.itemView.setOnClickListener(v -> onClick.accept(get(position), v));
+        JSONObject item = get(position);
+        holder.itemView.setOnClickListener(v -> onClick.accept(item, v));
         Map.of(binding.courseTitle, "courseName", binding.location, "teachingPlace", binding.time, "time", binding.teacher, "teacherName", binding.course, "course").forEach((v, s) -> {
-            v.setText(get(position).getString(s));
+            v.setText(item.getString(s));
             v.setOnLongClickListener(_ -> {
-                params.copy(s + "：", get(position).getString(s));
+                params.copy(s, item.getString(s));
                 params.toast(R.string.copy_successfully);
                 return true;
             });
@@ -573,9 +589,9 @@ class CourseAdapter extends RecyclerAdapter<JSONObject> {
         Resources.Theme theme = holder.itemView.getContext().getTheme();
         theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceDim, colorSurfaceDim, true);
         theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, colorSurface, true);
-        boolean isBefore = Objects.equals(get(position).getString("status"), "before");
+        boolean isBefore = Objects.equals(item.getString("status"), "before");
         binding.courseTitle.setTextAppearance(isBefore ? com.google.android.material.R.style.TextAppearance_Material3_TitleMedium : com.google.android.material.R.style.TextAppearance_Material3_TitleMedium_Emphasized);
-        holder.itemView.getBackground().setTint(Objects.equals(get(position).getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
+        holder.itemView.getBackground().setTint(Objects.equals(item.getString("status"), "in") ? colorSurfaceDim.data : isBefore ? 0x0 : colorSurface.data);
         binding.item.setAlpha(isBefore ? 0.64f : 1.0f);
         super.onBindViewHolder(holder, position);
     }
@@ -612,7 +628,7 @@ class ExamAdapter extends RecyclerAdapter<JSONObject> {
             materialTextButtons[i].setText(text[i]);
             int finalI = i;
             materialTextButtons[i].setOnClickListener(_ -> {
-                params.copy(finalI + "：", text[finalI]);
+                params.copy("exam", text[finalI]);
                 params.toast(R.string.copy_successfully);
             });
         }

@@ -186,7 +186,9 @@ public class ServiceFragment extends Fragment {
 
             chip.getRoot().setOnClickListener(action != null ? action : isEmpty(activity) ? isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()) : v -> {
                 try {
-                    startActivity(new Intent(requireContext(), Class.forName(requireContext().getPackageName() + activity)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle());
+                    Intent intent = new Intent(requireContext(), Class.forName(requireContext().getPackageName() + activity));
+                    if (intent.resolveActivity(requireContext().getPackageManager()) != null)
+                        startActivity(intent, ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle());
                 } catch (ClassNotFoundException _) {
                     params.toast("未找到对应活动");
                 }

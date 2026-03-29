@@ -53,7 +53,7 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
         preferenceUtil.insertEditValue("author", "author");
         preferenceUtil.insert("matches", JSONArray.from(((EditPreference) Objects.requireNonNull(findPreference("matches"))).getValue().split(",")).toString());
         preferenceUtil.insertMenuValue("run", "run");
-        preferenceUtil.insertSwitchValue("state", "state", 1, 0);
+        preferenceUtil.insertSwitchValue("state", "state", 0, 1);
         return preferenceUtil.getParams();
     }
 
@@ -62,7 +62,7 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
         ((EditPreference) Objects.requireNonNull(findPreference("description"))).setValue(info.getString("description"));
         ((EditPreference) Objects.requireNonNull(findPreference("author"))).setValue(info.getString("author"));
         ((EditPreference) Objects.requireNonNull(findPreference("matches"))).setValue(String.join(",", JSONArray.parseArray(trim(info.getString("matches"))).toList(String.class)));
-        ((MaterialSwitchPreference) Objects.requireNonNull(findPreference("state"))).setChecked(info.getInteger("state") == 1);
+        ((MaterialSwitchPreference) Objects.requireNonNull(findPreference("state"))).setChecked(info.getInteger("state") == 0);
         ((SimpleMenuPreference) Objects.requireNonNull(findPreference("run"))).setValue(info.getString("run"));
     }
 

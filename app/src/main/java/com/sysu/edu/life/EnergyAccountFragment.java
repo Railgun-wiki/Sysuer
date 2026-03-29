@@ -160,6 +160,7 @@ public class EnergyAccountFragment extends Fragment {
     }
 
     void gotoWechat(JSONObject data) {
+        data.put("scene", "web");
         StringBuilder info = new StringBuilder();
         data.forEach((key, value) -> info.append(key).append("=").append(value).append("&"));
         new OkHttpClient.Builder().followRedirects(false).build().newCall(http.getRequest("https://fee.sysu.edu.cn/gateway/unifiedorder/pagepay", info.toString(), "application/x-www-form-urlencoded", "POST").build()).enqueue(new Callback() {
@@ -170,7 +171,6 @@ public class EnergyAccountFragment extends Fragment {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) {
-                System.out.println(response.headers().toMultimap());
                 response.header("Location");
                 if (!isEmpty(response.header("Location"))) {
                     Message message = new Message();
