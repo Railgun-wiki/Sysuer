@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.google.firebase.crashlytics)
-    id("com.google.devtools.ksp")
-    id("kotlin-parcelize")
+//    id("com.google.devtools.ksp")
+//    id("kotlin-parcelize")
 }
 
 android {
@@ -96,7 +96,7 @@ dependencies {
 //    implementation(libs.core.remoteviews)
     implementation(libs.androidx.core.remoteviews)
     implementation(libs.androidx.fragment)
-    implementation(libs.enro.android)
+//    implementation(libs.enro.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -113,9 +113,9 @@ dependencies {
     implementation(project(":CalendarView"))
     implementation(libs.okhttp.java.net.cookiejar)
 //    implementation(libs.enro)
-    ksp(libs.enro.processor) // both kapt and ksp are supported
-    testImplementation(libs.enro.test)
-    implementation(libs.dev.enro)
+//    ksp(libs.enro.processor) // both kapt and ksp are supported
+//    testImplementation(libs.enro.test)
+//    implementation(libs.dev.enro)
     /*configurations.all {
         exclude("androidx.appcompat", "appcompat")
     }*/

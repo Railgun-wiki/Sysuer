@@ -39,13 +39,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import dev.enro.annotations.NavigationDestination;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 
-@NavigationDestination(key = HomeKey.class)
 public class EnergyAccountFragment extends Fragment {
 
     HttpManager http;

@@ -15,12 +15,7 @@ import com.sysu.edu.preference.Theme;
 import java.util.Objects;
 import java.util.Set;
 
-import dev.enro.annotations.NavigationComponent;
-import dev.enro.core.controller.NavigationApplication;
-import dev.enro.core.controller.NavigationController;
-
-@NavigationComponent
-public class Application extends android.app.Application implements NavigationApplication {
+public class Application extends android.app.Application{
     float defaultFontSize;
 
     @Override
@@ -73,12 +68,6 @@ public class Application extends android.app.Application implements NavigationAp
 
             }
         });
-    }
-
-    @NonNull
-    @Override
-    public NavigationController getNavigationController() {
-        return new NavApp().getNavigationController();
     }
 
 //    static class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
