@@ -21,16 +21,11 @@ public class EnergyFeeActivity extends AppCompatActivity {
         NavHostFragment fragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         if (fragment != null) {
             NavController nav = fragment.getNavController();
-//            NavHostController navHostController = new NavHostController(this).getNavController();
             NavigationUI.setupWithNavController(binding.toolbar, nav, new AppBarConfiguration.Builder().setFallbackOnNavigateUpListener(() -> {
                 supportFinishAfterTransition();
                 return false;
             }).build());
             NavigationUI.setupWithNavController(binding.bottomNavigation, nav);
         }
-//        NavigationContainer exampleContainer = new ActivityNavigationContainer(getApplicationContext());
     }
-
 }
-
-

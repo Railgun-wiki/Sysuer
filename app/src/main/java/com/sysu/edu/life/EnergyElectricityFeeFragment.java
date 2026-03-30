@@ -28,6 +28,7 @@ import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentWaterFeeBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
@@ -36,14 +37,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class EnergyElectricityFeeFragment extends Fragment {
 
     HttpManager http;
     String name = "";
-    LinkedList<Runnable> request = new LinkedList<>();
+    RequestQueue requestQueue = new RequestQueue();
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
     MutableLiveData<String> roomCode = new MutableLiveData<>();
 
@@ -107,8 +107,8 @@ public class EnergyElectricityFeeFragment extends Fragment {
                                         adapter.addAdapter(preferenceAdapter);
                                     });
                         }
-                        nextRequest();
-                    } else contextUtil.login(TargetUrl.ZHNY, () -> nextRequest());
+                        requestQueue.next();
+                    } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.next());
                 }
                 super.handleMessage(msg);
             }
@@ -116,9 +116,9 @@ public class EnergyElectricityFeeFragment extends Fragment {
         http.setAuthorizationRequired(true);
         http.setAuthorizationJar(new AuthorizationJar(requireContext()));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        request.add(this::getUserInfo);
-        request.add(() -> getRoom(name));
-        request.add(() -> {
+        requestQueue.add(this::getUserInfo);
+        requestQueue.add(() -> getRoom(name));
+        requestQueue.add(() -> {
             if (!rooms.isEmpty())
                 roomCode.setValue(rooms.valueAt(0).getSecond());
         });
@@ -129,7 +129,7 @@ public class EnergyElectricityFeeFragment extends Fragment {
                 getElectricityBill(v);
             }
         });
-        nextRequest();
+        requestQueue.next();
         binding.calendarView.setOnMonthChangeListener((year, month) -> {
             getElectricityConsumption(roomCode.getValue(), LocalDate.of(year, month, 1).with(TemporalAdjusters.firstDayOfMonth()).format(formatter), LocalDate.of(year, month, 1).with(TemporalAdjusters.lastDayOfMonth()).format(formatter));
             binding.date.setText(LocalDate.of(year, month, 1).format(formatter));
@@ -147,11 +147,6 @@ public class EnergyElectricityFeeFragment extends Fragment {
             }
         });
         return binding.getRoot();
-    }
-
-    void nextRequest() {
-        if (!request.isEmpty())
-            request.pop().run();
     }
 
     void getUserInfo() {

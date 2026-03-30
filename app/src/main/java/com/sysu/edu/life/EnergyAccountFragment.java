@@ -29,6 +29,7 @@ import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.DialogRechargeBinding;
 import com.sysu.edu.databinding.FragmentEnergyOrderBinding;
@@ -36,7 +37,6 @@ import com.sysu.edu.todo.info.TitleAdapter;
 import com.sysu.edu.view.ButtonAdapter;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 import okhttp3.Call;
@@ -50,7 +50,7 @@ public class EnergyAccountFragment extends Fragment {
     String roomCode;
     String username;
     FragmentEnergyOrderBinding binding;
-    LinkedList<Runnable> request = new LinkedList<>();
+    RequestQueue requestQueue = new RequestQueue();
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
 
     @Nullable
@@ -119,8 +119,8 @@ public class EnergyAccountFragment extends Fragment {
                                     /*{"code":200,"msg":"操作成功","data":{"data":{"page_url":"https://zhny.sysu.edu.cn/h5/#/pages/indexModule/pages/electricityRecharge/electricityRecharge","charset":"utf-8","pay_info":"{\"items\":[{\"item_code\":\"138\",\"item_money\":0.01}],\"total_money\":0.01}","sign":"FCE7FB5850452D14095B03D0456E6AF0","mch_id":"sysuZHNYGLPT","notify_url":"https://zhny.sysu.edu.cn/kbp/pay/notify/zdpay","person_code":"24308152","version":"2.0","scene":"wx","out_trade_no":"75892026032818574230884387233138","timestamp":"20260328185742309"},"url":"https://fee.sysu.edu.cn/gateway/unifiedorder/pagepay","outTradeNo":"75892026032818574230884387233138"}}*/
                                 }
                             }
-                            nextRequest();
-                        } else contextUtil.login(TargetUrl.ZHNY, () -> nextRequest());
+                            requestQueue.next();
+                        } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.next());
                     }
                     super.handleMessage(msg);
                 }
@@ -130,15 +130,15 @@ public class EnergyAccountFragment extends Fragment {
             binding = FragmentEnergyOrderBinding.inflate(inflater, container, false);
             binding.recyclerViewScroll.getRoot().setLayoutManager(new LinearLayoutManager(requireContext()));
             binding.recyclerViewScroll.getRoot().setAdapter(adapter);
-            request.add(this::getUserInfo);
-            request.add(() -> getRoom(username));
-            request.add(() -> {
+            requestQueue.add(this::getUserInfo);
+            requestQueue.add(() -> getRoom(username));
+            requestQueue.add(() -> {
                 if (!rooms.isEmpty()) {
                     roomCode = rooms.valueAt(0).second;
                     getBalance(roomCode);
                 }
             });
-            nextRequest();
+            requestQueue.next();
         }
         return binding.getRoot();
     }
@@ -180,9 +180,5 @@ public class EnergyAccountFragment extends Fragment {
                 }
             }
         });
-    }
-
-    void nextRequest() {
-        if (!request.isEmpty()) request.pop().run();
     }
 }

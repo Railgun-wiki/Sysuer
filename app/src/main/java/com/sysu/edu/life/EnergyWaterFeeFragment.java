@@ -28,6 +28,7 @@ import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentWaterFeeBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
@@ -37,14 +38,14 @@ import com.sysu.edu.view.FeeWeekView;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class EnergyWaterFeeFragment extends Fragment {
 
     HttpManager http;
     String name = "";
-    LinkedList<Runnable> request = new LinkedList<>();
+    RequestQueue requestQueue = new RequestQueue();
+
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
     MutableLiveData<String> roomCode = new MutableLiveData<>();
     private ConcatAdapter adapter;
@@ -115,8 +116,8 @@ public class EnergyWaterFeeFragment extends Fragment {
                                 });
                             }
                         }
-                        nextRequest();
-                    } else contextUtil.login(TargetUrl.ZHNY, () -> nextRequest());
+                        requestQueue.next();
+                    } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.next());
                 }
                 super.handleMessage(msg);
             }
@@ -124,9 +125,9 @@ public class EnergyWaterFeeFragment extends Fragment {
         http.setAuthorizationRequired(true);
         http.setAuthorizationJar(new AuthorizationJar(requireContext()));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-        request.add(this::getUserInfo);
-        request.add(() -> getRoom(name));
-        request.add(() -> {
+        requestQueue.add(this::getUserInfo);
+        requestQueue.add(() -> getRoom(name));
+        requestQueue.add(() -> {
             if (!rooms.isEmpty())
                 roomCode.setValue(rooms.valueAt(0).getSecond());
         });
@@ -152,14 +153,9 @@ public class EnergyWaterFeeFragment extends Fragment {
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-        nextRequest();
+        requestQueue.next();
 
         return binding.getRoot();
-    }
-
-    void nextRequest() {
-        if (!request.isEmpty())
-            request.pop().run();
     }
 
     void reset() {

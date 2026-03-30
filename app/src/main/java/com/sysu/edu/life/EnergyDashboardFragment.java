@@ -25,13 +25,13 @@ import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
+import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentEnergyDashboardBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,7 +39,7 @@ public class EnergyDashboardFragment extends Fragment {
 
     HttpManager http;
     String name;
-    LinkedList<Runnable> request = new LinkedList<>();
+    RequestQueue requestQueue = new RequestQueue();
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
     ConcatAdapter adapter = new ConcatAdapter();
 
@@ -100,23 +100,23 @@ public class EnergyDashboardFragment extends Fragment {
                                 });
                             }
                         }
-                        nextRequest();
-                    } else contextUtil.login(TargetUrl.ZHNY, () -> nextRequest());
+                        requestQueue.next();
+                    } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.next());
                 }
                 super.handleMessage(msg);
             }
         });
         http.setAuthorizationRequired(true);
         http.setAuthorizationJar(new AuthorizationJar(requireContext()));
-        request.add(this::getUserInfo);
-        request.add(this::getWaterInfo);
-        request.add(() -> getElectricityInfo(name));
-        request.add(() -> getRoom(name));
-        request.add(() -> {
+        requestQueue.add(this::getUserInfo);
+        requestQueue.add(this::getWaterInfo);
+        requestQueue.add(() -> getElectricityInfo(name));
+        requestQueue.add(() -> getRoom(name));
+        requestQueue.add(() -> {
             if (!rooms.isEmpty())
                 getOrderInfo(rooms.valueAt(0).getSecond(), LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")));
         });
-        nextRequest();
+        requestQueue.next();
         return binding.getRoot();
     }
 
@@ -138,11 +138,6 @@ public class EnergyDashboardFragment extends Fragment {
 
     void getRoom(String username) {
         http.postRequest("https://zhny.sysu.edu.cn/kbp/admin/sys/personRoom/list", "{\"username\":\"" + username + "\"}", 4);
-    }
-
-    void nextRequest() {
-        if (!request.isEmpty())
-            request.pop().run();
     }
 
     void reset() {
