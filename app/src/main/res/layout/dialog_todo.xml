@@ -8,13 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- <androidx.constraintlayout.helper.widget.Grid
-             android:id="@+id/grid"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:layout_margin="4dp"
-             app:constraint_referenced_ids="button1,button2,button3"
-             app:grid_columns="2"/>-->
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/check"

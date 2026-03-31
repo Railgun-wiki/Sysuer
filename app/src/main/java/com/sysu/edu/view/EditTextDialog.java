@@ -1,6 +1,10 @@
 package com.sysu.edu.view;
 
+import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
+
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
@@ -26,9 +30,25 @@ public class EditTextDialog {
         binding = DialogEditTextBinding.inflate(LayoutInflater.from(context));
         dialog = new MaterialAlertDialogBuilder(context)
                 .setView(binding.getRoot())
-                .setPositiveButton(android.R.string.ok, (_, _) -> setValue(binding.edit.getText() == null ? "" : binding.edit.getText().toString()))
+                .setPositiveButton(android.R.string.ok, (_, _) -> setValue(toStringOrEmpty(binding.edit.getText())))
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
+        binding.edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                setValue(s.toString());
+            }
+        });
     }
 
     public String getValue() {
@@ -39,9 +59,7 @@ public class EditTextDialog {
         if (!Objects.equals(mValue, value)) {
             mValue = value;
             binding.edit.setText(value);
-            if (listener != null) {
-                listener.onValueChange(value);
-            }
+            if (listener != null) listener.onValueChange(value);
         }
     }
 
@@ -81,7 +99,7 @@ public class EditTextDialog {
         return dialog;
     }
 
-    public TextInputEditText getEditText(){
+    public TextInputEditText getEditText() {
         return binding.edit;
     }
 

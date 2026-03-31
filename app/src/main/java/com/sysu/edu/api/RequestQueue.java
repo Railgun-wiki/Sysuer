@@ -6,10 +6,18 @@ import java.util.LinkedList;
 
 public class RequestQueue {
     LinkedList<Runnable> queue = new LinkedList<>();
+    Runnable lastRequest;
+
     public void add(@NonNull Runnable runnable) {
         queue.add(runnable);
     }
+
     public void next() {
-        if (queue.poll() != null && !queue.isEmpty()) queue.getFirst().run();
+        lastRequest = queue.poll();
+        if (lastRequest != null) lastRequest.run();
+    }
+
+    public void retry() {
+        lastRequest.run();
     }
 }

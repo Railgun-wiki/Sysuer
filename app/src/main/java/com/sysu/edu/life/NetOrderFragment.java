@@ -53,183 +53,173 @@ import okhttp3.Response;
 public class NetOrderFragment extends StaggeredFragment {
 
     HttpManager http;
-    View view;
     LocalDate oldDate;
     int fee;
     Number time;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (view == null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
-            view = super.onCreateView(inflater, container, savedInstanceState);
-            params.setCallback(this::getInfo);
-            DialogNetPayBinding dialogNetBinding = DialogNetPayBinding.inflate(inflater);
-            dialogNetBinding.service.key.setText(R.string.service);
-            dialogNetBinding.oldOutDate.key.setText(R.string.old_out_date);
-            dialogNetBinding.newOutDate.key.setText(R.string.new_out_date);
-            dialogNetBinding.fee.key.setText(R.string.fee);
-            dialogNetBinding.time.key.setText(R.string.time);
-            PopupMenu popupMenu = new PopupMenu(requireActivity(), dialogNetBinding.time.value, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
-            Menu menu = popupMenu.getMenu();
-            dialogNetBinding.time.getRoot().setOnClickListener(_ -> popupMenu.show());
-            String[] strings = new String[]{"15天", "1个月", "2个月", "3个月", "4个月", "5个月", "6个月", "7个月", "8个月", "9个月", "10个月", "11个月", "1年", "2年"};
-            long[] months = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 24, 48};
-            int[] fees = {15, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 300, 600};
-            for (int i = 0; i < strings.length; i++) {
-                int finalI = i;
-                menu.add(0, 0, 0, strings[i]).setOnMenuItemClickListener(_ -> {
-                    dialogNetBinding.time.value.setText(strings[finalI]);
-                    dialogNetBinding.newOutDate.value.setText((finalI == 0 ? oldDate.plusDays(15) : oldDate.plusMonths(months[finalI])).format(formatter));
-                    time = finalI == 0 ? 0.5 : months[finalI];
-                    fee = fees[finalI];
-                    dialogNetBinding.fee.value.setText(String.format(Locale.getDefault(), "%d元", fee));
-                    popupMenu.dismiss();
-                    return true;
-                });
-            }
-            BottomSheetDialog payDialog = new BottomSheetDialog(requireActivity());
-            payDialog.setContentView(dialogNetBinding.getRoot());
-            http = new HttpManager(new Handler(Looper.getMainLooper()) {
-                @Override
-                public void handleMessage(@NonNull Message msg) {
-                    super.handleMessage(msg);
-                    String response = (String) msg.obj;
-                    if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
-                    } else if (msg.what == 5) {
-                        params.copy("recharge", (String) msg.obj);
-                        Intent intent = Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, (String) msg.obj).putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recharge)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), getString(R.string.share));
-                        if (intent.resolveActivity(requireContext().getPackageManager()) != null)
-                            startActivity(intent);
-                    } else if (msg.what == 0 || msg.what == 1) {
-                        try {
-                            JSONObject json = JSONObject.parse(response);
-                            if (!json.getBoolean("success")) {
-                                params.toast(R.string.login_warning);
-                                params.gotoLogin(TargetUrl.NETPAY);
-                            }
-                        } catch (JSONException _) {
-                            Matcher matcher = Pattern.compile("<tr .+?>(.+?)</tr>", Pattern.DOTALL).matcher(response);
-                            while (matcher.find()) {
-                                ArrayList<String> orderDetail = new ArrayList<>();
-                                String item = matcher.group(1);
-                                if (item != null) {
-                                    boolean isStop = false;
-                                    Matcher matcher2 = Pattern.compile("<td .+?>(.+?)</td>", Pattern.DOTALL).matcher(item);
-                                    while (matcher2.find())
-                                        orderDetail.add(Objects.requireNonNull(matcher2.group(1)).replaceAll("<.+?>", "").trim());
-                                    if (requireArguments().getInt("code") == 1) {
-                                        Matcher action = Pattern.compile("onclick='(.+?)\\((.+?)\\)'>(.+?)</a>").matcher(item);
-                                        if (action.find()) {
-                                            isStop = Objects.equals(action.group(1), "stop");
-                                            final Matcher actionMatcher = Pattern.compile("(.+?),(.+?),").matcher((action.group(2) + ",").replace("\"", ""));
-                                            if (actionMatcher.find()) {
-                                                String leftDay = actionMatcher.group(2);
-                                                orderDetail.set(9, leftDay);
-                                                String serviceId = actionMatcher.group(1);
-                                                staggeredAdapter.setListener(new AdapterListener() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-M-d");
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        params.setCallback(this::getInfo);
+        DialogNetPayBinding dialogNetBinding = DialogNetPayBinding.inflate(inflater);
+        dialogNetBinding.service.key.setText(R.string.service);
+        dialogNetBinding.oldOutDate.key.setText(R.string.old_out_date);
+        dialogNetBinding.newOutDate.key.setText(R.string.new_out_date);
+        dialogNetBinding.fee.key.setText(R.string.fee);
+        dialogNetBinding.time.key.setText(R.string.time);
+        PopupMenu popupMenu = new PopupMenu(requireActivity(), dialogNetBinding.time.value, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
+        Menu menu = popupMenu.getMenu();
+        dialogNetBinding.time.getRoot().setOnClickListener(_ -> popupMenu.show());
+        String[] strings = new String[]{"15天", "1个月", "2个月", "3个月", "4个月", "5个月", "6个月", "7个月", "8个月", "9个月", "10个月", "11个月", "1年", "2年"};
+        long[] months = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 24, 48};
+        int[] fees = {15, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 300, 600};
+        for (int i = 0; i < strings.length; i++) {
+            int finalI = i;
+            menu.add(0, 0, 0, strings[i]).setOnMenuItemClickListener(_ -> {
+                dialogNetBinding.time.value.setText(strings[finalI]);
+                dialogNetBinding.newOutDate.value.setText((finalI == 0 ? oldDate.plusDays(15) : oldDate.plusMonths(months[finalI])).format(formatter));
+                time = finalI == 0 ? 0.5 : months[finalI];
+                fee = fees[finalI];
+                dialogNetBinding.fee.value.setText(String.format(Locale.getDefault(), "%d元", fee));
+                popupMenu.dismiss();
+                return true;
+            });
+        }
+        BottomSheetDialog payDialog = new BottomSheetDialog(requireActivity());
+        payDialog.setContentView(dialogNetBinding.getRoot());
+        http = new HttpManager(new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+                String response = (String) msg.obj;
+                if (msg.what == -1) {
+                    params.toast(R.string.no_wifi_warning);
+                } else if (msg.what == 5) {
+                    params.copy("recharge", (String) msg.obj);
+                    Intent intent = Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, (String) msg.obj).putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recharge)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), getString(R.string.share));
+                    if (intent.resolveActivity(requireContext().getPackageManager()) != null)
+                        startActivity(intent);
+                } else if (msg.what == 0 || msg.what == 1) {
+                    try {
+                        JSONObject json = JSONObject.parse(response);
+                        if (!json.getBoolean("success")) {
+                            params.toast(R.string.login_warning);
+                            params.gotoLogin(TargetUrl.NETPAY);
+                        }
+                    } catch (JSONException _) {
+                        Matcher matcher = Pattern.compile("<tr .+?>(.+?)</tr>", Pattern.DOTALL).matcher(response);
+                        while (matcher.find()) {
+                            ArrayList<String> orderDetail = new ArrayList<>();
+                            String item = matcher.group(1);
+                            if (item != null) {
+                                boolean isStop = false;
+                                Matcher matcher2 = Pattern.compile("<td .+?>(.+?)</td>", Pattern.DOTALL).matcher(item);
+                                while (matcher2.find())
+                                    orderDetail.add(Objects.requireNonNull(matcher2.group(1)).replaceAll("<.+?>", "").trim());
+                                if (requireArguments().getInt("code") == 1) {
+                                    Matcher action = Pattern.compile("onclick='(.+?)\\((.+?)\\)'>(.+?)</a>").matcher(item);
+                                    if (action.find()) {
+                                        isStop = Objects.equals(action.group(1), "stop");
+                                        final Matcher actionMatcher = Pattern.compile("(.+?),(.+?),").matcher((action.group(2) + ",").replace("\"", ""));
+                                        if (actionMatcher.find()) {
+                                            String leftDay = actionMatcher.group(2);
+                                            orderDetail.set(9, leftDay);
+                                            String serviceId = actionMatcher.group(1);
+                                            staggeredAdapter.setListener(new AdapterListener() {
 
-                                                    @Override
-                                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                                                @Override
+                                                public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                                                }
+
+                                                @Override
+                                                public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding b) {
+                                                    String[] strings = new String[]{action.group(3), getString(R.string.pay)};
+                                                    LinearLayout line = ItemButtonGroupBinding.inflate(inflater, ((ItemCardBinding) b).getRoot(), false).getRoot();
+                                                    for (int i = 0; i < strings.length; i++) {
+                                                        String fun = strings[i];
+                                                        MaterialButton button = ItemButtonOutlineBinding.inflate(inflater, ((ItemCardBinding) b).getRoot(), false).getRoot();//new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
+                                                        button.setText(fun);
+                                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                                                        lp.gravity = Gravity.END;
+                                                        lp.setMargins(0, 0, params.dpToPx(16), params.dpToPx(16));
+                                                        button.setLayoutParams(lp);
+                                                        boolean isStop = Objects.equals(action.group(1), "stop");
+                                                        button.setOnClickListener(new View.OnClickListener[]{v -> {
+                                                            if (leftDay != null) {
+                                                                Snackbar.make(v, isStop ? "暂停网络将即时生效，暂停最小时长：7天。是否确定要暂停？" : Integer.parseInt(leftDay) < 7 ? "网络服务已暂停" + leftDay + "天，不足暂停最小时长（7天），提前恢复本次暂停作废，过期日期不顺延！是否仍要提前恢复网络？" : "网络服务已暂停" + leftDay + "天，执行恢复将即时生效，是否确定要恢复？", Snackbar.LENGTH_SHORT).setAction(R.string.confirm, _ -> {
+                                                                    if (isStop) stop(serviceId);
+                                                                    else resume(serviceId);
+                                                                }).show();
+                                                            }
+                                                        }, _ -> {
+                                                            payDialog.show();
+                                                            oldDate = LocalDate.parse(orderDetail.get(7), formatter);
+                                                            dialogNetBinding.oldOutDate.value.setText(orderDetail.get(7));
+                                                            dialogNetBinding.service.value.setText(orderDetail.get(1));
+                                                            dialogNetBinding.submit.setOnClickListener(_ -> order(time, fee, serviceId));
+                                                        }}[i]);
+                                                        line.addView(button);
                                                     }
-
-                                                    @Override
-                                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding b) {
-                                                        String[] strings = new String[]{action.group(3), getString(R.string.pay)};
-                                                        LinearLayout line = ItemButtonGroupBinding.inflate(inflater, ((ItemCardBinding) b).getRoot(), false).getRoot();
-                                                        for (int i = 0; i < strings.length; i++) {
-                                                            String fun = strings[i];
-                                                            MaterialButton button = ItemButtonOutlineBinding.inflate(inflater, ((ItemCardBinding) b).getRoot(), false).getRoot();//new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonTonalStyle);
-                                                            button.setText(fun);
-                                                            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                                                            lp.gravity = Gravity.END;
-                                                            lp.setMargins(0, 0, params.dpToPx(16), params.dpToPx(16));
-                                                            button.setLayoutParams(lp);
-                                                            boolean isStop = Objects.equals(action.group(1), "stop");
-                                                            button.setOnClickListener(new View.OnClickListener[]{v -> {
-                                                                if (leftDay != null) {
-                                                                    Snackbar.make(v, isStop ? "暂停网络将即时生效，暂停最小时长：7天。是否确定要暂停？" : Integer.parseInt(leftDay) < 7 ? "网络服务已暂停" + leftDay + "天，不足暂停最小时长（7天），提前恢复本次暂停作废，过期日期不顺延！是否仍要提前恢复网络？" : "网络服务已暂停" + leftDay + "天，执行恢复将即时生效，是否确定要恢复？", Snackbar.LENGTH_SHORT).setAction(R.string.confirm, _ -> {
-                                                                        if (isStop) {
-                                                                            stop(serviceId);
-                                                                        } else {
-                                                                            resume(serviceId);
-                                                                        }
-                                                                    }).show();
-                                                                }
-                                                            }, _ -> {
-                                                                payDialog.show();
-                                                                oldDate = LocalDate.parse(orderDetail.get(7), formatter);
-                                                                dialogNetBinding.oldOutDate.value.setText(orderDetail.get(7));
-                                                                dialogNetBinding.service.value.setText(orderDetail.get(1));
-//                                                                dialogNetBinding.time.value.setText("1个月");
-//                                                                dialogNetBinding.fee.value.setText("30元");
-//                                                                dialogNetBinding.newOutDate.value.setText("2023-12-31");
-
-                                                                dialogNetBinding.submit.setOnClickListener(_ -> order(time, fee, serviceId));
-                                                            }}[i]);
-                                                            line.addView(button);
-                                                        }
-                                                        ((ItemCardBinding) b).getRoot().addView(line);
-                                                    }
-                                                });
-                                            }
+                                                    ((ItemCardBinding) b).getRoot().addView(line);
+                                                }
+                                            });
                                         }
                                     }
-                                    add(orderDetail.get(msg.what == 0 ? 4 : 0), msg.what == 0 ? List.of(
-                                            "订单号",
-                                            "所有者",
-                                            "金额",
-                                            "支付方式",
-                                            "订单时间",
-                                            "订单状态",
-                                            "服务",
-                                            "代支付者") : List.of("序号",
-                                            "服务",
-                                            "地址",
-                                            "MAC地址",
-                                            "部门",
-                                            "使用者",
-                                            "状态",
-                                            "过期日期",
-                                            "暂停日期",
-                                            isStop ? "暂停时长" : "剩余时长"), orderDetail);
                                 }
+                                add(orderDetail.get(msg.what == 0 ? 4 : 0), msg.what == 0 ? List.of(
+                                        "订单号",
+                                        "所有者",
+                                        "金额",
+                                        "支付方式",
+                                        "订单时间",
+                                        "订单状态",
+                                        "服务",
+                                        "代支付者") : List.of("序号",
+                                        "服务",
+                                        "地址",
+                                        "MAC地址",
+                                        "部门",
+                                        "使用者",
+                                        "状态",
+                                        "过期日期",
+                                        "暂停日期",
+                                        isStop ? "暂停时长" : "剩余时长"), orderDetail);
                             }
-                        }
-                    } else if (msg.what == 2 || msg.what == 3) {
-                        try {
-                            clear();
-                            getInfo();
-                        } catch (JSONException _) {
-                        }
-                    } else if (msg.what == 4) {
-                        try {
-                            System.out.println(response);
-                            JSONObject json = JSONObject.parse(response);
-                            if (json.getBoolean("success")) {
-                                params.toast(R.string.order_success);
-                                clear();
-                                getInfo();
-                            } else {
-                                params.toast(R.string.order_fail);
-                            }
-                        } catch (JSONException _) {
-                            params.toast(R.string.order_success);
-                            JSONObject data = new JSONObject();
-                            Matcher matcher = Pattern.compile("<input.*?name='(.*?)' value='(.*?)'/>", Pattern.DOTALL).matcher(response);
-                            while (matcher.find()) data.put(matcher.group(1), matcher.group(2));
-                            gotoWechat(data);
-                            clear();
-                            getInfo();
                         }
                     }
+                } else if (msg.what == 2 || msg.what == 3) {
+                    try {
+                        clear();
+                        getInfo();
+                    } catch (JSONException _) {
+                    }
+                } else if (msg.what == 4) {
+                    try {
+                        System.out.println(response);
+                        JSONObject json = JSONObject.parse(response);
+                        if (json.getBoolean("success")) {
+                            params.toast(R.string.order_success);
+                            clear();
+                            getInfo();
+                        } else {
+                            params.toast(R.string.order_fail);
+                        }
+                    } catch (JSONException _) {
+                        params.toast(R.string.order_success);
+                        JSONObject data = new JSONObject();
+                        Matcher matcher = Pattern.compile("<input.*?name='(.*?)' value='(.*?)'/>", Pattern.DOTALL).matcher(response);
+                        while (matcher.find()) data.put(matcher.group(1), matcher.group(2));
+                        gotoWechat(data);
+                        clear();
+                        getInfo();
+                    }
                 }
-            });
-            http.setHeader(Map.of("accept-language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"));
-            http.setParams(params);
-            getInfo();
-        }
+            }
+        });
+        http.setHeader(Map.of("accept-language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7"));
+        http.setParams(params);
+        getInfo();
         return view;
     }
 
@@ -254,7 +244,7 @@ public class NetOrderFragment extends StaggeredFragment {
     }
 
     void order(Number time, int fee, String serviceId) {
-        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/prepareOrder", String.format(Locale.getDefault(), "type=web&months=%d&moneys=%d&serviceIds=%s", time.intValue(), fee, serviceId), "application/x-www-form-urlencoded", 4);
+        http.postRequest("https://netpay.sysu.edu.cn/netpay/c/site/prepareOrder", String.format(Locale.getDefault(), "type=web&months=%s&moneys=%d&serviceIds=%s", time.floatValue() < 1 ? time.floatValue() : time.intValue(), fee, serviceId), "application/x-www-form-urlencoded", 4);
     }
 
     void gotoWechat(JSONObject data) {

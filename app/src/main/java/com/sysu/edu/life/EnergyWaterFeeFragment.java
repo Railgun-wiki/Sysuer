@@ -63,6 +63,7 @@ public class EnergyWaterFeeFragment extends Fragment {
         binding.list.setAdapter(adapter);
         binding.calendarView.setMonthView(FeeMonthView.class);
         binding.calendarView.setWeekView(FeeWeekView.class);
+        String[] paymentStatuses = getResources().getStringArray(R.array.payment_status);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -107,7 +108,7 @@ public class EnergyWaterFeeFragment extends Fragment {
                                     ArrayList<String> value = extractValue(item, new String[]{"billStartDate", "paymentStatus", "useWaterTypeName", "finalWaterUsage", "waterPayment", "paidPayment"});
                                     Integer paymentStatus = item.getInteger("paymentStatus");
                                     value.set(0, duration);
-                                    value.set(1, new String[]{"待缴费", "缴费中", "已缴费", "缴费失败", "无需缴费"}[paymentStatus - 1]);
+                                    value.set(1, paymentStatuses[paymentStatus - 1]);
                                     preferenceAdapter.set(List.of(R.string.bill_period, R.string.status, R.string.type, R.string.electricity_consumption, R.string.fee, R.string.paid_fee),
                                             value,
                                             List.of(R.drawable.calendar, paymentStatus == 3 || paymentStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.water, R.drawable.water, R.drawable.money, R.drawable.money), requireContext());
@@ -117,7 +118,7 @@ public class EnergyWaterFeeFragment extends Fragment {
                             }
                         }
                         requestQueue.next();
-                    } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.next());
+                    } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.retry());
                 }
                 super.handleMessage(msg);
             }

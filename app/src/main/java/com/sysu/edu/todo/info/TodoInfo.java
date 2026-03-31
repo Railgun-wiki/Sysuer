@@ -33,7 +33,7 @@ public class TodoInfo {
         dueDate = new MutableLiveData<>();
         ddlDate = new MutableLiveData<>();
         dueTime = new MutableLiveData<>();
-        priority = new MutableLiveData<>(0);
+        priority = new MutableLiveData<>();
         remindTime = new MutableLiveData<>();
         type = new MutableLiveData<>();
         location = new MutableLiveData<>();
@@ -120,11 +120,32 @@ public class TodoInfo {
         this.dueDate.setValue(dueDate);
     }
 
+    /**
+     * 获取优先级
+     * 0: 无优先级
+     * 1: 不重要且不紧急
+     * 2: 不重要且紧急
+     * 3: 重要且不紧急
+     * 4: 重要且紧急
+     *
+     * @return 优先级
+     *
+     */
     public MutableLiveData<Integer> getPriority() {
         return priority;
     }
 
-    public void setPriority(int priority) {
+    /**
+     * 设置优先级
+     * 0: 无优先级
+     * 1: 不重要且不紧急
+     * 2: 不重要且紧急
+     * 3: 重要且不紧急
+     * 4: 重要且紧急
+     *
+     * @param priority 优先级
+     */
+    public void setPriority(Integer priority) {
         this.priority.setValue(priority);
     }
 
@@ -198,7 +219,7 @@ public class TodoInfo {
         setDueDate("");
         setDdlDate("");
         setDueTime("");
-        setPriority(0);
+        setPriority(null);
         setRemindTime("");
         setType("");
         setLocation("");

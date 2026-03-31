@@ -1,5 +1,6 @@
 package com.sysu.edu.life;
 
+import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
 import static com.sysu.edu.api.CommonUtil.trim;
 
 import android.app.Activity;
@@ -62,7 +63,7 @@ public class NewsFragment extends Fragment {
         if (savedInstanceState == null) {
             binding = RecyclerViewScrollBinding.inflate(inflater);
             Params params = new Params(this);
-            params.setCallback(() -> run.run());
+            params.setCallback(run);
             binding.recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), params.getColumn()));
             binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -76,13 +77,12 @@ public class NewsFragment extends Fragment {
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
-                    boolean isJSON = msg.getData().getBoolean("isJSON");
                     String json = (String) msg.obj;
                     if (json == null || msg.what == -1) {
                         params.toast(R.string.no_wifi_warning);
                         return;
                     }
-                    if (!isJSON) {
+                    if (!msg.getData().getBoolean("isJSON")) {
                         if (!authorizationManager.isAuthorized(json)) {
                             params.toast(R.string.login_warning);
                             params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
@@ -91,87 +91,34 @@ public class NewsFragment extends Fragment {
                         if (!authorizationManager.isAccessible(json)) {
                             params.toast(R.string.educational_wifi_warning);
                             run.run();
-                            return;
                         }
-                        return;
-                    }
-                    JSONObject data = JSONObject.parseObject(json);
-                    Integer code = data.getInteger("code");
-                    JSONObject response = null;
-                    if (msg.what != 3) response = data.getJSONObject("data");
-                    if (code == 10000) {
-                        switch (msg.what) {
-                            case 2:
-                                response.getJSONArray("records").forEach(e -> {
-                                    JSONObject item = (JSONObject) e;
-                                    JSONArray cover = item.getJSONArray("coversPicList");
-                                    String image = "";
-                                    if (cover != null && !cover.isEmpty()) {
-                                        if (cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
-                                            image = cover.getJSONObject(0).getString("outLink");
-                                    }
-                                    String title = item.getString("title");
-                                    String url = item.getString("url");
-                                    String time = item.getString("createTime");
-                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
-                                });
-                                //
-                                break;
-                            case 3:
-                                data.getJSONArray("data").forEach(e -> {
-                                    JSONObject item = (JSONObject) e;
-                                    JSONArray cover = item.getJSONArray("coversPicList");
-                                    String image = "";
-                                    if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
-                                        image = cover.getJSONObject(0).getString("outLink");
-                                    String title = item.getString("title");
-                                    String url = item.getString("url");
-                                    String time = item.getString("createTime");
-                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
-                                });
-                                break;
-                            case 4:
-                                response.getJSONArray("records").forEach(e -> {
-                                    JSONObject item = (JSONObject) e;
-                                    JSONArray cover = item.getJSONArray("coversPicList");
-                                    String image = "";
-                                    if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
-                                        image = cover.getJSONObject(0).getString("outLink");
-                                    String title = item.getString("title");
-                                    String url = item.getString("url");
-                                    String time = item.getString("createTime");
-                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
-                                });
-                                //通知
-                                break;
-                            case 5:
-                                response.getJSONArray("records").forEach(e -> {
-                                    JSONObject item = (JSONObject) e;
-                                    JSONArray cover = item.getJSONArray("coversPicList");
-                                    String image = "";
-                                    if (cover != null && cover.getJSONObject(0) != null && !cover.isEmpty() && cover.getJSONObject(0).getString("outLink") != null)
-                                        image = cover.getJSONObject(0).getString("outLink");
-                                    String title = item.getString("title");
-                                    String url = item.getString("url");
-                                    String time = item.getString("createTime");
-                                    newsAdapter.add(new HashMap<>(Map.of("title", title, "image", image, "url", url, "time", time, "source", item.getJSONObject("source").getString("seedName"))));
-                                });
-                                break;
+                    } else {
+                        JSONObject response = JSONObject.parseObject(json);
+                        Integer code = response.getInteger("code");
+                        if (code == 10000) {
+                            (msg.what == 3 ? response.getJSONArray("data") : response.getJSONObject("data").getJSONArray("records")).forEach(e -> {
+                                JSONObject item = (JSONObject) e;
+                                JSONArray cover = item.getJSONArray("coversPicList");
+                                String image = "";
+                                if (cover != null && !cover.isEmpty() && cover.getJSONObject(0) != null && cover.getJSONObject(0).getString("outLink") != null)
+                                    image = cover.getJSONObject(0).getString("outLink");
+                                newsAdapter.add(new HashMap<>(Map.of("title", item.getString("title"), "image", image, "url", item.getString("url"), "time", item.getString("createTime"), "source", item.getJSONObject("source").getString("seedName"))));
+                            });
+                        } else if (code == 10003) {
+                            params.toast(code + " " + response.getString("message"));
+                            params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
+                        } else if (code == 496 || code == 497) {
+                            params.toast(response.getString("message"));
+                            params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
                         }
-                    } else if (code == 10003) {
-                        params.toast(code + " " + data.getString("message"));
-                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
-                    } else if (code == 496 || code == 497) {
-                        params.toast(data.getString("message"));
-                        params.gotoLogin(authorizationManager.isAccessible() ? TargetUrl.NEWS : TargetUrl.NEWS_WEBVPN);
-                    }
-                } //今日中大
+                    } //今日中大
+                }
             });
             http.setAuthorizationRequired(true);
             http.setAuthorizationJar(new AuthorizationJar(requireContext()));
             http.setParams(params);
         }
-        run = List.of(this::getNews, this::getSubscription, this::getNotice, (Runnable) this::getDailyNews).get(position);
+        run = List.of((Runnable) this::getNews, this::getSubscription, this::getNotice, this::getDailyNews).get(position);
         run.run();
         return binding.getRoot();
     }
@@ -214,8 +161,8 @@ public class NewsFragment extends Fragment {
             AuthorizationJar authorizationJar = new AuthorizationJar(context);
             if (!img.isEmpty())
                 Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
-                                .addHeader("Cookie", authorizationJar.getCookie(img))
-                                .addHeader("Authorization", authorizationJar.getAuthorization(CommonUtil.getHost(img)))
+                                .addHeader("Cookie", toStringOrEmpty(authorizationJar.getCookie(img)))
+                                .addHeader("Authorization", toStringOrEmpty(authorizationJar.getAuthorization(CommonUtil.getHost(img))))
                                 .build()))
                         .timeout(30000)
                         .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))

@@ -31,7 +31,7 @@ public class TodoHelper extends SQLiteOpenHelper {
         value.put("description", todoInfo.getDescription().getValue());
         value.put("due_date", todoInfo.getDueDate().getValue());
         value.put("status", todoInfo.getStatus().getValue());
-        value.put("priority", todoInfo.getPriority().getValue());
+        value.put("priority", todoInfo.getPriority().getValue() == null ? 0 : todoInfo.getPriority().getValue());
         value.put("todo_type", todoInfo.getType().getValue());
         value.put("subtask", todoInfo.getSubtask().getValue());
         value.put("attachment", todoInfo.getAttachment().getValue());

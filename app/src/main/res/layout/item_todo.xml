@@ -19,6 +19,22 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/round_rect"
+        android:padding="2dp"
+        android:radius="4dp"
+        android:text="@string/type"
+        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:textColor="?colorOnPrimary"
+        app:layout_constraintBottom_toTopOf="@id/description"
+        app:layout_constraintLeft_toRightOf="@id/check"
+        app:layout_constraintRight_toLeftOf="@id/title"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -26,7 +42,7 @@
         android:text="@string/todo"
         android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
         app:layout_constraintBottom_toTopOf="@id/description"
-        app:layout_constraintLeft_toRightOf="@id/check"
+        app:layout_constraintLeft_toRightOf="@id/type"
         app:layout_constraintRight_toLeftOf="@id/menu"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -38,10 +54,33 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:text="@string/todo"
+        app:layout_constraintBottom_toTopOf="@id/detail"
+        app:layout_constraintEnd_toEndOf="@id/title"
+        app:layout_constraintStart_toStartOf="@+id/type"
+        app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <androidx.constraintlayout.helper.widget.Flow
+        android:id="@+id/detail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="detail_content"
+        app:flow_horizontalBias="0"
+        app:flow_horizontalStyle="spread"
+        app:flow_wrapMode="chain2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/title"
-        app:layout_constraintStart_toStartOf="@+id/title"
-        app:layout_constraintTop_toBottomOf="@id/title" />
+        app:layout_constraintStart_toStartOf="@+id/type"
+        app:layout_constraintTop_toBottomOf="@id/description" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/detail_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:drawablePadding="4dp"
+        android:text="@string/type"
+        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+        app:drawableStartCompat="@drawable/round_rect" />
+
 
     <com.google.android.material.button.MaterialButtonGroup
         android:id="@+id/menu"

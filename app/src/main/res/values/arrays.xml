@@ -261,11 +261,19 @@
         <item>六</item>
         <item>日</item>
     </string-array>
+
     <string-array name="payment_status">
-        <item>Pending</item>
-        <item>Processing</item>
-        <item>Paid</item>
-        <item>Failed</item>
-        <item>Unpaid</item>
+        <item>待缴费</item>
+        <item>缴费中</item>
+        <item>已缴费</item>
+        <item>缴费失败</item>
+        <item>无需缴费</item>
+    </string-array>
+    <string-array name="priority">
+        <item>无</item>
+        <item>不重要且不紧急</item>
+        <item>不重要但紧急</item>
+        <item>重要但不紧急</item>
+        <item>重要且紧急</item>
     </string-array>
 </resources>

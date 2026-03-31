@@ -39,9 +39,12 @@ import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.EditTextDialog;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +72,9 @@ public class TodoManager {
         dialogTodoBinding = DialogTodoBinding.inflate(activity.getLayoutInflater());
         dialogTodoBinding.prioritySlider.addOnChangeListener((_, value, _) -> todoInfo.setPriority((int) value));
         dialogTodoBinding.priorityContainer.updateAppearance(0, 1);
-
+        dialogTodoBinding.todoType.setOnCheckedStateChangeListener((_, checkedIds) -> todoInfo.setType(checkedIds.isEmpty() ? "" : types.get(checkedIds.indexOf(checkedIds.get(0)))));
+        dialogTodoBinding.subject.setOnCheckedStateChangeListener((_, checkedIds) -> todoInfo.setSubject(checkedIds.isEmpty() ? "" : subjects.get(checkedIds.indexOf(checkedIds.get(0)))));
+        dialogTodoBinding.tag.setOnCheckedStateChangeListener((_, checkedIds) -> todoInfo.setTag(checkedIds.isEmpty() ? "" : tags.get(checkedIds.indexOf(checkedIds.get(0)))));
         todoDetailDialog = new MaterialAlertDialogBuilder(activity)
                 .setView(dialogTodoBinding.getRoot())
                 .setPositiveButton(R.string.confirm, (_, _) -> {
@@ -139,9 +144,8 @@ public class TodoManager {
         }
 
         ArrayList<PopupMenu> popupMenuArrayList = new ArrayList<>();
-        Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateString = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (int i = 0; i < 4; i++) {
             ItemPreferenceBinding itemPreferenceBinding = ItemPreferenceBinding.inflate(activity.getLayoutInflater(), dialogTodoBinding.times, false);
             itemPreferenceBinding.itemTitle.setText(activity.getString(new int[]{R.string.date, R.string.time, R.string.remind, R.string.ddl}[i]));
@@ -155,14 +159,12 @@ public class TodoManager {
 
             switch (i) {
                 case 0: // due date
-                    datePicker.addOnPositiveButtonClickListener(selection -> todoInfo.setDueDate(dateString.format(selection)));
+                    datePicker.addOnPositiveButtonClickListener(selection -> todoInfo.setDueDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection), ZoneId.systemDefault()).format(formatter)));
                     for (int j = 0; j < 3; j++) {
                         int finalJ = j;
                         menu.add(0, Menu.NONE, Menu.NONE, new int[]{R.string.today, R.string.tomorrow, R.string.next_week}[j])
                                 .setOnMenuItemClickListener(_ -> {
-                                    calendar.setTime(new Date());
-                                    calendar.add(Calendar.DAY_OF_MONTH, new int[]{0, 1, 7}[finalJ]);
-                                    todoInfo.setDueDate(dateString.format(calendar.getTime()));
+                                    todoInfo.setDueDate(LocalDate.now().plusDays(new int[]{0, 1, 7}[finalJ]).format(formatter));
                                     return true;
                                 });
                     }
@@ -180,9 +182,7 @@ public class TodoManager {
                         int finalJ = j;
                         menu.add(0, Menu.NONE, Menu.NONE, new int[]{R.string.today, R.string.tomorrow, R.string.next_week}[j])
                                 .setOnMenuItemClickListener(_ -> {
-                                    calendar.setTime(new Date());
-                                    calendar.add(Calendar.DAY_OF_MONTH, new int[]{0, 1, 7}[finalJ]);
-                                    todoInfo.setDdlDate(dateString.format(calendar.getTime()));
+                                    todoInfo.setDdlDate(LocalDate.now().plusDays(new int[]{0, 1, 7}[finalJ]).format(formatter));
                                     return true;
                                 });
                     }
@@ -398,7 +398,7 @@ public class TodoManager {
         todoInfo.getPriority().observe(activity, integer -> {
             int priority = integer != null && integer != -1 ? integer : 0;
             dialogTodoBinding.prioritySlider.setValue(priority);
-            dialogTodoBinding.priorityValue.setText(new String[]{"无", "不重要且不紧急", "不重要但紧急", "重要但不紧急", "重要且紧急"}[priority]);
+            dialogTodoBinding.priorityValue.setText(activity.getResources().getStringArray(R.array.priority)[priority]);
         });
         todoInfo.getType().observe(activity, s -> {
             if (!isEmpty(s)) {
@@ -407,6 +407,8 @@ public class TodoManager {
                     types.add(s);
                 }
                 selectChipIfPresent(dialogTodoBinding.todoType, types, s);
+            }else{
+                dialogTodoBinding.todoType.clearCheck();
             }
         });
         todoInfo.getSubject().observe(activity, s -> {
@@ -416,6 +418,8 @@ public class TodoManager {
                     subjects.add(s);
                 }
                 selectChipIfPresent(dialogTodoBinding.subject, subjects, s);
+            }else{
+                dialogTodoBinding.subject.clearCheck();
             }
         });
         todoInfo.getTag().observe(activity, s -> {
@@ -425,8 +429,19 @@ public class TodoManager {
                     tags.add(s);
                 }
                 selectChipIfPresent(dialogTodoBinding.tag, tags, s);
+            }else{
+                dialogTodoBinding.tag.clearCheck();
             }
         });
+//        todoInfo.getSubtask().observe(activity,s -> {
+//            if (!isEmpty(s)) {
+//                if (!tags.contains(s)) {
+//                    createFilterChip(s, dialogTodoBinding.tag, 2);
+//                    tags.add(s);
+//                }
+//                selectChipIfPresent(dialogTodoBinding.tag, tags, s);
+//            }
+//        } );
         todoInfo.getStatus().observe(activity, integer -> dialogTodoBinding.check.setChecked(integer != null && Objects.equals(integer, TodoInfo.DONE)));
         todoInfo.getDueDate().observe(activity, i -> ItemPreferenceBinding.bind(dialogTodoBinding.times.getChildAt(0)).itemContent.setText(!isEmpty(i) ? i : activity.getString(R.string.none)));
         todoInfo.getDueTime().observe(activity, i -> ItemPreferenceBinding.bind(dialogTodoBinding.times.getChildAt(1)).itemContent.setText(!isEmpty(i) ? i : activity.getString(R.string.none)));

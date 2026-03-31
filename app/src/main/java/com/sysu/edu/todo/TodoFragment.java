@@ -99,6 +99,7 @@ public class TodoFragment extends Fragment {
         ArrayList<String> a = new ArrayList<>();
         ArrayList<String> b = new ArrayList<>();
         HashMap<String, MutableLiveData<?>> map = new HashMap<>();
+        System.out.println(todoInfo.getPriority().getValue());
 //        map.put("due_date", todoInfo.getDueDate());
 //        map.put("ddl", todoInfo.getDdlDate());
         map.put("status", todoInfo.getStatus());

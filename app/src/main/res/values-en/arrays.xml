@@ -127,11 +127,19 @@
         <item>Sat</item>
         <item>Sun</item>
     </string-array>
+
     <string-array name="payment_status">
-        <item><Pending></Pending></item>
-        <item>缴费中</item>
-        <item>已缴费</item>
-        <item>缴费失败</item>
-        <item>无需缴费</item>
+        <item>Pending</item>
+        <item>Processing</item>
+        <item>Paid</item>
+        <item>Failed</item>
+        <item>Unpaid</item>
+    </string-array>
+    <string-array name="priority">
+        <item>None</item>
+        <item>Not Important and Not Urgent</item>
+        <item>Not Important but Urgent</item>
+        <item>Important but Not Urgent</item>
+        <item>Important and Urgent</item>
     </string-array>
 </resources>
