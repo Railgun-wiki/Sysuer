@@ -32,6 +32,8 @@ import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentWaterFeeBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.view.ButtonAdapter;
+import com.sysu.edu.view.KeyValueDialog;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +60,7 @@ public class EnergyElectricityFeeFragment extends Fragment {
         String[] paymentStatus = getResources().getStringArray(R.array.payment_status);
         binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.list.setAdapter(adapter);
+        KeyValueDialog detailDialog = new KeyValueDialog(requireContext());
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -89,7 +92,6 @@ public class EnergyElectricityFeeFragment extends Fragment {
                                         calendar.setMonth(date.getMonthValue());
                                         calendar.setDay(date.getDayOfMonth());
                                         binding.calendarView.addSchemeDate(calendar);
-                                        //                                    preferenceAdapter.add(item.getString("date"), content, R.drawable.flash);
                                     });
                             case 3 ->
                                     response.getJSONObject("data").getJSONArray("list").forEach(e -> {
@@ -102,10 +104,38 @@ public class EnergyElectricityFeeFragment extends Fragment {
                                         value.set(3, String.format("%s-%s=%s", item.getString("currReportElectric"), item.getString("lastReportElectric"), item.getString("useElectric")));
                                         preferenceAdapter.set(List.of(R.string.bill_period, R.string.status, R.string.remark, R.string.electricity_consumption, R.string.payer, R.string.campus, R.string.dorm, R.string.price, R.string.fee, R.string.paid_fee, R.string.pay_time),
                                                 value,
-                                                List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.flash, R.drawable.flash, R.drawable.account, R.drawable.location, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.time), requireContext());
+                                                List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.text, R.drawable.flash, R.drawable.account, R.drawable.location, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.time), requireContext());
                                         preferenceAdapter.setHideNull(true);
+                                        ButtonAdapter buttonAdapter = new ButtonAdapter();
+                                        buttonAdapter.add(getString(R.string.view_detail));
+                                        buttonAdapter.add(getString(R.string.pay));
+                                        buttonAdapter.setListener((button, position) -> {
+                                            switch (position) {
+                                                case 0 ->
+                                                        button.setOnClickListener(_ -> getDetail(item.getString("id"), roomCode.getValue()));
+                                                case 1 ->
+                                                        button.setOnClickListener(_ -> params.toast(R.string.pay));
+                                            }
+                                        });
                                         adapter.addAdapter(preferenceAdapter);
+                                        adapter.addAdapter(buttonAdapter);
                                     });
+
+                            case 4 -> {
+                                detailDialog.clear();
+                                response.getJSONObject("data").getJSONArray("list").forEach(e -> {
+                                    JSONObject item = (JSONObject) e;
+                                    ArrayList<String> value = extractValue(item, new String[]{"billPeriod", "billStatus", "remark", "useElectric", "name", "campusName", "areaInfo", "unitPrice", "totalUseAmount", "payedUseAmount", "useAmount", "billTime"});
+                                    Integer billStatus = item.getInteger("billStatus");
+                                    value.set(1, paymentStatus[billStatus - 1]);
+                                    value.set(3, String.format("%s-%s=%s", item.getString("currReportElectric"), item.getString("lastReportElectric"), item.getString("useElectric")));
+                                    detailDialog.getAdapter().set(List.of(R.string.bill_period, R.string.status, R.string.remark, R.string.electricity_consumption, R.string.payer, R.string.campus, R.string.dorm, R.string.price, R.string.fee, R.string.paid_fee, R.string.unpaid_fee, R.string.pay_time),
+                                            value,
+                                            List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.text, R.drawable.flash, R.drawable.account, R.drawable.location, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money,R.drawable.money, R.drawable.time), requireContext());
+                                    detailDialog.getAdapter().setHideNull(true);
+                                });
+                                detailDialog.show();
+                            }
                         }
                         requestQueue.next();
                     } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.retry());
@@ -163,5 +193,9 @@ public class EnergyElectricityFeeFragment extends Fragment {
 
     void getElectricityBill(String roomCode) {
         http.postRequest("https://zhny.sysu.edu.cn/kbp/ele/mobile/billRecord", String.format("{\"roomCode\":\"%s\",\"billType\":1}", roomCode), 3);
+    }
+
+    void getDetail(String id, String room) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/ele/mobile/billRecord", String.format("{\"id\":\"%s\",\"roomCode\":\"%s\"}", id, room), 4);
     }
 }

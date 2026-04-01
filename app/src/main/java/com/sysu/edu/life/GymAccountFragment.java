@@ -102,7 +102,7 @@ public class GymAccountFragment extends Fragment {
                             params.toast(R.string.login_warning);
                             params.gotoLogin(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (Pattern.compile("人机识别检测").matcher(response).find()) {
-                            params.gotoLogin( viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
+                            params.gotoLogin(viewModel.authorizationManager.isAccessible() ? TargetUrl.GYM : TargetUrl.GYM_WEBVPN);
                         } else if (!viewModel.authorizationManager.isAccessible(response)) {
                             params.toast(R.string.educational_wifi_warning);
                             getAccount();
@@ -162,7 +162,7 @@ public class GymAccountFragment extends Fragment {
             binding.getRoot().updateAppearance(pos, getItemCount());
         }
 
-        void add(String title, String content, Integer icon) {
+        public void add(String title, String content, Integer icon) {
             titles.add(title);
             contents.add(content);
             icons.add(icon);
@@ -178,9 +178,7 @@ public class GymAccountFragment extends Fragment {
         }*/
 
         void set(List<Integer> titles, List<String> contents, List<Integer> icons, Context context) {
-            this.titles.clear();
-            this.contents.clear();
-            this.icons.clear();
+            clear();
             titles.forEach(title -> this.titles.add(context.getString(title)));
             this.contents.addAll(contents);
             this.icons.addAll(icons);
@@ -188,9 +186,7 @@ public class GymAccountFragment extends Fragment {
         }
 
         void set(List<String> titles, List<String> contents, List<Integer> icons) {
-            this.titles.clear();
-            this.contents.clear();
-            this.icons.clear();
+            clear();
             this.titles.addAll(titles);
             this.contents.addAll(contents);
             this.icons.addAll(icons);
@@ -200,6 +196,13 @@ public class GymAccountFragment extends Fragment {
         @Override
         public int getItemCount() {
             return titles.size();
+        }
+
+        public void clear() {
+            titles.clear();
+            contents.clear();
+            icons.clear();
+            notifyItemRangeRemoved(0, getItemCount());
         }
     }
 }

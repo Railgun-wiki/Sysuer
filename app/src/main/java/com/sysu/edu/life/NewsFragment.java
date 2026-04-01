@@ -54,7 +54,8 @@ public class NewsFragment extends Fragment {
     Runnable run;
 
     public NewsFragment(int pos) {
-        this.position = pos;
+        position = pos;
+        run = List.of((Runnable) this::getNews, this::getSubscription, this::getNotice, this::getDailyNews).get(position);
     }
 
     @Nullable
@@ -118,7 +119,6 @@ public class NewsFragment extends Fragment {
             http.setAuthorizationJar(new AuthorizationJar(requireContext()));
             http.setParams(params);
         }
-        run = List.of((Runnable) this::getNews, this::getSubscription, this::getNotice, this::getDailyNews).get(position);
         run.run();
         return binding.getRoot();
     }
@@ -128,15 +128,19 @@ public class NewsFragment extends Fragment {
     }
 
     void getSubscription() {
-        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytr4e6c\",\"notice\":false}", 2);
+        baseRequest("3ytr4e6c", 2);
     }
 
     void getNotice() {
-        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"3ytunvv6\",\"notice\":false}", 4);
+        baseRequest("3ytunvv6", 4);
     }
 
     void getDailyNews() {
-        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"4cef8rqw\",\"notice\":false}", 5);
+        baseRequest("4cef8rqw", 5);
+    }
+
+    void baseRequest(String code, int what) {
+        http.postRequest(authorizationManager.getBaseUrl() + "ai_service/content-portal/user/content/page", "{\"pageSize\":20,\"currentPage\":" + page++ + ",\"apiCode\":\"" + code + "\",\"notice\":false}", what);
     }
 
     static class NewsAdapter extends RecyclerAdapter<HashMap<String, String>> {

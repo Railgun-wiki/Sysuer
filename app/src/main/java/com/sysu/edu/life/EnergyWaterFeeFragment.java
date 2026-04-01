@@ -32,8 +32,10 @@ import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentWaterFeeBinding;
 import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.view.ButtonAdapter;
 import com.sysu.edu.view.FeeMonthView;
 import com.sysu.edu.view.FeeWeekView;
+import com.sysu.edu.view.KeyValueDialog;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -63,6 +65,7 @@ public class EnergyWaterFeeFragment extends Fragment {
         binding.list.setAdapter(adapter);
         binding.calendarView.setMonthView(FeeMonthView.class);
         binding.calendarView.setWeekView(FeeWeekView.class);
+        KeyValueDialog detailDialog = new KeyValueDialog(requireContext());
         String[] paymentStatuses = getResources().getStringArray(R.array.payment_status);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
@@ -113,8 +116,34 @@ public class EnergyWaterFeeFragment extends Fragment {
                                             value,
                                             List.of(R.drawable.calendar, paymentStatus == 3 || paymentStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.water, R.drawable.water, R.drawable.money, R.drawable.money), requireContext());
                                     preferenceAdapter.setHideNull(true);
+                                    ButtonAdapter buttonAdapter = new ButtonAdapter();
+                                    buttonAdapter.add(getString(R.string.view_detail));
+                                    buttonAdapter.add(getString(R.string.pay));
+                                    buttonAdapter.setListener((button, position) -> {
+                                        switch (position) {
+                                            case 0 ->
+                                                    button.setOnClickListener(_ -> getDetail(item.getString("id")));
+                                            case 1 ->
+                                                    button.setOnClickListener(_ -> params.toast(R.string.pay));
+                                        }
+                                    });
                                     adapter.addAdapter(preferenceAdapter);
+                                    adapter.addAdapter(buttonAdapter);
                                 });
+                            }
+                            case 4 -> {
+                                detailDialog.clear();
+                                JSONObject item = response.getJSONObject("data");
+                                ArrayList<String> value = extractValue(item, new String[]{"billStartDate", "billStatus", "remark", "finalWaterUsage", "useWaterTypeName", "areaInfo", "unitPrice", "waterPayment", "paidPayment", "unpaidPayment", "createTime"});
+                                Integer billStatus = item.getInteger("paymentStatus");
+                                value.set(0, String.format("%s~%s", item.getString("billStartDate"), item.getString("billEndDate")));
+                                value.set(2, item.getString("remark") == null ? "-" : item.getString("remark"));
+                                value.set(1, paymentStatuses[billStatus - 1]);
+                                value.set(3, String.format("%s-%s=%s", item.getString("currMeterReading"), item.getString("lastMeterReading"), item.getString("finalWaterUsage")));
+                                detailDialog.getAdapter().set(List.of(R.string.bill_period, R.string.status, R.string.remark, R.string.water_consumption, R.string.type, R.string.dorm, R.string.price, R.string.fee, R.string.paid_fee, R.string.unpaid_fee, R.string.pay_time),
+                                        value,
+                                        List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.text, R.drawable.menu, R.drawable.dashboard, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.time), requireContext());
+                                detailDialog.show();
                             }
                         }
                         requestQueue.next();
@@ -177,5 +206,9 @@ public class EnergyWaterFeeFragment extends Fragment {
 
     void getWaterBill(String room) {
         http.postRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/list", String.format("{\"roomCode\":\"%s\"}", room), 3);
+    }
+
+    void getDetail(String billId) {
+        http.getRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/get/" + billId, 4);
     }
 }
