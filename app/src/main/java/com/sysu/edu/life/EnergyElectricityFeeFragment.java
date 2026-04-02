@@ -40,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class EnergyElectricityFeeFragment extends Fragment {
 
@@ -48,7 +49,6 @@ public class EnergyElectricityFeeFragment extends Fragment {
     RequestQueue requestQueue = new RequestQueue();
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
     MutableLiveData<String> roomCode = new MutableLiveData<>();
-
 
     @Nullable
     @Override
@@ -108,13 +108,14 @@ public class EnergyElectricityFeeFragment extends Fragment {
                                         preferenceAdapter.setHideNull(true);
                                         ButtonAdapter buttonAdapter = new ButtonAdapter();
                                         buttonAdapter.add(getString(R.string.view_detail));
-                                        buttonAdapter.add(getString(R.string.pay));
+                                        if (billStatus == 1)
+                                            buttonAdapter.add(getString(R.string.pay));
                                         buttonAdapter.setListener((button, position) -> {
                                             switch (position) {
                                                 case 0 ->
-                                                        button.setOnClickListener(_ -> getDetail(item.getString("id"), roomCode.getValue()));
+                                                        button.setOnClickListener(_ -> requestQueue.addAndNext(() -> getDetail(item.getString("id"), roomCode.getValue())));
                                                 case 1 ->
-                                                        button.setOnClickListener(_ -> params.toast(R.string.pay));
+                                                        button.setOnClickListener(_ -> requestQueue.addAndNext(() -> recharge(item.getString("id"), roomCode.getValue(), item.getFloat("totalUseAmount"))));
                                             }
                                         });
                                         adapter.addAdapter(preferenceAdapter);
@@ -131,13 +132,20 @@ public class EnergyElectricityFeeFragment extends Fragment {
                                     value.set(3, String.format("%s-%s=%s", item.getString("currReportElectric"), item.getString("lastReportElectric"), item.getString("useElectric")));
                                     detailDialog.getAdapter().set(List.of(R.string.bill_period, R.string.status, R.string.remark, R.string.electricity_consumption, R.string.payer, R.string.campus, R.string.dorm, R.string.price, R.string.fee, R.string.paid_fee, R.string.unpaid_fee, R.string.pay_time),
                                             value,
-                                            List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.text, R.drawable.flash, R.drawable.account, R.drawable.location, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money,R.drawable.money, R.drawable.time), requireContext());
+                                            List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.text, R.drawable.flash, R.drawable.account, R.drawable.location, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.time), requireContext());
                                     detailDialog.getAdapter().setHideNull(true);
                                 });
                                 detailDialog.show();
                             }
+                            case 5 -> {
+                                params.toast(response.getString("msg"));
+                                requestQueue.addAndNext(() -> getElectricityBill(roomCode.getValue()));
+                            }
                         }
                         requestQueue.next();
+                    } else if (response.getInteger("errorCode") == 500) {
+//                        params.toast(R.string.pay_fail);
+                        params.toast(response.getString("msg"));
                     } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.retry());
                 }
                 super.handleMessage(msg);
@@ -148,27 +156,23 @@ public class EnergyElectricityFeeFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         requestQueue.add(this::getUserInfo);
         requestQueue.add(() -> getRoom(name));
-        requestQueue.add(() -> {
-            if (!rooms.isEmpty())
-                roomCode.setValue(rooms.valueAt(0).getSecond());
-        });
         roomCode.observe(getViewLifecycleOwner(), v -> {
             if (v != null) {
                 LocalDate date = LocalDate.of(binding.calendarView.getSelectedCalendar().getYear(), binding.calendarView.getSelectedCalendar().getMonth(), 1);
-                getElectricityConsumption(v, date.with(TemporalAdjusters.firstDayOfMonth()).format(formatter), date.with(TemporalAdjusters.lastDayOfMonth()).format(formatter));
-                getElectricityBill(v);
+                requestQueue.add(() -> getElectricityConsumption(v, date.with(TemporalAdjusters.firstDayOfMonth()).format(formatter), date.with(TemporalAdjusters.lastDayOfMonth()).format(formatter)));
+                requestQueue.addAndNext(() -> getElectricityBill(v));
             }
         });
         requestQueue.next();
         binding.calendarView.setOnMonthChangeListener((year, month) -> {
-            getElectricityConsumption(roomCode.getValue(), LocalDate.of(year, month, 1).with(TemporalAdjusters.firstDayOfMonth()).format(formatter), LocalDate.of(year, month, 1).with(TemporalAdjusters.lastDayOfMonth()).format(formatter));
+            requestQueue.addAndNext(() -> getElectricityConsumption(roomCode.getValue(), LocalDate.of(year, month, 1).with(TemporalAdjusters.firstDayOfMonth()).format(formatter), LocalDate.of(year, month, 1).with(TemporalAdjusters.lastDayOfMonth()).format(formatter)));
             binding.date.setText(LocalDate.of(year, month, 1).format(formatter));
         });
         binding.date.setText(LocalDate.now().format(formatter));
         binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                roomCode.setValue(rooms.valueAt(position).getSecond());
+                requestQueue.addAndNext(() -> roomCode.setValue(rooms.valueAt(position).getSecond()));
             }
 
             @Override
@@ -197,5 +201,9 @@ public class EnergyElectricityFeeFragment extends Fragment {
 
     void getDetail(String id, String room) {
         http.postRequest("https://zhny.sysu.edu.cn/kbp/ele/mobile/billRecord", String.format("{\"id\":\"%s\",\"roomCode\":\"%s\"}", id, room), 4);
+    }
+
+    void recharge(String id, String roomCode, float amount) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/ele/mobile/pay/bill/recharge", String.format(Locale.getDefault(), "{\"roomCode\":\"%s\",\"actualBillAmount\":%.2f,\"useTypeEleAndMoneyList\":[{\"billAmount\":%.2f,\"useEleType\":1,\"idList\":[\"%s\"]}],\"rechargeType\":16}", roomCode, amount, amount, id), 5);
     }
 }

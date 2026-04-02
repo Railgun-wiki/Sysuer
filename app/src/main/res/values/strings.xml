@@ -629,5 +629,9 @@
     <string name="recharge">充值</string>
     <string name="water_consumption">用水量</string>
     <string name="unpaid_fee">待付费用</string>
+    <string name="pay_success">支付成功</string>
+    <string name="pay_fail">支付失败</string>
+    <string name="left_time">剩余时长</string>
+    <string name="pause_time">暂停时长</string>
 
 </resources>

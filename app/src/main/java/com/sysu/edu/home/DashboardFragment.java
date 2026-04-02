@@ -404,7 +404,6 @@ public class DashboardFragment extends Fragment {
 
     void getTodayCourses(String term) {
         http.setReferrer("https://jwxt.sysu.edu.cn/jwxt/yd/index/");
-        System.out.println(term);
         http.getRequest("https://jwxt.sysu.edu.cn/jwxt/timetable-search/classTableInfo/queryTodayStudentClassTable?academicYear=" + term, 1);
     }
 

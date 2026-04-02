@@ -76,6 +76,7 @@ public class EnergyAccountFragment extends Fragment {
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) params.toast(R.string.no_wifi_warning);
                     else if (msg.what == 4) {
+                        System.out.println((String) msg.obj);
                         params.copy("recharge", (String) msg.obj);
                         Intent intent = Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, (String) msg.obj).putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recharge)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), getString(R.string.share));
                         if (intent.resolveActivity(requireContext().getPackageManager()) != null)
@@ -160,7 +161,7 @@ public class EnergyAccountFragment extends Fragment {
     }
 
     void gotoWechat(JSONObject data) {
-        data.put("scene", "web");
+//        data.put("scene", "web");
         StringBuilder info = new StringBuilder();
         data.forEach((key, value) -> info.append(key).append("=").append(value).append("&"));
         new OkHttpClient.Builder().followRedirects(false).build().newCall(http.getRequest("https://fee.sysu.edu.cn/gateway/unifiedorder/pagepay", info.toString(), "application/x-www-form-urlencoded", "POST").build()).enqueue(new Callback() {

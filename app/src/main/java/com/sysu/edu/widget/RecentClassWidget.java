@@ -25,14 +25,10 @@ import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.TargetUrl;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -119,7 +115,7 @@ public class RecentClassWidget extends AppWidgetProvider {
                                 String term = response.getJSONObject("data").getString("acadYearSemester");
                                 getTodayCourses(term);
                                 getWeek(term);
-                                remoteViews.setTextViewText(R.id.day, String.format("%s %s周%s", term, new SimpleDateFormat("M.dd", Locale.getDefault()).format(new Date()), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                                remoteViews.setTextViewText(R.id.day, String.format("%s %s周%s", term, LocalDateTime.now().format(DateTimeFormatter.ofPattern("M.dd")), new String[]{"日", "一", "二", "三", "四", "五", "六"}[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
                                 break;
                             case 4:
                                 remoteViews.setTextViewText(R.id.week, String.format(context.getString(R.string.week_x), response.getJSONArray("data").getJSONObject(0).getString("weekTimes")));
@@ -131,8 +127,8 @@ public class RecentClassWidget extends AppWidgetProvider {
                         update(appWidgetManager, appWidgetIds, remoteViews);
 
                     }
-                }else{
-                    new ContextUtil(context).login(TargetUrl.JWXT,()->getTerm());
+                } else {
+                    new ContextUtil(context).login(TargetUrl.JWXT, () -> getTerm());
                 }
             }
         });
@@ -140,15 +136,9 @@ public class RecentClassWidget extends AppWidgetProvider {
     }
 
     String getTimePosition(String from, String to) {
-        Date now = new Date();
-        try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd hh:mm", Locale.getDefault());
-            Date fromDate = simpleDateFormat.parse(from);
-            Date toDate = simpleDateFormat.parse(to);
-            return now.before(fromDate) ? "after" : now.after(toDate) ? "before" : "in";
-        } catch (ParseException _) {
-        }
-        return "before";
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return now.isBefore(LocalDateTime.parse(from, formatter)) ? "after" : now.isAfter(LocalDateTime.parse(to, formatter)) ? "before" : "in";
     }
 
     void getTerm() {

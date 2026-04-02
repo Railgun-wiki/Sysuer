@@ -50,7 +50,7 @@ public class EnergyWaterFeeFragment extends Fragment {
 
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
     MutableLiveData<String> roomCode = new MutableLiveData<>();
-    private ConcatAdapter adapter;
+    ConcatAdapter adapter;
 
 
     @Nullable
@@ -118,11 +118,12 @@ public class EnergyWaterFeeFragment extends Fragment {
                                     preferenceAdapter.setHideNull(true);
                                     ButtonAdapter buttonAdapter = new ButtonAdapter();
                                     buttonAdapter.add(getString(R.string.view_detail));
-                                    buttonAdapter.add(getString(R.string.pay));
+                                    if (paymentStatus == 1)
+                                        buttonAdapter.add(getString(R.string.pay));
                                     buttonAdapter.setListener((button, position) -> {
                                         switch (position) {
                                             case 0 ->
-                                                    button.setOnClickListener(_ -> getDetail(item.getString("id")));
+                                                    button.setOnClickListener(_ -> requestQueue.addAndNext(() -> getDetail(item.getString("id"))));
                                             case 1 ->
                                                     button.setOnClickListener(_ -> params.toast(R.string.pay));
                                         }
@@ -157,18 +158,14 @@ public class EnergyWaterFeeFragment extends Fragment {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
         requestQueue.add(this::getUserInfo);
         requestQueue.add(() -> getRoom(name));
-        requestQueue.add(() -> {
-            if (!rooms.isEmpty())
-                roomCode.setValue(rooms.valueAt(0).getSecond());
-        });
         roomCode.observe(getViewLifecycleOwner(), v -> {
             if (v != null) {
-                getWaterConsumption(v, LocalDate.of(binding.calendarView.getSelectedCalendar().getYear(), binding.calendarView.getSelectedCalendar().getMonth(), 1).format(formatter));
-                getWaterBill(v);
+                requestQueue.add(() -> getWaterConsumption(v, LocalDate.of(binding.calendarView.getSelectedCalendar().getYear(), binding.calendarView.getSelectedCalendar().getMonth(), 1).format(formatter)));
+                requestQueue.addAndNext(() -> getWaterBill(v));
             }
         });
         binding.calendarView.setOnMonthChangeListener((year, month) -> {
-            getWaterConsumption(roomCode.getValue(), LocalDate.of(year, month, 1).format(formatter));
+            requestQueue.addAndNext(() -> getWaterConsumption(roomCode.getValue(), LocalDate.of(year, month, 1).format(formatter)));
             binding.date.setText(LocalDate.of(year, month, 1).format(formatter));
         });
         binding.date.setText(LocalDate.now().format(formatter));
@@ -210,5 +207,8 @@ public class EnergyWaterFeeFragment extends Fragment {
 
     void getDetail(String billId) {
         http.getRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/get/" + billId, 4);
+    }
+    void recharge(String billId) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/recharge", String.format("{\"billId\":\"%s\"}", billId), 5);
     }
 }

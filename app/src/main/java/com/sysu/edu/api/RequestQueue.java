@@ -16,6 +16,10 @@ public class RequestQueue {
         lastRequest = queue.poll();
         if (lastRequest != null) lastRequest.run();
     }
+    public void addAndNext(@NonNull Runnable runnable) {
+        add(runnable);
+        next();
+    }
 
     public void retry() {
         lastRequest.run();

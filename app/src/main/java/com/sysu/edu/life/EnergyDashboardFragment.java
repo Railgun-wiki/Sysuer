@@ -42,81 +42,84 @@ public class EnergyDashboardFragment extends Fragment {
     RequestQueue requestQueue = new RequestQueue();
     ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
     ConcatAdapter adapter = new ConcatAdapter();
+    FragmentEnergyDashboardBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Params params = new Params(this);
-        ContextUtil contextUtil = new ContextUtil(requireContext());
-        FragmentEnergyDashboardBinding binding = FragmentEnergyDashboardBinding.inflate(inflater, container, false);
-        binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.list.setAdapter(adapter);
-        http = new HttpManager(new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                if (msg.what == -1)
-                    params.toast(R.string.no_wifi_warning);
-                else if (msg.getData().getBoolean("isJSON")) {
-                    JSONObject response = JSONObject.parse((String) msg.obj);
-                    if (response.getInteger("code") == 200) {
-                        JSONObject data = response.getJSONObject("data");
-                        switch (msg.what) {
-                            case 0 -> name = data.getString("username");
-                            case 1 -> {
-                                binding.lastMonthElectricity.setText(String.format(Locale.getDefault(), "上月用电\n%.2f", data.getDouble("lastMonthUsage")));
-                                binding.thisMonthElectricity.setText(String.format(Locale.getDefault(), "本月用电\n%.2f", data.getDouble("currentMonthUsage")));
-                                binding.deltaElectricity.setText(String.format(Locale.getDefault(), "用电变化\n%.2f", data.getDouble("usageChange")));
-                            }
-                            case 2 -> {
-                                binding.lastMonthWater.setText(String.format(Locale.getDefault(), "上月用水\n%.2f", data.getDouble("lastMonthUsage")));
-                                binding.thisMonthWater.setText(String.format(Locale.getDefault(), "本月用水\n%.2f", data.getDouble("thisMonthUsage")));
-                                binding.deltaWater.setText(String.format(Locale.getDefault(), "用水变化\n%.2f", data.getDouble("growthUsage")));
-                            }
-                            case 3 -> {
-                                reset();
-                                response.getJSONObject("data").getJSONArray("records").forEach(e -> {
-                                    JSONObject item = (JSONObject) e;
-                                    TitleAdapter titleAdapter = new TitleAdapter(item.getString("date"));
-                                    titleAdapter.setHeader(2);
-                                    adapter.addAdapter(titleAdapter);
-                                    item.getJSONArray("detailRecords").forEach(o -> {
-                                        JSONObject detail = (JSONObject) o;
-                                        adapter.addAdapter(new TitleAdapter(detail.getString("tradeTypeDesc")));
-                                        GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
-                                        preferenceAdapter.set(List.of(R.string.type, R.string.time, R.string.fee, R.string.payer, R.string.student_id),
-                                                extractValue(detail, new String[]{"tradeTypeDesc", "tradeTime", "tradeAmount", "name", "username", "paidPayment"}),
-                                                List.of(R.drawable.menu, R.drawable.time, R.drawable.money, R.drawable.account, R.drawable.id), requireContext());
-                                        preferenceAdapter.setHideNull(true);
-                                        adapter.addAdapter(preferenceAdapter);
+        if (binding == null) {
+            Params params = new Params(this);
+            ContextUtil contextUtil = new ContextUtil(requireContext());
+            binding = FragmentEnergyDashboardBinding.inflate(inflater, container, false);
+            binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
+            binding.list.setAdapter(adapter);
+            http = new HttpManager(new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(@NonNull Message msg) {
+                    if (msg.what == -1)
+                        params.toast(R.string.no_wifi_warning);
+                    else if (msg.getData().getBoolean("isJSON")) {
+                        JSONObject response = JSONObject.parse((String) msg.obj);
+                        if (response.getInteger("code") == 200) {
+                            JSONObject data = response.getJSONObject("data");
+                            switch (msg.what) {
+                                case 0 -> name = data.getString("username");
+                                case 1 -> {
+                                    binding.lastMonthElectricity.setText(String.format(Locale.getDefault(), "上月用电\n%.2f", data.getDouble("lastMonthUsage")));
+                                    binding.thisMonthElectricity.setText(String.format(Locale.getDefault(), "本月用电\n%.2f", data.getDouble("currentMonthUsage")));
+                                    binding.deltaElectricity.setText(String.format(Locale.getDefault(), "用电变化\n%.2f", data.getDouble("usageChange")));
+                                }
+                                case 2 -> {
+                                    binding.lastMonthWater.setText(String.format(Locale.getDefault(), "上月用水\n%.2f", data.getDouble("lastMonthUsage")));
+                                    binding.thisMonthWater.setText(String.format(Locale.getDefault(), "本月用水\n%.2f", data.getDouble("thisMonthUsage")));
+                                    binding.deltaWater.setText(String.format(Locale.getDefault(), "用水变化\n%.2f", data.getDouble("growthUsage")));
+                                }
+                                case 3 -> {
+                                    reset();
+                                    response.getJSONObject("data").getJSONArray("records").forEach(e -> {
+                                        JSONObject item = (JSONObject) e;
+                                        TitleAdapter titleAdapter = new TitleAdapter(item.getString("date"));
+                                        titleAdapter.setHeader(2);
+                                        adapter.addAdapter(titleAdapter);
+                                        item.getJSONArray("detailRecords").forEach(o -> {
+                                            JSONObject detail = (JSONObject) o;
+                                            adapter.addAdapter(new TitleAdapter(detail.getString("tradeTypeDesc")));
+                                            GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                            preferenceAdapter.set(List.of(R.string.type, R.string.time, R.string.fee, R.string.payer, R.string.student_id),
+                                                    extractValue(detail, new String[]{"tradeTypeDesc", "tradeTime", "tradeAmount", "name", "username", "paidPayment"}),
+                                                    List.of(R.drawable.menu, R.drawable.time, R.drawable.money, R.drawable.account, R.drawable.id), requireContext());
+                                            preferenceAdapter.setHideNull(true);
+                                            adapter.addAdapter(preferenceAdapter);
+                                        });
                                     });
-                                });
+                                }
+                                case 4 -> {
+                                    ArrayAdapter<Object> items = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1);
+                                    response.getJSONArray("data").forEach(e -> {
+                                        JSONObject roomInfo = (JSONObject) e;
+                                        rooms.add(new CommonUtil.Tuple2<>(roomInfo.getString("roomName"), roomInfo.getString("roomCode")));
+                                        items.add(roomInfo.getString("roomName"));
+                                    });
+                                }
                             }
-                            case 4 -> {
-                                ArrayAdapter<Object> items = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1);
-                                response.getJSONArray("data").forEach(e -> {
-                                    JSONObject roomInfo = (JSONObject) e;
-                                    rooms.add(new CommonUtil.Tuple2<>(roomInfo.getString("roomName"), roomInfo.getString("roomCode")));
-                                    items.add(roomInfo.getString("roomName"));
-                                });
-                            }
-                        }
-                        requestQueue.next();
-                    } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.retry());
+                            requestQueue.next();
+                        } else contextUtil.login(TargetUrl.ZHNY, () -> requestQueue.retry());
+                    }
+                    super.handleMessage(msg);
                 }
-                super.handleMessage(msg);
-            }
-        });
-        http.setAuthorizationRequired(true);
-        http.setAuthorizationJar(new AuthorizationJar(requireContext()));
-        requestQueue.add(this::getUserInfo);
-        requestQueue.add(this::getWaterInfo);
-        requestQueue.add(() -> getElectricityInfo(name));
-        requestQueue.add(() -> getRoom(name));
-        requestQueue.add(() -> {
-            if (!rooms.isEmpty())
-                getOrderInfo(rooms.valueAt(0).getSecond(), LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")));
-        });
-        requestQueue.next();
+            });
+            http.setAuthorizationRequired(true);
+            http.setAuthorizationJar(new AuthorizationJar(requireContext()));
+            requestQueue.add(this::getUserInfo);
+            requestQueue.add(this::getWaterInfo);
+            requestQueue.add(() -> getElectricityInfo(name));
+            requestQueue.add(() -> getRoom(name));
+            requestQueue.add(() -> {
+                if (!rooms.isEmpty())
+                    getOrderInfo(rooms.valueAt(0).getSecond(), LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            });
+            requestQueue.next();
+        }
         return binding.getRoot();
     }
 
