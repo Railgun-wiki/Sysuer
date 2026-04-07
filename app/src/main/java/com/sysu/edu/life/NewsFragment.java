@@ -80,7 +80,7 @@ public class NewsFragment extends Fragment {
                 public void handleMessage(@NonNull Message msg) {
                     String json = (String) msg.obj;
                     if (json == null || msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                         return;
                     }
                     if (!msg.getData().getBoolean("isJSON")) {

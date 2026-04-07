@@ -49,7 +49,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                 JSONObject response = JSONObject.parseObject((String) msg.obj);
                 if (response.getInteger("code").equals(200)) {
                     switch (msg.what) {
-                        case -1 -> params.toast(R.string.no_wifi_warning);
+                        case -1 -> params.toast(R.string.no_net_connected);
                         case 1 -> {
                             JSONObject data = response.getJSONObject("data");
                             if (data != null) {

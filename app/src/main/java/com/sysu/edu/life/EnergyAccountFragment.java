@@ -74,7 +74,7 @@ public class EnergyAccountFragment extends Fragment {
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
-                    if (msg.what == -1) params.toast(R.string.no_wifi_warning);
+                    if (msg.what == -1) params.toast(R.string.no_net_connected);
                     else if (msg.what == 4) {
                         System.out.println((String) msg.obj);
                         params.copy("recharge", (String) msg.obj);

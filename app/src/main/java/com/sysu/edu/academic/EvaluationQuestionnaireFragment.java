@@ -154,7 +154,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                         break;
                     }
                     case -1:
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                         params.gotoLogin("https://pjxt.sysu.edu.cn");
                         break;
                 }

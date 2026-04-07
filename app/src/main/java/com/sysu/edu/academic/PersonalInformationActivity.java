@@ -64,7 +64,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
                     return;
                 }
                 if (response == null) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                     return;
                 }
                 if (!isJSON) {
@@ -80,7 +80,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
                     }
                 }
                 if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                 } else {
                     JSONObject data = JSONObject.parseObject(response);
                     if (data.containsKey("code") && data.getInteger("code") == 200) {

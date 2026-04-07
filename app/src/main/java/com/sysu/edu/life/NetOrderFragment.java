@@ -67,6 +67,7 @@ public class NetOrderFragment extends StaggeredFragment {
         dialogNetBinding.newOutDate.key.setText(R.string.new_out_date);
         dialogNetBinding.fee.key.setText(R.string.fee);
         dialogNetBinding.time.key.setText(R.string.time);
+        dialogNetBinding.time.value.setText(R.string.click_to_select);
         PopupMenu popupMenu = new PopupMenu(requireActivity(), dialogNetBinding.time.value, 0, 0, com.google.android.material.R.style.Widget_Material3_PopupMenu_Overflow);
         Menu menu = popupMenu.getMenu();
         dialogNetBinding.time.getRoot().setOnClickListener(_ -> popupMenu.show());
@@ -93,7 +94,7 @@ public class NetOrderFragment extends StaggeredFragment {
                 super.handleMessage(msg);
                 String response = (String) msg.obj;
                 switch (msg.what) {
-                    case -1 -> params.toast(R.string.no_wifi_warning);
+                    case -1 -> params.toast(R.string.no_net_connected);
                     case 5 -> {
                         params.copy("recharge", (String) msg.obj);
                         Intent intent = Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, (String) msg.obj).putExtra(Intent.EXTRA_SUBJECT, getString(R.string.recharge)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), getString(R.string.share));

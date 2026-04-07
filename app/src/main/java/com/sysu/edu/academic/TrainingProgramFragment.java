@@ -87,7 +87,7 @@ public class TrainingProgramFragment extends Fragment {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                     } else {
                         JSONObject data = JSONObject.parseObject((String) msg.obj);
                         if (data.getInteger("code") == 200) {

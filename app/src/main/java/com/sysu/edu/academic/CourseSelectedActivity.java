@@ -96,7 +96,7 @@ public class CourseSelectedActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
-                    case -1 -> params.toast(R.string.no_wifi_warning);
+                    case -1 -> params.toast(R.string.no_net_connected);
                     case 1 -> response.postValue((String) msg.obj);
                 }
             }

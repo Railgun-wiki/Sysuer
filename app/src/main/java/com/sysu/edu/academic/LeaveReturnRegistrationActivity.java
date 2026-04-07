@@ -39,7 +39,7 @@ public class LeaveReturnRegistrationActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                 } else if (msg.what == 0) {
                     int code = msg.getData().getInt("code");
                     if (code == 200) {

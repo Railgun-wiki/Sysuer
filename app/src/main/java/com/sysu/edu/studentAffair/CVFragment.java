@@ -49,7 +49,7 @@ public class CVFragment extends StaggeredFragment {
                         return;
                     }
                     if (response == null) {
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                         return;
                     }
                     if (!isJSON) {
@@ -65,7 +65,7 @@ public class CVFragment extends StaggeredFragment {
                         }
                     }
                     switch (msg.what) {
-                        case -1 -> params.toast(R.string.no_wifi_warning);
+                        case -1 -> params.toast(R.string.no_net_connected);
                         case 0 -> {
                             JSONObject data = JSONObject.parseObject(response);
                             if (data.containsKey("code") && data.getInteger("code") == 200) {

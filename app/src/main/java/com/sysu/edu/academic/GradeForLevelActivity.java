@@ -121,7 +121,7 @@ public class GradeForLevelActivity extends AppCompatActivity {
                 super.handleMessage(msg);
                 int what = msg.what;
                 if (what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                 } else {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     Integer code = response.getInteger("code");

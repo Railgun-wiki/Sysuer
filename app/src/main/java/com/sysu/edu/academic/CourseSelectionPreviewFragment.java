@@ -63,7 +63,7 @@ public class CourseSelectionPreviewFragment extends Fragment {
                 public void handleMessage(@NonNull Message msg) {
                     super.handleMessage(msg);
                     if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                     } else {
                         System.out.println(msg.obj);
                         JSONObject response = JSONObject.parse((String) msg.obj);

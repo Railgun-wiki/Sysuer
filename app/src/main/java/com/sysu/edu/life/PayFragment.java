@@ -141,7 +141,7 @@ public class PayFragment extends StaggeredFragment {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
-                    params.toast(getString(R.string.no_wifi_warning));
+                    params.toast(getString(R.string.no_net_connected));
                 } else {
                     JSONObject response = JSONObject.parseObject((String) msg.obj);
                     if (response != null && response.getInteger("code").equals(200)) {

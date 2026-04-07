@@ -161,7 +161,7 @@ public class CalendarActivity extends AppCompatActivity {
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
                     case -1:
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                         break;
                     case 1:
                         Matcher matcher = Pattern.compile("(<strong>.+?)(?=<strong>)").matcher(msg.obj + "<strong>");

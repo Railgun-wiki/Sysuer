@@ -58,7 +58,7 @@ public class CourseSelectionFilterFragment extends Fragment {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
-                        params.toast(getString(R.string.no_wifi_warning));
+                        params.toast(getString(R.string.no_net_connected));
                         return;
                     }
                     JSONObject response = JSONObject.parseObject((String) msg.obj);

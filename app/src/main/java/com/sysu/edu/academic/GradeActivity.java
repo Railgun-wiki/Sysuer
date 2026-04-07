@@ -148,7 +148,7 @@ public class GradeActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                     return;
                 }
                 JSONObject dataString = JSON.parseObject((String) msg.obj);

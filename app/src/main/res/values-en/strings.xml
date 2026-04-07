@@ -71,7 +71,7 @@
     <string name="appearance">Appearance</string>
     <string name="open_source">Open Source</string>
     <string name="week_x">Week %s</string>
-    <string name="no_wifi_warning">Please check the wifi</string>
+    <string name="no_net_connected">Please check the wifi</string>
     <string name="login_warning">Login please!</string>
     <string name="term_x">Term %s</string>
     <string name="minute">min</string>
@@ -628,4 +628,12 @@
     <string name="unpaid">Unpaid</string>
     <string name="default_remark">Balance Top-up</string>
     <string name="recharge">Recharge</string>
+    <string name="water_consumption">Water Consumption</string>
+    <string name="unpaid_fee">Unpaid Fee</string>
+    <string name="pay_success">Pay Successfully</string>
+    <string name="pay_fail">Fail to Pay</string>
+    <string name="left_time">Left Time</string>
+    <string name="pause_time">Pause Time</string>
+    <string name="error">Error</string>
+    <string name="click_to_select">Click to Select</string>
 </resources>

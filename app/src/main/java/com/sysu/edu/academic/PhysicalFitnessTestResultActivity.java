@@ -54,7 +54,7 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                 } else {
                     if (msg.getData().getInt("code") == 302) {
                         params.toast(R.string.login_warning);

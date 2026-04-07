@@ -68,7 +68,7 @@ public class SchoolBusActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                 } else if (!msg.getData().getBoolean("isJSON")) {
                     params.toast(R.string.login_warning);
                     params.gotoLogin(TargetUrl.PORTAL);

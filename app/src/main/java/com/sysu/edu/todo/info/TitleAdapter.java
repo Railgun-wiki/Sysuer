@@ -38,7 +38,10 @@ public class TitleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public void setHeader(int n) {
-        this.n = n;
+        if (0 <= n && n <= 2) {
+            this.n = n;
+            notifyItemChanged(0);
+        }
     }
 
     @Override

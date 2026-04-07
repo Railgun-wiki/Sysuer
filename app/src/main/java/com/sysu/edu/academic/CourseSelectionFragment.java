@@ -148,7 +148,7 @@ public class CourseSelectionFragment extends Fragment {
                     Integer code = response.getInteger("code");
                     if (Objects.equals(code, 200)) {
                         switch (msg.what) {
-                            case -1 -> params.toast(R.string.no_wifi_warning);
+                            case -1 -> params.toast(R.string.no_net_connected);
                             case 0 -> {
                                 term = response.getJSONObject("data").getString("semesterYear");
                                 getCourseList();

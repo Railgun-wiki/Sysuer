@@ -236,7 +236,7 @@ public class CourseScheduleActivity extends AppCompatActivity {
                             getTable(currentTerm, currentWeek);
                             realTime.setSecond(currentWeekIndex);
                         }
-                        case -1 -> params.toast(R.string.no_wifi_warning);
+                        case -1 -> params.toast(R.string.no_net_connected);
                     }
                 } else if (response.get("code").equals(50043000)) {
                     params.toast(response.getString("message"));

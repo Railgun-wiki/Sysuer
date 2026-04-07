@@ -80,7 +80,6 @@ public class LoginManager {
         try {
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
             String a = response.body().string();
-            System.out.println(a);
             if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json"))
                 request(redirect(a));
         } catch (IOException _) {
@@ -152,8 +151,7 @@ public class LoginManager {
                                 request("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
                         case TargetUrl.PAY -> {
                             String token = getPayToken(service);
-                            if (authorizationJar != null)
-                                authorizationJar.setToken(host, token);
+                            setToken(host, token);
                             cookieJar.saveFromResponse(HttpUrl.get(service), List.of(new Cookie.Builder().name("ibps-1.0.1-token").value(token).domain("pay.sysu.edu.cn").build()));
                         }
                         case TargetUrl.ZHNY -> {
@@ -163,6 +161,8 @@ public class LoginManager {
                         case TargetUrl.XGXT -> getXGXTToken(service, targetBaseUrl);
                         case TargetUrl.NEWS ->
                                 setAuthorization(host, getNewsAuthorization(service));
+                        case TargetUrl.LMS -> setToken(host, getLmsToken());
+
                     }
                 }
                 return true;
@@ -171,6 +171,11 @@ public class LoginManager {
             }
             return false;
         }).get();
+    }
+
+    private void setToken(String host, String token) {
+        if (authorizationJar != null)
+            authorizationJar.setToken(host, token);
     }
 
     /*
@@ -193,6 +198,14 @@ public class LoginManager {
                 .header("Referer", "https://pay.sysu.edu.cn/")
                 .post(RequestBody.create("{\"key\":\"https://cas.sysu.edu.cn/cas/serviceValidate?service=https://pay.sysu.edu.cn/sso&ticket=" + getTicket(service) + "\"}", MediaType.parse("application/json")))
                 .build()).execute().body().string()).getString("data");
+    }
+
+    private String getLmsToken() throws IOException {
+        String response = client.newCall(new Request.Builder().url("https://lms.sysu.edu.cn/my/")
+                .build()).execute().body().string();
+        Matcher matcher = Pattern.compile("\"sesskey\":\"(.+?)\"").matcher(response);
+        if (matcher.find()) return matcher.group(1);
+        return "";
     }
 
     private String getZHNYAuthoritarian(String service) throws IOException {

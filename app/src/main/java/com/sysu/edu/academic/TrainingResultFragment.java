@@ -50,7 +50,7 @@ public class TrainingResultFragment extends Fragment {
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
                     case -1:
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                     case 1:
                         JSONObject response = JSONObject.parse((String) msg.obj);
                         if (response.getIntValue("code") == 200) {

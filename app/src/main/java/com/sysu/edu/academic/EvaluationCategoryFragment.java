@@ -62,7 +62,7 @@ public class EvaluationCategoryFragment extends Fragment {
                         params.gotoLogin(TargetUrl.PJXT);
                     }
                 } else if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                     params.gotoLogin(TargetUrl.PJXT);
                 }
             }

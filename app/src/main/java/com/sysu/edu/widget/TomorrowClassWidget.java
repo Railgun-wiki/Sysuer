@@ -44,6 +44,7 @@ public class TomorrowClassWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
+        ContextUtil contextUtil = new ContextUtil(context);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -55,7 +56,7 @@ public class TomorrowClassWidget extends AppWidgetProvider {
                         if (msg.what == 5) {
                             remoteViews.setTextViewText(R.id.day, data.getString("chooseTime"));
                             RemoteViewsCompat.RemoteCollectionItems.Builder items = new RemoteViewsCompat.RemoteCollectionItems.Builder();
-                            if (data.containsKey("list")) {
+                            if (data.containsKey("list") && data.get("list") != null) {
                                 JSONArray list = data.getJSONArray("list");
                                 list.forEach(e -> {
                                     JSONObject item = (JSONObject) e;
@@ -75,6 +76,8 @@ public class TomorrowClassWidget extends AppWidgetProvider {
                                         .build();
                                 WorkManager.getInstance(context).enqueue(workRequest);
                                 remoteViews.setTextViewText(R.id.week, String.format(Locale.getDefault(), "共%d节", list.size()));
+                            } else {
+                                contextUtil.toast(context.getString(R.string.error) + ":" + msg.obj);
                             }
                         }
 

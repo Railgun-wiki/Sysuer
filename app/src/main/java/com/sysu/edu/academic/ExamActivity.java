@@ -77,7 +77,7 @@ public class ExamActivity extends AppCompatActivity {
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
                 if (msg.what == -1) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                 } else {
                     JSONObject response = JSON.parseObject((String) msg.obj);
                     if (response.getInteger("code").equals(200)) {

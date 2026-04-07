@@ -78,7 +78,7 @@ public class NewsActivity extends AppCompatActivity {
                 boolean isJSON = rdata.getBoolean("isJSON");
                 String json = rdata.getString("data");
                 if (json == null) {
-                    params.toast(R.string.no_wifi_warning);
+                    params.toast(R.string.no_net_connected);
                     return;
                 }
                 System.out.println(json);
