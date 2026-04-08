@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -90,21 +92,14 @@ public class GradeActivity extends AppCompatActivity {
                 this.classNumber = classNumber;
                 grade = maxGrade;
                 isFetching = true;
-                if (this.maxGrade < 0) {
-                    this.maxGrade = maxGrade;
-                }
-                if (position < 0) {
-                    position = pos;
-                }
+                if (this.maxGrade < 0) this.maxGrade = maxGrade;
+                if (position < 0) position = pos;
                 http.postRequest("https://jwxt.sysu.edu.cn/jwxt/gradua-degree/graduatemsg/studentsGraduationExamination/studentCourse", String.format("{\"pageNo\":1,\"pageSize\":10,\"total\":true,\"param\":{\"achievementCourseNumber\":\"%s\",\"beforeAchievementPoint\":\"%s\",\"afterAchievementPoint\":\"%s\",\"cultureTypeCode\":\"01\"}}", classNumber, maxGrade, maxGrade), 5);
             }
 
             void getGrade() {
-                if (maxGrade - grade < 60) {
-                    getGrade(classNumber, position, --grade);
-                } else {
-                    isFetching = false;
-                }
+                if (maxGrade - grade < 60) getGrade(classNumber, position, --grade);
+                else isFetching = false;
             }
 
             void setGrade() {
@@ -119,12 +114,13 @@ public class GradeActivity extends AppCompatActivity {
         }
         GradeManager gradeManager = new GradeManager();
         adp.setAction(position -> {
-            if (gradeManager.isFetching) {
-                params.toast(R.string.grade_fetching);
-            } else {
+            if (gradeManager.isFetching) params.toast(R.string.grade_fetching);
+            else {
                 String level = adp.getLevel(position);
-                int minGrade = Objects.requireNonNull(gradeMap.getOrDefault(level.substring(0, 1), 0)) - (level.length() == 2 ? 0 : 6);
-                gradeManager.getGrade(adp.getClassNumber(position), position, minGrade);
+                if (!isEmpty(level)) {
+                    int minGrade = Objects.requireNonNull(gradeMap.getOrDefault(level.substring(0, 1), 0)) - (level.length() == 2 ? 0 : 6);
+                    gradeManager.getGrade(adp.getClassNumber(position), position, minGrade);
+                }
             }
         });
 
@@ -295,7 +291,8 @@ public class GradeActivity extends AppCompatActivity {
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(ItemScoreBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {};
+            return new RecyclerView.ViewHolder(ItemScoreBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false).getRoot()) {
+            };
         }
 
         public void setAction(Consumer<Integer> action) {
