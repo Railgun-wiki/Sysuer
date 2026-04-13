@@ -86,7 +86,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
                     if (msg.what == -1) {
-                        params.toast(R.string.no_wifi_warning);
+                        params.toast(R.string.no_net_connected);
                     } else {
                         int code = msg.getData().getInt("code");
                         if (code == 200) {
@@ -341,6 +341,7 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                 selection = position;
                 notifyItemRangeChanged(0, getItemCount());
             });
+            super.onBindViewHolder(holder, pos);
         }
 
         public String getResult() {

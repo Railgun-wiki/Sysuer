@@ -93,6 +93,12 @@
         "activity": ".academic.AgendaActivity",
         "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
         "description": "日程管理系统，包括校历、班级日程、个人日程等"
+      },
+      {
+        "id": 203,
+        "name": "作业",
+        "activity": ".academic.HomeworkActivity",
+        "description": "作业管理系统，包括在线教学平台作业等"
       }
     ]
   },

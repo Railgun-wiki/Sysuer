@@ -280,7 +280,9 @@ public class MainActivity extends AppCompatActivity {
 //        actionMap.put(301, newActivity(NewsActivity.class));                 // 资讯门户
         actionMap.put(302, _ -> {
             try {
-                startActivity(Objects.requireNonNull(getPackageManager().getLaunchIntentForPackage("com.comingx.zanao")).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                Intent launchIntentForPackage = getPackageManager().getLaunchIntentForPackage("com.comingx.zanao");
+                if (launchIntentForPackage != null)
+                    startActivity(Objects.requireNonNull(launchIntentForPackage).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (ActivityNotFoundException e) {
                 params.toast(R.string.no_app);
             }

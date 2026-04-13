@@ -93,6 +93,12 @@
         "activity": ".academic.AgendaActivity",
         "url": "https://mportal.sysu.edu.cn/newClient/#/newPortal/scheduleSchema",
         "description": "Schedule management system, including school calendar, class schedule, and personal schedule"
+      },
+      {
+        "id": 203,
+        "name": "Homework",
+        "activity": ".academic.HomeworkActivity",
+        "description": "Homework management system, including online homework assignments, submission, and feedback"
       }
     ]
   },

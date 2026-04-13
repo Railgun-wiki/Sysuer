@@ -1,6 +1,8 @@
 package com.sysu.edu.academic;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,23 +13,28 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewbinding.ViewBinding;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.sysu.edu.R;
 import com.sysu.edu.api.AuthorizationJar;
 import com.sysu.edu.api.ContextUtil;
 import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
+import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.FragmentHomeworkMainBinding;
 import com.sysu.edu.databinding.ItemHomeworkBinding;
 import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.view.AdapterListener;
 
 public class HomeworkMainFragment extends Fragment {
 
@@ -42,6 +49,7 @@ public class HomeworkMainFragment extends Fragment {
         Params params = new Params(this);
         ContextUtil contextUtil = new ContextUtil(requireContext());
         AuthorizationJar authorizationJar = new AuthorizationJar(requireContext());
+        AlertDialog detailDialog = new MaterialAlertDialogBuilder(requireContext()).create();
         binding.list.setAdapter(adapter);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
@@ -61,12 +69,26 @@ public class HomeworkMainFragment extends Fragment {
                             item.getJSONObject("data").getJSONArray("events").forEach(event -> {
                                 JSONObject eventItem = (JSONObject) event;
                                 TitleAdapter titleAdapter = new TitleAdapter(eventItem.getString("popupname"));
-                                titleAdapter.setHeader(2);
+//                                titleAdapter.setHeader(1);
                                 adapter.addAdapter(titleAdapter);
-//                                GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
-//                                preferenceAdapter.add(eventItem.getString("name"), eventItem.getString("description"), R.drawable.text);
                                 HomeworkAdapter homeworkAdapter = new HomeworkAdapter();
                                 homeworkAdapter.add(eventItem);
+                                homeworkAdapter.setListener(new AdapterListener() {
+                                    @Override
+                                    public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
+                                        ItemHomeworkBinding binding = ItemHomeworkBinding.bind(holder.itemView);
+                                        binding.fold.setOnClickListener(_ -> {
+                                            detailDialog.setMessage(Html.fromHtml(homeworkAdapter.get(position).getString("description"), Html.FROM_HTML_MODE_COMPACT));
+                                            detailDialog.show();
+                                        });
+                                        binding.view.setOnClickListener(_ -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(homeworkAdapter.get(position).getString("url")))));
+                                        binding.upload.setOnClickListener(_ -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(homeworkAdapter.get(position).getString("viewurl")))));
+                                    }
+
+                                    @Override
+                                    public void onCreate(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, ViewBinding binding) {
+                                    }
+                                });
                                 adapter.addAdapter(homeworkAdapter);
                             });
                         }
@@ -101,11 +123,9 @@ public class HomeworkMainFragment extends Fragment {
             Context context = holder.itemView.getContext();
             JSONObject item = get(position);
             binding.title.setText(item.getString("name"));
-            binding.description.setText(Html.fromHtml(item.getString("description"), Html.FROM_HTML_MODE_COMPACT));
-            binding.fold.setOnClickListener(_ -> binding.description.setMaxLines(Integer.MAX_VALUE-1-binding.description.getMaxLines()));
             binding.detail.setText(String.format("%s %s\n%s %s", context.getString(R.string.type), item.getString("normalisedeventtypetext"),
                     context.getString(R.string.link), item.getString("viewurl")));
-//            Markwon.create(binding.title.getContext()).setMarkdown(binding.description, item.getString("description"));
+            super.onBindViewHolder(holder, position);
         }
     }
 }
