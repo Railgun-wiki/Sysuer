@@ -35,4 +35,8 @@ public class Pager2Adapter extends FragmentStateAdapter {
     public int getItemCount() {
         return fragments.size();
     }
+
+    public boolean isEmpty(){
+        return fragments.isEmpty();
+    }
 }

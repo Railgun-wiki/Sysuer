@@ -28,13 +28,13 @@ import java.util.Objects;
 public class DormActivity extends AppCompatActivity {
 
     final AuthorizationManager auth = new AuthorizationManager("https://xgxt.sysu.edu.cn/", "https://xgxt-443.webvpn.sysu.edu.cn/");
-    final ArrayList<String> tabs = new ArrayList<>();
     HttpManager http;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityPagerBinding binding = ActivityPagerBinding.inflate(getLayoutInflater());
+        final ArrayList<String> tabs = new ArrayList<>();
         setContentView(binding.getRoot());
         Params params = new Params(this);
         params.setCallback(this::getDormInfo);
@@ -43,8 +43,10 @@ public class DormActivity extends AppCompatActivity {
         Pager2Adapter pager2Adapter = new Pager2Adapter(this);
         binding.pager.setAdapter(pager2Adapter);
         binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
-            int currentItem = binding.pager.getCurrentItem();
-            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            if(!pager2Adapter.isEmpty() && binding.pager.getCurrentItem() < pager2Adapter.getItemCount()) {
+                int currentItem = binding.pager.getCurrentItem();
+                ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            }
             return true;
         });
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(tabs.get(position))).attach();
@@ -52,10 +54,8 @@ public class DormActivity extends AppCompatActivity {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 super.handleMessage(msg);
-                boolean isJSON = msg.getData().getBoolean("isJSON");
-                int code = msg.getData().getInt("code");
                 String response = (String) msg.obj;
-                if (code == 0) {
+                if (msg.getData().getInt("code") == 0) {
                     auth.setAccessible(false);
                     getDormInfo();
                     return;
@@ -64,7 +64,7 @@ public class DormActivity extends AppCompatActivity {
                     params.toast(R.string.no_net_connected);
                     return;
                 }
-                if (!isJSON) {
+                if (!msg.getData().getBoolean("isJSON")) {
                     if (!auth.isAuthorized(response)) {
                         params.toast(R.string.login_warning);
                         params.gotoLogin(auth.isAccessible() ? TargetUrl.XGXT : TargetUrl.XGXT_WEBVPN);
