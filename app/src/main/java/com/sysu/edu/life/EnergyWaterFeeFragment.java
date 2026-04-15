@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class EnergyWaterFeeFragment extends Fragment {
 
@@ -73,8 +74,12 @@ public class EnergyWaterFeeFragment extends Fragment {
                 if (msg.what == -1)
                     params.toast(R.string.no_net_connected);
                 else if (msg.getData().getBoolean("isJSON")) {
+                    System.out.println((String) msg.obj);
                     JSONObject response = JSONObject.parse((String) msg.obj);
-                    if (response.getInteger("code") == 200) {
+                    if(msg.what == 5 && response.getInteger("status") == 404)
+                    {
+                        params.toast(response.getString("error"));
+                    }else if (response.getInteger("code") == 200) {
                         switch (msg.what) {
                             case 0 -> name = response.getJSONObject("data").getString("username");
                             case 1 -> {
@@ -125,7 +130,9 @@ public class EnergyWaterFeeFragment extends Fragment {
                                             case 0 ->
                                                     button.setOnClickListener(_ -> requestQueue.addAndNext(() -> getDetail(item.getString("id"))));
                                             case 1 ->
-                                                    button.setOnClickListener(_ -> params.toast(R.string.pay));
+                                                    button.setOnClickListener(_ ->
+                                                        requestQueue.addAndNext(() -> recharge(item.getString("id"), roomCode.getValue(), item.getFloat("waterPayment")))
+                                                    );
                                         }
                                     });
                                     adapter.addAdapter(preferenceAdapter);
@@ -145,6 +152,10 @@ public class EnergyWaterFeeFragment extends Fragment {
                                         value,
                                         List.of(R.drawable.calendar, billStatus == 3 || billStatus == 5 ? R.drawable.check : R.drawable.uncheck, R.drawable.text, R.drawable.menu, R.drawable.dashboard, R.drawable.home, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.money, R.drawable.time), requireContext());
                                 detailDialog.show();
+                            }
+                            case 5 -> {
+                                params.toast(response.getString("msg"));
+                                requestQueue.addAndNext(() -> getWaterBill(roomCode.getValue()));
                             }
                         }
                         requestQueue.next();
@@ -208,7 +219,7 @@ public class EnergyWaterFeeFragment extends Fragment {
     void getDetail(String billId) {
         http.getRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/get/" + billId, 4);
     }
-    void recharge(String billId) {
-        http.postRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/recharge", String.format("{\"billId\":\"%s\"}", billId), 5);
+    void recharge(String billId, String room, float amount) {
+        http.postRequest("https://zhny.sysu.edu.cn/kbp/cwbs/mobile/room/bill/pay", String.format(Locale.getDefault(), "{\"roomCode\":\"%s\",\"billAmount\":%.2f,\"idList\":[\"%s\"],\"isMobile\":true,\"rechargeChannel\":6,\"rechargeMethod\":16}", room,amount,billId), 5);
     }
 }
