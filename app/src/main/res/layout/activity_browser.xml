@@ -98,9 +98,7 @@
         <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="@dimen/fab_margin"
-            android:layout_marginEnd="@dimen/fab_margin">
+            android:layout_gravity="bottom">
 
             <com.google.android.material.overflow.OverflowLinearLayout
                 android:layout_width="match_parent"
