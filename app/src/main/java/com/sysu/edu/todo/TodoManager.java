@@ -32,9 +32,6 @@ import com.sysu.edu.databinding.DialogTodoBinding;
 import com.sysu.edu.databinding.ItemFilterChipBinding;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
 import com.sysu.edu.databinding.ItemTodoBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
-import com.sysu.edu.todo.info.TodoAdapter;
-import com.sysu.edu.todo.info.TodoInfo;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.EditTextDialog;
 

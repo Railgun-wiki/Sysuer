@@ -1,5 +1,6 @@
 package com.sysu.edu;
 
+import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.DownloadManager.downloadFile;
 import static com.sysu.edu.api.DownloadManager.openFile;
 
@@ -30,6 +31,7 @@ import androidx.navigation.NavGraph;
 import androidx.navigation.NavInflater;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
+import androidx.preference.PreferenceManager;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController((NavigationBarView) binding.navView, navController);
 
         PreferenceViewModel spm = new ViewModelProvider(this).get(PreferenceViewModel.class);
-        spm.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(this));
+        spm.setPM(PreferenceManager.getDefaultSharedPreferences(this));
         spm.initLiveData();
         AlertDialog dialog = new MaterialAlertDialogBuilder(this).setTitle(R.string.user_agreement_and_privacy_policy)
                 .setMessage("")
@@ -135,12 +137,9 @@ public class MainActivity extends AppCompatActivity {
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                super.handleMessage(msg);
-                if (msg.what == -1) {
-                    params.toast(R.string.no_net_connected);
-                } else {
-                    JSONObject response = JSONObject.parseObject((String) msg.obj);
-                    showUpdateDialog(response);
+                switch (msg.what) {
+                    case -1 -> params.toast(R.string.no_net_connected);
+                    case 0 -> showUpdateDialog(JSONObject.parseObject((String) msg.obj));
                 }
             }
         });
@@ -159,12 +158,6 @@ public class MainActivity extends AppCompatActivity {
                 .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, AppWidgetManager.getInstance(this)
                         .getAppWidgetIds(new ComponentName(this, e)))));
         ContextCompat.registerReceiver(this, receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), ContextCompat.RECEIVER_EXPORTED);
-//        detailLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), _ -> {
-//        });
-        //PackageManager pm = getPackageManager();
-        //pm.setComponentEnabledSetting(new ComponentName(this, SettingActivity.class), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-        //WorkManager.getInstance(this).enqueue(new OneTimeWorkRequest.Builder(ClassIsland.class).build());
-        //new ClassIsland(this).doWork();
         /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{"android.permission.POST_NOTIFICATIONS"}, 1);
         } else {
@@ -175,20 +168,9 @@ public class MainActivity extends AppCompatActivity {
                     System.currentTimeMillis() + 2 * 1000, piMorning);
         }*/
         if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PackageManager.PERMISSION_GRANTED);
-            }
         }
-        /*handler.postAtTime(() -> {
-            ClassIsland.sendCourseNotification(
-                    this,
-                    "高等数学",           // 课程名称
-                    "9分钟",            // 剩余时间
-                    "逸夫楼301"          // 教室
-            );
-        },  SystemClock.uptimeMillis() + 4 * 1000);*/
-//        Intent service = new Intent(this, CourseService.class);
-//        ContextCompat.startForegroundService(this, service);
     }
 
     void showUpdateDialog(JSONObject response) {
@@ -210,11 +192,7 @@ public class MainActivity extends AppCompatActivity {
                         .create();
                 updateDialog.show();
                 Markwon.builder(MainActivity.this).build().setMarkdown(Objects.requireNonNull(updateDialog.findViewById(android.R.id.message)), response.getString("description"));
-            } /*else if (version > responseVersion) {
-                params.toast(getString(R.string.app_modfied_detected));
-            }else {
-                params.toast(getString(R.string.app_latest_installed));
-            }*/
+            }
         } catch (PackageManager.NameNotFoundException _) {
         }
     }
@@ -229,13 +207,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    void beginClassNotificationWorker(Date target) {
-//        WorkManager.getInstance(getApplicationContext())
-//                .enqueueUniqueWork("next_class_widget_update",
-//                        ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(NextClassWidgetWorker.class).setInitialDelay(target.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS).build());
-//
-//    }
-
     void checkUpdate() {
         http.getRequest("https://sysu-tang.github.io/latest.json", 0);
     }
@@ -246,14 +217,6 @@ public class MainActivity extends AppCompatActivity {
         receiver = null;
         super.onDestroy();
     }
-
-//    View.OnClickListener browse(String url) {
-//        return view -> startActivity(new Intent(this, BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(this, view, "miniapp").toBundle());
-//    }
-//
-//    View.OnClickListener newActivity(Class<?> activity_class) {
-//        return view -> launcher.launch(new Intent(this, activity_class), ActivityOptionsCompat.makeSceneTransitionAnimation(this, view, "miniapp"));
-//    }
 
     void initActionMap(Map<Integer, View.OnClickListener> actionMap) {
         // 学术服务 (id: 1xx)
@@ -310,11 +273,11 @@ public class MainActivity extends AppCompatActivity {
 
         // 官方服务 (id: 6xx)
         actionMap.put(601, _ -> {    // 二维码
-            String linking = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this).getString("qrcode", "");
-            if (!linking.isEmpty()) {
+            String linking = PreferenceManager.getDefaultSharedPreferences(this).getString("qrcode", "");
+            if (!isEmpty(linking)) {
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(linking)));
-                } catch (ActivityNotFoundException e) {
+                } catch (ActivityNotFoundException _) {
                     params.toast(R.string.no_app);
                 }
             }/* else {

@@ -8,14 +8,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.sysu.edu.databinding.DialogKeyValueBinding;
-import com.sysu.edu.life.GymAccountFragment;
 
-public class KeyValueDialog {
+public class PreferenceDialog {
     private final BottomSheetDialog dialog;
     private final DialogKeyValueBinding binding;
-    private GymAccountFragment.PreferenceAdapter adapter;
+    private PreferenceAdapter adapter;
 
-    public KeyValueDialog(Context context) {
+    public PreferenceDialog(Context context) {
         dialog = new BottomSheetDialog(context);
         binding = DialogKeyValueBinding.inflate(LayoutInflater.from(context));
         dialog.setContentView(binding.getRoot());
@@ -24,7 +23,7 @@ public class KeyValueDialog {
 
     private void init(Context context) {
         binding.recyclerView.getRoot().setLayoutManager(new LinearLayoutManager(context));
-        adapter = new GymAccountFragment.PreferenceAdapter();
+        adapter = new PreferenceAdapter();
         binding.recyclerView.getRoot().setAdapter(adapter);
     }
 
@@ -36,7 +35,7 @@ public class KeyValueDialog {
         dialog.dismiss();
     }
 
-    public GymAccountFragment.PreferenceAdapter getAdapter() {
+    public PreferenceAdapter getAdapter() {
         return adapter;
     }
 
@@ -51,9 +50,11 @@ public class KeyValueDialog {
         binding.negative.setText(text);
         binding.negative.setOnClickListener(onClick);
     }
+
     public void add(String title, String content, Integer icon) {
         adapter.add(title, content, icon);
     }
+
     public void clear() {
         adapter.clear();
     }

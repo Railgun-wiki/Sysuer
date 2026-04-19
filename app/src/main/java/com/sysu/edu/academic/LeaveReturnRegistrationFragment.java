@@ -28,8 +28,8 @@ import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.databinding.DialogRegionBinding;
 import com.sysu.edu.databinding.ItemCardBinding;
 import com.sysu.edu.databinding.ItemTitleBinding;
-import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.AdapterListener;
+import com.sysu.edu.view.RecyclerAdapter;
 import com.sysu.edu.view.StaggeredFragment;
 
 import java.text.ParseException;

@@ -30,7 +30,7 @@ import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityClassroomQueryBinding;
 import com.sysu.edu.databinding.ItemClassroomResultBinding;
 import com.sysu.edu.databinding.ItemFilterChipBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

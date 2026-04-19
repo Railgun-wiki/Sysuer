@@ -44,7 +44,7 @@ public class PersonalInformationActivity extends AppCompatActivity {
                 _ -> {
                     if (pager2Adapter.getItemCount() > 0) {
                         int currentItem = binding.pager.getCurrentItem();
-                        ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, tabs.get(currentItem));
+                        ((StaggeredFragment) pager2Adapter.get(currentItem)).export(binding.toolbar, tabs.get(currentItem));
                     }
                     return true;
                 }

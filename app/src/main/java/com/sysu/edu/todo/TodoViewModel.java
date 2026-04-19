@@ -3,8 +3,6 @@ package com.sysu.edu.todo;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.sysu.edu.todo.info.TodoInfo;
-
 public class TodoViewModel extends ViewModel {
     final MutableLiveData<TodoInfo> todoItem = new MutableLiveData<>();
 

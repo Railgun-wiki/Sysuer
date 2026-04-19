@@ -636,9 +636,15 @@
     <string name="error">错误</string>
     <string name="click_to_select">点击选择</string>
     <string name="homework">作业</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="update">更新</string>
     <string name="install">安装</string>
+    <string name="complaint">投诉</string>
+    <string name="response">回应</string>
+    <string name="square">广场</string>
+    <string name="name_helper_text">可匿名,用于查询进度。\n经统计，以企微实名提交可提升反馈效率，匿名的平均反馈周期较长。</string>
+    <string name="phone">电话</string>
+    <string name="message_code">短信验证码</string>
+    <string name="send">发送</string>
+    <string name="content">内容</string>
 
 </resources>

@@ -455,6 +455,12 @@
         "name": "逸仙智课平台",
         "url": "https://aic.sysu.edu.cn/",
         "description": "AI与教学结合"
+      },
+      {
+        "id": 809,
+        "name": "爱物理",
+        "url": "https://lovephysics.sysu.edu.cn/",
+        "description": "爱物理物理实验平台，提供下载物理实验报告等功能"
       }
     ]
   },
@@ -515,6 +521,12 @@
         "name": "校园网",
         "url": "https://netpay.sysu.edu.cn/",
         "description": "校园网管理系统"
+      },{
+        "id": 910,
+        "name": "投诉即办",
+        "activity": ".life.ComplaintsActivity",
+        "url": "https://xinfang.sysu.edu.cn/webzd/jsjb.html",
+        "description": "中山大学投诉即办系统"
       }
     ]
   },

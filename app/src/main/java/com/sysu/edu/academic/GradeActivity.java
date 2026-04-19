@@ -25,7 +25,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityGradeBinding;
 import com.sysu.edu.databinding.ItemScoreBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 import com.sysu.edu.view.StaggeredFragment;
 
 import java.util.ArrayList;

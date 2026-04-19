@@ -50,10 +50,10 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ActivityBrowserBinding;
 import com.sysu.edu.databinding.DialogJsBinding;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
-import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.EditTextDialog;
 import com.sysu.edu.view.GridDialog;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

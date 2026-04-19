@@ -31,7 +31,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityCourseSelectedBinding;
 import com.sysu.edu.databinding.ItemCourseSelectedBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.util.ArrayList;
 import java.util.Locale;

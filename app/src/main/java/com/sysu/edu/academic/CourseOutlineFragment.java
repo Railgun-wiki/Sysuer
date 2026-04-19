@@ -19,7 +19,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.sysu.edu.R;
 import com.sysu.edu.databinding.FragmentCourseOutlineBinding;
 import com.sysu.edu.databinding.ItemCourseOutlineBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 public class CourseOutlineFragment extends Fragment {
 

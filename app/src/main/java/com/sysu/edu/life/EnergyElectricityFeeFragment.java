@@ -31,9 +31,10 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentWaterFeeBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
 import com.sysu.edu.view.ButtonAdapter;
-import com.sysu.edu.view.KeyValueDialog;
+import com.sysu.edu.view.PreferenceAdapter;
+import com.sysu.edu.view.PreferenceDialog;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -60,7 +61,7 @@ public class EnergyElectricityFeeFragment extends Fragment {
         String[] paymentStatus = getResources().getStringArray(R.array.payment_status);
         binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.list.setAdapter(adapter);
-        KeyValueDialog detailDialog = new KeyValueDialog(requireContext());
+        PreferenceDialog detailDialog = new PreferenceDialog(requireContext());
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -97,7 +98,7 @@ public class EnergyElectricityFeeFragment extends Fragment {
                                     response.getJSONObject("data").getJSONArray("list").forEach(e -> {
                                         JSONObject item = (JSONObject) e;
                                         adapter.addAdapter(new TitleAdapter(item.getString("billPeriod")));
-                                        GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                        PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                         ArrayList<String> value = extractValue(item, new String[]{"billPeriod", "billStatus", "remark", "useElectric", "name", "campusName", "areaInfo", "unitPrice", "totalUseAmount", "payedUseAmount", "billTime"});
                                         Integer billStatus = item.getInteger("billStatus");
                                         value.set(1, paymentStatus[billStatus - 1]);

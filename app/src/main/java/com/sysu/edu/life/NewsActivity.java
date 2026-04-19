@@ -31,9 +31,9 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.browser.BrowserActivity;
 import com.sysu.edu.databinding.ActivityNewsBinding;
-import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.view.AdapterListener;
 import com.sysu.edu.view.Pager2Adapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.util.Objects;
 import java.util.stream.IntStream;

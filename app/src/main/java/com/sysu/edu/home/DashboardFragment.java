@@ -70,10 +70,10 @@ import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentDashboardBinding;
 import com.sysu.edu.databinding.ItemCourseBinding;
 import com.sysu.edu.databinding.ItemExamBinding;
-import com.sysu.edu.template.RecyclerAdapter;
 import com.sysu.edu.todo.TodoActivity;
+import com.sysu.edu.todo.TodoInfo;
 import com.sysu.edu.todo.TodoManager;
-import com.sysu.edu.todo.info.TodoInfo;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import org.commonmark.node.Heading;
 import org.commonmark.node.Node;

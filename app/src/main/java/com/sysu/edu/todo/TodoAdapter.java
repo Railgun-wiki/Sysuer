@@ -1,4 +1,4 @@
-package com.sysu.edu.todo.info;
+package com.sysu.edu.todo;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -16,8 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sysu.edu.R;
 import com.sysu.edu.api.CommonUtil;
 import com.sysu.edu.databinding.ItemTodoBinding;
-import com.sysu.edu.template.RecyclerAdapter;
-import com.sysu.edu.todo.TodoManager;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

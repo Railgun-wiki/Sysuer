@@ -52,7 +52,7 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
         binding.toolbar.setTitle(R.string.school_enroll);
         binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
             int currentItem = binding.pager.getCurrentItem();
-            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            ((StaggeredFragment) pager2Adapter.get(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
             return true;
         });
         new TabLayoutMediator(binding.tabs, binding.pager, (tab, position) -> tab.setText(new String[]{
@@ -70,7 +70,7 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
                         JSONObject data = response.getJSONObject("data");
                         if (data != null) {
                             if (msg.what == 0) {
-                                dataMap.forEach((title, keyName) -> ((StaggeredFragment) pager2Adapter.getItem(0)).add(getString(title), R.drawable.calendar, List.of(CommonUtil.getString(SchoolEnrollmentActivity.this, keyName)),
+                                dataMap.forEach((title, keyName) -> ((StaggeredFragment) pager2Adapter.get(0)).add(getString(title), R.drawable.calendar, List.of(CommonUtil.getString(SchoolEnrollmentActivity.this, keyName)),
                                         extractValue(data, keys.get(List.of(R.string.school_enrollment_personal_info, R.string.school_enrollment_roll_info, R.string.school_enrollment_contact_info).indexOf(title)))));
                                 addNextPage(msg.what + 1);
                             } else {
@@ -87,7 +87,7 @@ public class SchoolEnrollmentActivity extends AppCompatActivity {
                                                     {R.string.school_enrollment_academic_year, R.string.school_enrollment_checkin_status, R.string.school_enrollment_register_status, R.string.school_enrollment_payment_status},
                                                     {R.string.school_enrollment_punish_date, R.string.school_enrollment_punish_brief, R.string.school_enrollment_punish_type, R.string.school_enrollment_punish_source, R.string.school_enrollment_punish_name, R.string.school_enrollment_punish_reason, R.string.school_enrollment_punish_time, R.string.school_enrollment_punish_proof, R.string.school_enrollment_punish_repeal_time, R.string.school_enrollment_punish_repeal_proof, R.string.school_enrollment_punish_graduate, R.string.school_enrollment_punish_degree, R.string.school_enrollment_punish_sponsor, R.string.school_enrollment_punish_department, R.string.school_enrollment_punish_clause, R.string.school_enrollment_punish_money, R.string.school_enrollment_punish_status, R.string.school_enrollment_punish_in_school}
                                             }[msg.what - 1];
-                                    ((StaggeredFragment) pager2Adapter.getItem(msg.what)).add(String.valueOf(order), R.drawable.calendar, List.of(CommonUtil.getString(SchoolEnrollmentActivity.this, keyName)),
+                                    ((StaggeredFragment) pager2Adapter.get(msg.what)).add(String.valueOf(order), R.drawable.calendar, List.of(CommonUtil.getString(SchoolEnrollmentActivity.this, keyName)),
                                             extractValue((JSONObject) a, new String[][]{
                                                     {"familyRelationName", "familyMemberName", "familyWorkUnit", "jobName", "familyPhone", "familyBirthday"},
                                                     {"experBeginTime", "experEndTime", "experStudyUnit", "experSite"},

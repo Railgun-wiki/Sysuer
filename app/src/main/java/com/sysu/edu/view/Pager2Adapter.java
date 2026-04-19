@@ -27,7 +27,7 @@ public class Pager2Adapter extends FragmentStateAdapter {
         return this;
     }
 
-    public Fragment getItem(int position) {
+    public Fragment get(int position) {
         return fragments.get(position);
     }
 

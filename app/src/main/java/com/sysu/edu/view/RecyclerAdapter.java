@@ -1,10 +1,9 @@
-package com.sysu.edu.template;
+package com.sysu.edu.view;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sysu.edu.api.Params;
-import com.sysu.edu.view.AdapterListener;
 
 import java.util.ArrayList;
 import java.util.Collections;

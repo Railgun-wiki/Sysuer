@@ -56,10 +56,10 @@ public class CourseDetailActivity extends AppCompatActivity {
                                 Bundle bundle = new Bundle();
                                 bundle.putInt("what", 1);
                                 bundle.putString("data", data.getJSONObject("outlineInfo").toJSONString());
-                                courseDetailPageAdapter.getItem(0).setArguments(bundle);
+                                courseDetailPageAdapter.get(0).setArguments(bundle);
                                 Bundle bundle2 = new Bundle();
                                 bundle2.putString("data", data.getJSONArray("scheduleList").toJSONString());
-                                courseDetailPageAdapter.getItem(1).setArguments(bundle2);
+                                courseDetailPageAdapter.get(1).setArguments(bundle2);
                                 id = data.getJSONObject("outlineInfo").getString("courseId");
                                 getCourseOutline2();
                             }
@@ -70,7 +70,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                                 Bundle bundle = new Bundle();
                                 bundle.putInt("what", 2);
                                 bundle.putString("data", data.toString());
-                                courseDetailPageAdapter.getItem(0).setArguments(bundle);
+                                courseDetailPageAdapter.get(0).setArguments(bundle);
                             }
                         }
                     }

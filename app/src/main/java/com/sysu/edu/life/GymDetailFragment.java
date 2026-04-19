@@ -29,7 +29,7 @@ import com.sysu.edu.databinding.DialogGymReservationBinding;
 import com.sysu.edu.databinding.FragmentGymDetailBinding;
 import com.sysu.edu.databinding.ItemDateBinding;
 import com.sysu.edu.databinding.ItemFieldDetailBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

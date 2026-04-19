@@ -46,7 +46,7 @@ import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentCourseSelectionBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemCourseSelectionBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.util.List;
 import java.util.Locale;

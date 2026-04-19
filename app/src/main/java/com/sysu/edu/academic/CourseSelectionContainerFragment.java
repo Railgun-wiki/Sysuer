@@ -43,7 +43,7 @@ public class CourseSelectionContainerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         nav = ((NavHostFragment) Objects.requireNonNull(getChildFragmentManager().findFragmentById(R.id.nav_host_fragment))).getNavController();
-        int graph = List.of(R.navigation.course_selection, R.navigation.course_preview, R.navigation.course_selected).get(requireArguments().getInt("position"));
+        int graph = List.of(R.navigation.course_selection_nav, R.navigation.course_preview_nav, R.navigation.course_selected_nav).get(requireArguments().getInt("position"));
         nav.setGraph(graph);
         NavigationUI.setupWithNavController(requireActivity().findViewById(R.id.toolbar), nav, new AppBarConfiguration.Builder().setFallbackOnNavigateUpListener(() -> {
             requireActivity().supportFinishAfterTransition();

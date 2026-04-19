@@ -18,7 +18,6 @@ import com.haibin.calendarview.Calendar;
 import com.haibin.calendarview.CalendarView;
 import com.sysu.edu.R;
 import com.sysu.edu.databinding.FragmentTodoBinding;
-import com.sysu.edu.todo.info.TodoInfo;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

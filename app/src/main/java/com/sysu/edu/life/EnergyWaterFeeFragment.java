@@ -31,11 +31,12 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentWaterFeeBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
 import com.sysu.edu.view.ButtonAdapter;
 import com.sysu.edu.view.FeeMonthView;
 import com.sysu.edu.view.FeeWeekView;
-import com.sysu.edu.view.KeyValueDialog;
+import com.sysu.edu.view.PreferenceAdapter;
+import com.sysu.edu.view.PreferenceDialog;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -66,7 +67,7 @@ public class EnergyWaterFeeFragment extends Fragment {
         binding.list.setAdapter(adapter);
         binding.calendarView.setMonthView(FeeMonthView.class);
         binding.calendarView.setWeekView(FeeWeekView.class);
-        KeyValueDialog detailDialog = new KeyValueDialog(requireContext());
+        PreferenceDialog detailDialog = new PreferenceDialog(requireContext());
         String[] paymentStatuses = getResources().getStringArray(R.array.payment_status);
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
@@ -92,7 +93,7 @@ public class EnergyWaterFeeFragment extends Fragment {
                                 });
                             }
                             case 2 -> {
-                                GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                 response.getJSONObject("data").getJSONArray("waterUsageList").forEach(e -> {
                                     JSONObject item = (JSONObject) e;
                                     Object totalWaterUsage = item.get("totalWaterUsage");
@@ -112,7 +113,7 @@ public class EnergyWaterFeeFragment extends Fragment {
                                     JSONObject item = (JSONObject) e;
                                     String duration = String.format("%s~%s", item.getString("originalBillStartDate"), item.getString("originalBillEndDate"));
                                     adapter.addAdapter(new TitleAdapter(duration));
-                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                    PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                     ArrayList<String> value = extractValue(item, new String[]{"billStartDate", "paymentStatus", "useWaterTypeName", "finalWaterUsage", "waterPayment", "paidPayment"});
                                     Integer paymentStatus = item.getInteger("paymentStatus");
                                     value.set(0, duration);

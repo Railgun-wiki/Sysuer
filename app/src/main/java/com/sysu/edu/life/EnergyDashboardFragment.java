@@ -28,7 +28,8 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentEnergyDashboardBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
+import com.sysu.edu.view.PreferenceAdapter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -84,7 +85,7 @@ public class EnergyDashboardFragment extends Fragment {
                                         item.getJSONArray("detailRecords").forEach(o -> {
                                             JSONObject detail = (JSONObject) o;
                                             adapter.addAdapter(new TitleAdapter(detail.getString("tradeTypeDesc")));
-                                            GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                            PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                             preferenceAdapter.set(List.of(R.string.type, R.string.time, R.string.fee, R.string.payer, R.string.student_id),
                                                     extractValue(detail, new String[]{"tradeTypeDesc", "tradeTime", "tradeAmount", "name", "username", "paidPayment"}),
                                                     List.of(R.drawable.menu, R.drawable.time, R.drawable.money, R.drawable.account, R.drawable.id), requireContext());

@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static android.text.TextUtils.isEmpty;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,13 +33,14 @@ import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.DialogEditTextBinding;
 import com.sysu.edu.databinding.FragmentQuestionnaireBinding;
 import com.sysu.edu.databinding.ItemOptionBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 
 public class EvaluationQuestionnaireFragment extends Fragment {
+
     final JSONObject answers = JSONObject.parseObject("{\"pjidlist\":[],\"pjjglist\":[],\"pjzt\": \"2\"}");
     Params params;
     HttpManager http;
@@ -84,13 +87,10 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                         pjjglist.remove("dtjgList");
                                         pjjglist.put("pjxxlist", new JSONArray());
                                         answers.getJSONArray("pjjglist").add(pjjglist);
-                                        TitleAdapter name = new TitleAdapter();
                                         String bprmc = ((JSONObject) list).getString("bprmc");
-                                        if (bprmc != null && !bprmc.isEmpty()) {
-                                            name.setTitle(bprmc);
-                                            name.setHeader(1);
-                                            adp.addAdapter(name);
-                                        }// 被评名称
+                                        // 被评名称
+                                        if (!isEmpty(bprmc))
+                                            adp.addAdapter(new TitleAdapter(bprmc, 1));
                                         ((JSONObject) list).getJSONArray("dtjgList").forEach(e ->
                                         {
                                             JSONObject pjxxlist = JSONObject.parse(String.format(
@@ -103,9 +103,7 @@ public class EvaluationQuestionnaireFragment extends Fragment {
                                             pjxxlist.put("xxdalist", da);
                                             pjjglist.getJSONArray("pjxxlist").add(pjxxlist);
 
-                                            TitleAdapter title = new TitleAdapter();
-                                            title.setTitle(((JSONObject) e).getString("tgmc"));
-                                            adp.addAdapter(title); // 题目标题
+                                            adp.addAdapter(new TitleAdapter(((JSONObject) e).getString("tgmc"))); // 题目标题
 
                                             switch (((JSONObject) e).getString("tmlx")) {
                                                 case "1": {

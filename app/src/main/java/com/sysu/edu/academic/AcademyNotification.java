@@ -78,7 +78,7 @@ public class AcademyNotification extends AppCompatActivity {
                         if (response.get("data") != null) {
                             switch (msg.what) {
                                 case 0, 1 ->
-                                        response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) pager2Adapter.getItem(msg.what)).add((JSONObject) a));
+                                        response.getJSONObject("data").getJSONArray("list").forEach(a -> ((NewsFragment) pager2Adapter.get(msg.what)).add((JSONObject) a));
                                 case 2 ->
                                         startActivity(new Intent(AcademyNotification.this, BrowserActivity.class).putExtra("data", ("""
                                                         <!DOCTYPE html><html><head><style>

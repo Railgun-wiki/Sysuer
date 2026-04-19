@@ -31,8 +31,9 @@ import com.sysu.edu.api.HttpManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentGymOrderBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
 import com.sysu.edu.view.ButtonAdapter;
+import com.sysu.edu.view.PreferenceAdapter;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -76,7 +77,7 @@ public class GymReservationFragment extends Fragment {
                         switch (msg.what) {
                             case 0 -> JSONArray.parseArray(response).forEach((i) -> {
                                 JSONObject item = (JSONObject) i;
-                                GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                 TitleAdapter titleAdapter = new TitleAdapter(item.getString("Description"));
                                 titleAdapter.setHeader(1);
                                 ButtonAdapter buttonAdapter = new ButtonAdapter();

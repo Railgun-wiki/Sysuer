@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.NonNull;
 
 import com.sysu.edu.R;
-import com.sysu.edu.todo.info.TodoInfo;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

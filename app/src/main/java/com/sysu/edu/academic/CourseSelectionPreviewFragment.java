@@ -29,7 +29,7 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.FragmentCourseSelectionPreviewBinding;
 import com.sysu.edu.databinding.ItemEvaluationBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import org.commonmark.node.Node;
 

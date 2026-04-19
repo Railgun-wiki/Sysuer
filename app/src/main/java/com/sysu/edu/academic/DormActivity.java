@@ -45,7 +45,7 @@ public class DormActivity extends AppCompatActivity {
         binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
             if(!pager2Adapter.isEmpty() && binding.pager.getCurrentItem() < pager2Adapter.getItemCount()) {
                 int currentItem = binding.pager.getCurrentItem();
-                ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+                ((StaggeredFragment) pager2Adapter.get(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
             }
             return true;
         });

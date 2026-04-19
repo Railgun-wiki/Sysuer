@@ -25,8 +25,8 @@ import com.sysu.edu.api.Params;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.ActivityAgendaBinding;
 import com.sysu.edu.databinding.ItemPreferenceBinding;
-import com.sysu.edu.template.RecyclerAdapter;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;

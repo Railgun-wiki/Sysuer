@@ -41,7 +41,7 @@ public class RegistrationActivity extends AppCompatActivity {
         adp = new Pager2Adapter(this);
         binding.pager.setAdapter(adp);
         Stream.of("2024", "2025", "2026").forEach(i -> binding.toolbar.getMenu().add(i).setOnMenuItemClickListener(_ -> {
-            ((StaggeredFragment) adp.getItem(1)).clear();
+            ((StaggeredFragment) adp.get(1)).clear();
             getPay(i);
             return false;
         }));
@@ -61,7 +61,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                 case 2: {
                                     JSONObject data = response.getJSONObject("data");
                                     int total = data.getInteger("total");
-                                    data.getJSONArray("rows").forEach(a -> ((StaggeredFragment) adp.getItem(2)).add(((JSONObject) a).getString("academicYearTerm"), R.drawable.calendar, List.of(new String[]{"学年学期", "校区", "学院", "年级专业", "缴费状态", "报到状态", "注册状态", "报到日期", "注册日期"}),
+                                    data.getJSONArray("rows").forEach(a -> ((StaggeredFragment) adp.get(2)).add(((JSONObject) a).getString("academicYearTerm"), R.drawable.calendar, List.of(new String[]{"学年学期", "校区", "学院", "年级专业", "缴费状态", "报到状态", "注册状态", "报到日期", "注册日期"}),
                                             extractValue((JSONObject) a, new String[]{"academicYearTerm", "campusName", "collegeName", "gradeMajorName", "payedStatusName", "checkInStatusName", "registerStatusName", "checkInDate", "registerDate"})));
                                     if (total / 10 > page - 1) {
                                         getList();
@@ -71,7 +71,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                     break;
                                 }
                                 case 0: {
-                                    ((StaggeredFragment) adp.getItem(0)).add("学生报到信息", R.drawable.calendar, List.of("学号", "注册学年学期", "报到状态", "注册状态", "缴费状态"),
+                                    ((StaggeredFragment) adp.get(0)).add("学生报到信息", R.drawable.calendar, List.of("学号", "注册学年学期", "报到状态", "注册状态", "缴费状态"),
                                             extractValue(response.getJSONObject("data"), new String[]{"stuNum", "academicYearTerm", "checkInStatusName", "registerStatusName", "payedStatusName"}));
                                     getNextPage(msg.what + 1);
                                     break;
@@ -79,7 +79,7 @@ public class RegistrationActivity extends AppCompatActivity {
                                 case 1: {
                                     JSONArray d = response.getJSONArray("data");
                                     d.forEach(v -> {
-                                        StaggeredFragment page2 = (StaggeredFragment) adp.getItem(1);
+                                        StaggeredFragment page2 = (StaggeredFragment) adp.get(1);
                                         page2.setHideNull(true);
                                         page2.add(((JSONObject) v).getString("acadYear"), R.drawable.money, List.of(new String[]{"年份", "类别", "项目名称", "金额（元）", "区间", "时间"}),
                                                 extractValue((JSONObject) v, new String[]{"acadYear", "typeName", "feeTypeName", "payedItemAmount", "feeTimeSection", "editeTime"}));

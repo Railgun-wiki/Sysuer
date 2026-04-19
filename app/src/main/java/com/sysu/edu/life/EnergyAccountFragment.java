@@ -33,8 +33,9 @@ import com.sysu.edu.api.RequestQueue;
 import com.sysu.edu.api.TargetUrl;
 import com.sysu.edu.databinding.DialogRechargeBinding;
 import com.sysu.edu.databinding.FragmentEnergyOrderBinding;
-import com.sysu.edu.todo.info.TitleAdapter;
+import com.sysu.edu.todo.TitleAdapter;
 import com.sysu.edu.view.ButtonAdapter;
+import com.sysu.edu.view.PreferenceAdapter;
 
 import java.io.IOException;
 import java.util.List;
@@ -88,7 +89,7 @@ public class EnergyAccountFragment extends Fragment {
                                 case 0 -> {
                                     JSONObject userInfo = response.getJSONObject("data");
                                     adapter.addAdapter(new TitleAdapter(getString(R.string.account)));
-                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                    PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                     preferenceAdapter.set(List.of(R.string.name, R.string.student_id),
                                             extractValue(userInfo, new String[]{"name", "username"}), List.of(R.drawable.account, R.drawable.id), requireContext());
                                     adapter.addAdapter(preferenceAdapter);
@@ -97,7 +98,7 @@ public class EnergyAccountFragment extends Fragment {
                                 case 1 -> response.getJSONArray("data").forEach(e -> {
                                     JSONObject roomInfo = (JSONObject) e;
                                     adapter.addAdapter(new TitleAdapter(getString(R.string.dorm)));
-                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                    PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                     preferenceAdapter.set(List.of(R.string.location, R.string.room_name),
                                             extractValue(roomInfo, new String[]{"areaInfo", "roomName"}), List.of(R.drawable.location, R.drawable.home), requireContext());
                                     adapter.addAdapter(preferenceAdapter);
@@ -105,7 +106,7 @@ public class EnergyAccountFragment extends Fragment {
                                 });
                                 case 2 -> {
                                     adapter.addAdapter(new TitleAdapter(getString(R.string.balance)));
-                                    GymAccountFragment.PreferenceAdapter preferenceAdapter = new GymAccountFragment.PreferenceAdapter();
+                                    PreferenceAdapter preferenceAdapter = new PreferenceAdapter();
                                     preferenceAdapter.add(getString(R.string.balance), response.getJSONObject("data").getString("balance"), R.drawable.money);
                                     adapter.addAdapter(preferenceAdapter);
                                     ButtonAdapter buttonAdapter = new ButtonAdapter();

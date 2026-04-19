@@ -59,7 +59,7 @@ public class SchoolBusActivity extends AppCompatActivity {
         });
         binding.toolbar.getMenu().add(R.string.export).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM).setIcon(R.drawable.export).setOnMenuItemClickListener(_ -> {
             int currentItem = binding.pager.getCurrentItem();
-            ((StaggeredFragment) pager2Adapter.getItem(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
+            ((StaggeredFragment) pager2Adapter.get(currentItem)).export(binding.toolbar, Objects.requireNonNull(Objects.requireNonNull(binding.tabs.getTabAt(currentItem)).getText()).toString());
             return true;
         });
         binding.appBarLayout.addView(header.getRoot());
@@ -95,13 +95,13 @@ public class SchoolBusActivity extends AppCompatActivity {
         AtomicInteger i = new AtomicInteger(0);
         if (data != null) {
             if (data.getJSONArray(day).isEmpty()) {
-                IntStream.range(0, adp.getItemCount()).forEach(j -> ((StaggeredFragment) adp.getItem(j)).clear());
+                IntStream.range(0, adp.getItemCount()).forEach(j -> ((StaggeredFragment) adp.get(j)).clear());
             } else {
                 data.getJSONArray(day).forEach(a -> {
                     JSONObject item = (JSONObject) a;
                     StaggeredFragment fragment;
                     if (adp.getItemCount() > i.get()) {
-                        fragment = (StaggeredFragment) adp.getItem(i.get());
+                        fragment = (StaggeredFragment) adp.get(i.get());
                         fragment.clear();
                     } else {
                         routes.add(item.getString("drivingDirectionName"));

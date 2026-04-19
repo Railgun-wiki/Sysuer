@@ -42,7 +42,7 @@ import com.sysu.edu.databinding.DialogServiceOrderBinding;
 import com.sysu.edu.databinding.FragmentServiceBinding;
 import com.sysu.edu.databinding.ItemActionChipBinding;
 import com.sysu.edu.databinding.ItemServiceBoxBinding;
-import com.sysu.edu.template.RecyclerAdapter;
+import com.sysu.edu.view.RecyclerAdapter;
 
 import org.commonmark.node.Heading;
 import org.commonmark.node.Node;

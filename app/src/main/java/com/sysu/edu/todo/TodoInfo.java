@@ -1,4 +1,4 @@
-package com.sysu.edu.todo.info;
+package com.sysu.edu.todo;
 
 import androidx.lifecycle.MutableLiveData;
 

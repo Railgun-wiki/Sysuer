@@ -70,7 +70,7 @@ public class PhysicalFitnessTestResultActivity extends AppCompatActivity {
                                 int num = msg.what;
                                 ArrayList<String> urls = new ArrayList<>();
                                 Matcher matcher = Pattern.compile("<a class=\"weui-cell weui-cell_access\".+?</a>", Pattern.DOTALL).matcher((String) msg.obj);
-                                StaggeredFragment page = (StaggeredFragment) adp.getItem(num);
+                                StaggeredFragment page = (StaggeredFragment) adp.get(num);
                                 while (matcher.find()) {
                                     Matcher matcher1 = Pattern.compile("<div class=\"weui-cell__bd\".*?<p.*?>(.+?)</p>.*?<div class=\"weui-cell__ft.*?\">.+?<span.+?>(.+?)(&nbsp;)?</span>", Pattern.DOTALL).matcher(matcher.group());
                                     if (matcher1.find())
