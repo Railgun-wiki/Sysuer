@@ -6,20 +6,21 @@
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
+        style="@style/SYSUER.CollapsingAppBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="?collapsingToolbarLayoutMediumSize">
+        android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             style="?attr/collapsingToolbarLayoutMediumStyle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:minHeight="?attr/actionBarSize"
+            android:layout_height="?attr/collapsingToolbarLayoutMediumSize"
+            app:title="@string/classroom_query"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?actionBarSize"
+                android:layout_height="?attr/actionBarSize"
                 android:transitionName="miniapp"
                 app:layout_collapseMode="pin"
                 app:navigationIcon="?homeAsUpIndicator"

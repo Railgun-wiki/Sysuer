@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.sysu.edu"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.sysu.edu"

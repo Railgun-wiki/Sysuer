@@ -1,4 +1,4 @@
-package com.sysu.edu.extra.ui;
+package com.sysu.edu.extra;
 
 import android.os.Bundle;
 import android.os.Handler;

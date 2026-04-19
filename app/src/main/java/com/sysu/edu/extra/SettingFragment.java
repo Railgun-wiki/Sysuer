@@ -1,4 +1,4 @@
-package com.sysu.edu.extra.ui;
+package com.sysu.edu.extra;
 
 import android.content.ComponentName;
 import android.content.pm.PackageManager;

@@ -12,8 +12,6 @@ import com.sysu.edu.databinding.ActivityHomeWorkBinding;
 
 public class HomeworkActivity extends AppCompatActivity {
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

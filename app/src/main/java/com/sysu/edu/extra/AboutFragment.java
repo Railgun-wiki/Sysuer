@@ -1,4 +1,4 @@
-package com.sysu.edu.extra.ui;
+package com.sysu.edu.extra;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -9,7 +9,6 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.sysu.edu.R;
-import com.sysu.edu.extra.AboutActivity;
 
 import java.util.Objects;
 
@@ -21,10 +20,10 @@ public class AboutFragment extends PreferenceFragmentCompat {
             PackageInfo version = requireContext().getPackageManager().getPackageInfo(requireContext().getPackageName(), 0);
             Preference versionPreference = Objects.requireNonNull(findPreference("version"));
             versionPreference.setSummary(String.format("%s(%s)", version.versionName, version.versionCode));
-            versionPreference.setOnPreferenceClickListener(_ -> {
-                ((AboutActivity) requireActivity()).checkUpdate();
-                return false;
-            });
+//            versionPreference.setOnPreferenceClickListener(_ -> {
+//                ((AboutActivity) requireActivity()).checkUpdate();
+//                return false;
+//            });
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }

@@ -5,7 +5,11 @@
         <Preference
             android:key="version"
             app:icon="@drawable/submit"
-            app:title="@string/current_version" />
+            app:title="@string/current_version" >
+            <intent
+                android:targetClass="com.sysu.edu.extra.UpdateActivity"
+                android:targetPackage="com.sysu.edu" />
+        </Preference>
         <Preference
             android:summary="https://github.com/SYSU-Tang/Sysuer/releases"
             app:icon="@drawable/down"

@@ -13,7 +13,7 @@
         android:layout_weight="1">
 
         <com.google.android.material.appbar.AppBarLayout
-            style="@style/SYSU.AppBarLayout"
+            style="@style/SYSUER.AppBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -41,7 +41,7 @@
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
-        style="@style/SYSU.BottomNavigationView"
+        style="@style/SYSUER.BottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"

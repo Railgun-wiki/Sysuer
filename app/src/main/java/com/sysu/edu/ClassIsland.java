@@ -30,7 +30,7 @@ public class ClassIsland {
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(timeRemaining + "，" + classroom))
                 .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
     }
