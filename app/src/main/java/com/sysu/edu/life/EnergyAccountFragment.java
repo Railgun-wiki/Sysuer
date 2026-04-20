@@ -2,7 +2,7 @@ package com.sysu.edu.life;
 
 import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.extractValue;
-import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -69,7 +69,7 @@ public class EnergyAccountFragment extends Fragment {
                 Editable money = rechargeBinding.rmb.getText();
                 int rmb;
                 if (!isEmpty(money) && (rmb = (int) (Float.parseFloat(money.toString()) * 100)) > 0) {
-                    recharge(rmb, roomCode, toStringOrEmpty(rechargeBinding.remark.getText()));
+                    recharge(rmb, roomCode, toStringOrDefault(rechargeBinding.remark.getText()));
                 }
             });
             http = new HttpManager(new Handler(Looper.getMainLooper()) {

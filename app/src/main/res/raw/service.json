@@ -523,10 +523,10 @@
         "description": "校园网管理系统"
       },{
         "id": 910,
-        "name": "投诉即办",
-        "activity": ".life.ComplaintsActivity",
+        "name": "接诉即办",
+        "activity": ".life.ComplaintActivity",
         "url": "https://xinfang.sysu.edu.cn/webzd/jsjb.html",
-        "description": "中山大学投诉即办系统"
+        "description": "中山大学接诉即办系统"
       }
     ]
   },

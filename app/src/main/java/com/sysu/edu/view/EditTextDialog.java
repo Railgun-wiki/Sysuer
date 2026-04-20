@@ -1,6 +1,6 @@
 package com.sysu.edu.view;
 
-import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
 
 import android.content.Context;
 import android.text.Editable;
@@ -30,7 +30,7 @@ public class EditTextDialog {
         binding = DialogEditTextBinding.inflate(LayoutInflater.from(context));
         dialog = new MaterialAlertDialogBuilder(context)
                 .setView(binding.getRoot())
-                .setPositiveButton(android.R.string.ok, (_, _) -> setValue(toStringOrEmpty(binding.edit.getText())))
+                .setPositiveButton(android.R.string.ok, (_, _) -> setValue(toStringOrDefault(binding.edit.getText())))
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
         binding.edit.addTextChangedListener(new TextWatcher() {

@@ -1,6 +1,6 @@
 package com.sysu.edu.life;
 
-import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
 import static com.sysu.edu.api.CommonUtil.trim;
 
 import android.app.Activity;
@@ -165,8 +165,8 @@ public class NewsFragment extends Fragment {
             AuthorizationJar authorizationJar = new AuthorizationJar(context);
             if (!img.isEmpty())
                 Glide.with(context).load(new GlideUrl(img, new LazyHeaders.Builder()
-                                .addHeader("Cookie", toStringOrEmpty(authorizationJar.getCookie(img)))
-                                .addHeader("Authorization", toStringOrEmpty(authorizationJar.getAuthorization(CommonUtil.getHost(img))))
+                                .addHeader("Cookie", toStringOrDefault(authorizationJar.getCookie(img)))
+                                .addHeader("Authorization", toStringOrDefault(authorizationJar.getAuthorization(CommonUtil.getHost(img))))
                                 .build()))
                         .timeout(30000)
                         .override(params.dpToPx(120), params.dpToPx(120)).optionalFitCenter().transform(new RoundedCorners(16))

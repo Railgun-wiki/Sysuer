@@ -54,7 +54,7 @@
             app:summary="@string/custom"
             app:title="@string/dashboard" />
     </PreferenceCategory>
-    <PreferenceCategory app:title="@string/login">
+    <!--<PreferenceCategory app:title="@string/login">
         <com.sysu.edu.preference.MenuPreference
             app:defaultValue="2"
             app:entries="@array/login_mode"
@@ -62,7 +62,7 @@
             app:icon="@drawable/account"
             app:key="loginMode"
             app:title="@string/login" />
-    </PreferenceCategory>
+    </PreferenceCategory>-->
 
     <PreferenceCategory app:title="@string/browser">
         <Preference
@@ -108,6 +108,13 @@
             <intent
                 android:action="android.intent.action.VIEW"
                 android:targetClass="com.sysu.edu.extra.AboutActivity"
+                android:targetPackage="com.sysu.edu" />
+        </Preference>
+        <Preference
+            app:icon="@drawable/refresh"
+            app:title="@string/update">
+            <intent
+                android:targetClass="com.sysu.edu.extra.UpdateActivity"
                 android:targetPackage="com.sysu.edu" />
         </Preference>
         <Preference

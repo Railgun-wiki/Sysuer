@@ -526,7 +526,7 @@
       },
       {
         "id": 910,
-        "name": "Complaint",
+        "name": "plaint",
         "activity": ".life.ComplaintActivity",
         "url": "https://complaint.sysu.edu.cn/",
         "description": "Complaint system for reporting and resolving issues"

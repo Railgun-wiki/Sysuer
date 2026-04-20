@@ -1,7 +1,7 @@
 package com.sysu.edu.todo;
 
 import static android.text.TextUtils.isEmpty;
-import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -75,8 +75,8 @@ public class TodoManager {
         todoDetailDialog = new MaterialAlertDialogBuilder(activity)
                 .setView(dialogTodoBinding.getRoot())
                 .setPositiveButton(R.string.confirm, (_, _) -> {
-                    todoInfo.setTitle(toStringOrEmpty(dialogTodoBinding.title.getText()));
-                    todoInfo.setDescription(toStringOrEmpty(dialogTodoBinding.description.getText()));
+                    todoInfo.setTitle(toStringOrDefault(dialogTodoBinding.title.getText()));
+                    todoInfo.setDescription(toStringOrDefault(dialogTodoBinding.description.getText()));
                     if (todoInfo.getFunction() == TodoInfo.ADD) todoDB.addTodo(todoInfo);
                     else if (todoInfo.getFunction() == TodoInfo.VIEW) todoDB.updateTodo(todoInfo);
                     performRefresh();

@@ -1,7 +1,7 @@
 package com.sysu.edu.view;
 
 import static android.text.TextUtils.isEmpty;
-import static com.sysu.edu.api.CommonUtil.toStringOrEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -53,7 +53,7 @@ public class PreferenceAdapter extends RecyclerAdapter<JSONObject> {
         int pos = holder.getBindingAdapterPosition();
         ItemPreferenceBinding binding = ItemPreferenceBinding.bind(holder.itemView);
         JSONObject item = get(position);
-        binding.itemTitle.setText(toStringOrEmpty(item.getString("title")));
+        binding.itemTitle.setText(toStringOrDefault(item.getString("title")));
         binding.itemContent.setText(isEmpty(item.getString("content")) ? holder.itemView.getContext().getString(R.string.none) : item.getString("content"));
         binding.getRoot().setOnClickListener(_ -> {
             // params.toast(titles.get(pos) + ": " + contents.get(pos));

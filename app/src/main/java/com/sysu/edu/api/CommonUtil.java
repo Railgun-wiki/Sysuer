@@ -160,14 +160,26 @@ public class CommonUtil {
     }
 
     /**
-    * 将对象转换为字符串，若对象为空则返回空字符串
-    *
-    * @param t 要转换的对象
-    * @return 转换后的字符串，若对象为空则返回空字符串
-    *
-    */
-    public static <T> String toStringOrEmpty(T t) {
-        return t == null ? "" : t.toString();
+     * 将对象转换为字符串，若对象为空则返回空字符串
+     *
+     * @param t 要转换的对象
+     * @return 转换后的字符串，若对象为空则返回空字符串
+     *
+     */
+    public static <T> String toStringOrDefault(T t) {
+        return toStringOrDefault(t, "");
+    }
+
+    /**
+     * 将对象转换为字符串，若对象为空则返回默认值
+     *
+     * @param t            要转换的对象
+     * @param defaultValue 默认值，若对象为空则返回该值
+     * @return 转换后的字符串，若对象为空则返回默认值
+     *
+     */
+    public static <T> String toStringOrDefault(T t, String defaultValue) {
+        return t == null ? defaultValue : t.toString();
     }
 
     /**

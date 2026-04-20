@@ -646,5 +646,15 @@
     <string name="message_code">短信验证码</string>
     <string name="send">发送</string>
     <string name="content">内容</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="expand">展开</string>
+    <string name="invalid_phone">号码错误</string>
+    <string name="upload_attachment">上传附件</string>
+    <string name="subject_helper">示例：关于反映XX校区/校园XX事项的意见/建议/诉求</string>
+    <string name="subject_helper_text">示例：关于反映XX校区/校园XX事项的意见/建议/诉求</string>
+    <string name="content_helper_text">请务必点明诉求的关键要素，包括但不限于时间、地点、缘由,字数不能多于1000个。</string>
+    <string name="attachment">附件</string>
+    <string name="optional">可选</string>
 
 </resources>

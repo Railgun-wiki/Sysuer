@@ -1,5 +1,7 @@
 package com.sysu.edu.academic;
 
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -101,11 +103,11 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                                     add("基本信息", List.of("姓名", "学号", "年级", "培养层次", "专业", "学院", "联系电话", "宿舍地址", "紧急联系人", "紧急联系人联系电话", "节假日名称", "节假日时间", "返校报到时间段"), value);
                                     isStay = data.getString("sflx");
                                     try {
-                                        Date leaveTime = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(data.getString("yjlxsj") == null ? "" : data.getString("yjlxsj"));
+                                        Date leaveTime = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(toStringOrDefault(data.getString("yjlxsj")));
                                         if (leaveTime != null) {
                                             leaveDate.postValue(leaveTime.getTime());
                                         }
-                                        Date returnTime = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(data.getString("yjfxsj") == null ? "" : data.getString("yjfxsj"));
+                                        Date returnTime = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(toStringOrDefault(data.getString("yjfxsj")));
                                         if (returnTime != null) {
                                             returnDate.postValue(returnTime.getTime());
                                         }
@@ -264,7 +266,6 @@ public class LeaveReturnRegistrationFragment extends StaggeredFragment {
                         if ("0".equals(isStay)) {
                             save(id, isStay, leaveDate.getValue() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(leaveDate.getValue())), returnDate.getValue() == null ? "" : new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(returnDate.getValue()), leave.get(3), leave.get(4), country, province, city);
                         } else {
-
                             save(id, isStay, stay.get(1));
                         }
                     });

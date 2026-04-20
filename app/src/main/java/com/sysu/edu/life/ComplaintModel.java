@@ -25,7 +25,6 @@ public class ComplaintModel {
     private static final String CHECK_CODE_URL = "/servlet/checkcode";
     private static final String SUBMIT_URL = "/jsp_api/fywt";
 
-    // OkHttp 客户端（可复用）
     private final OkHttpClient httpClient;
     private final MessageCallback messageCallback;
     // 短信验证码发送间隔控制（单位：毫秒）
@@ -206,7 +205,6 @@ public class ComplaintModel {
         }
     }
 
-    // ==================== 提交问题 ====================
 
     private void showMessage(String msg, String type) {
         if (messageCallback != null) {
@@ -216,7 +214,7 @@ public class ComplaintModel {
         }
     }
 
-    // 消息回调接口（替代原JS的 Mess.show）
+    // 消息回调接口
     public interface MessageCallback {
         void onMessage(String msg, String type); // type: "success", "warning", "error"
     }
