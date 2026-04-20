@@ -1,5 +1,6 @@
 package com.sysu.edu.browser;
 
+import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.trim;
 import static com.sysu.edu.api.DownloadManager.downloadFile;
 
@@ -17,8 +18,10 @@ import android.os.Environment;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
@@ -29,6 +32,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -48,6 +52,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.sysu.edu.R;
+import com.sysu.edu.api.DownloadManager;
 import com.sysu.edu.api.Params;
 import com.sysu.edu.databinding.ActivityBrowserBinding;
 import com.sysu.edu.databinding.DialogJsBinding;
@@ -73,16 +78,17 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class BrowserActivity extends AppCompatActivity {
+    final MutableLiveData<Integer> progress = new MutableLiveData<>();
     WebView web;
     ActivityBrowserBinding binding;
     WebSettings webSettings;
     CookieManager cookie;
-    final MutableLiveData<Integer> progress = new MutableLiveData<>();
     MaterialButton refreshButton;
     BrowserHelper db;
     JavaScript js;
+    Params params;
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,7 +97,7 @@ public class BrowserActivity extends AppCompatActivity {
         db = new BrowserHelper(this);
         cookie = CookieManager.getInstance();
         binding.toolbar.setNavigationOnClickListener(_ -> finishAfterTransition());
-        Params params = new Params(this);
+        params = new Params(this);
         BrowserPreference preference = new BrowserPreference(this);
         String url = getIntent().getDataString() != null ? getIntent().getDataString() : "https://www.sysu.edu.cn/";
         js = new JavaScript();
@@ -252,6 +258,39 @@ public class BrowserActivity extends AppCompatActivity {
         setPrivacyMode(preference.isPrivacyMode());
         cookie.setAcceptCookie(preference.isCookieAccept());
         cookie.setAcceptThirdPartyCookies(web, preference.isThirdPartyCookieAccept());
+
+        /*
+         * 长按菜单
+         * */
+        final View anchorView = new View(BrowserActivity.this);
+        anchorView.setLayoutParams(new FrameLayout.LayoutParams(1, 1));
+        ((FrameLayout) web.getParent()).addView(anchorView);
+        GestureDetector gesture = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(@NonNull MotionEvent e) {
+//                int[] webViewLocation = new int[2];
+//                web.getLocationOnScreen(webViewLocation);
+//                System.out.println("webViewLocation:" + Arrays.toString(webViewLocation));
+                anchorView.setX(/*webViewLocation[0] +*/ (int) e.getX());
+                anchorView.setY(/*webViewLocation[1] + */(int) e.getY());
+                PopupMenu pop = new PopupMenu(BrowserActivity.this, anchorView);
+                WebView.HitTestResult result = web.getHitTestResult();
+                int type = result.getType();
+                String extra = result.getExtra();
+                switch (type) {
+                    case WebView.HitTestResult.SRC_ANCHOR_TYPE -> {
+                        if (!isEmpty(extra)) showLinkMenu(extra, pop);
+                    }
+                    case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                        if (!isEmpty(extra)) showImageMenu(extra, pop);
+                    }
+                }
+            }
+        });
+        web.setOnTouchListener((_, event) -> {
+            gesture.onTouchEvent(event);
+            return false;
+        });
         /*
          * 脚本弹窗
          * */
@@ -269,7 +308,7 @@ public class BrowserActivity extends AppCompatActivity {
                 holder.itemView.setOnLongClickListener(v -> {
                     PopupMenu pop = new PopupMenu(BrowserActivity.this, v);
                     pop.getMenuInflater().inflate(R.menu.js_item_menu, pop.getMenu());
-                    pop.getMenu().add(0,R.id.run,0,R.string.run);
+                    pop.getMenu().add(0, R.id.run, 0, R.string.run);
                     pop.show();
 
                     pop.getMenu().findItem(R.id.ban).setTitle(item.getInteger("state") == 1 ? R.string.disable : R.string.enable);
@@ -593,6 +632,60 @@ public class BrowserActivity extends AppCompatActivity {
 
     void pageDown() {
         web.pageDown(true);
+    }
+
+
+    private void showLinkMenu(final String url, PopupMenu popup) {
+        popup.getMenu().add(R.string.open_in_browser).setOnMenuItemClickListener(_ -> {
+            web.loadUrl(url);
+            return true;
+        });
+        popup.getMenu().add(R.string.copy).setOnMenuItemClickListener(_ -> {
+            params.copy("link", url);
+            return true;
+        });
+        popup.getMenu().add(R.string.share).setOnMenuItemClickListener(_ -> {
+            shareText(url);
+            return true;
+        });
+        popup.show();
+    }
+
+    private void showImageMenu(final String imageUrl, PopupMenu popup) {
+        popup.getMenu().add(R.string.download).setOnMenuItemClickListener(_ -> {
+//            System.out.println(imageUrl);
+//            System.out.println(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/" + getString(R.string.app_name) + "/" + getFileName(imageUrl));
+            downloadFile(this, imageUrl, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/" + getString(R.string.app_name) + "/" + getFileName(imageUrl), new DownloadManager.DownloadListener() {
+                @Override
+                public void onDownloadProgress(long progress, long total) {
+                    System.out.println(progress + " " + total);
+                }
+
+                @Override
+                public void onDownloadComplete(String path) {
+                    System.out.println(path);
+                }
+
+                @Override
+                public void onDownloadError(int code, String message) {
+                    System.out.println(code + " " + message);
+                }
+            });
+            return true;
+        });
+        popup.getMenu().add(R.string.copy).setOnMenuItemClickListener(_ -> {
+            params.copy("image", imageUrl);
+            return true;
+        });
+        popup.getMenu().add(R.string.share).setOnMenuItemClickListener(_ -> {
+            shareText(imageUrl);
+            return true;
+        });
+        popup.show();
+    }
+
+    private void shareText(String text) {
+        startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), getString(R.string.share)));
     }
 
     String getFileName(String url) {

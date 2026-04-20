@@ -70,9 +70,8 @@ public class DownloadManager {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 System.out.println("下载网络文件报错：" + e.getMessage());
                 context.runOnUiThread(() -> Toast.makeText(context, "下载网络文件报错：" + e.getMessage(), Toast.LENGTH_SHORT).show());
-                if (listener != null) {
+                if (listener != null)
                     listener.onDownloadError(404, "下载网络文件报错：" + e.getMessage());
-                }
             }
 
             @Override
