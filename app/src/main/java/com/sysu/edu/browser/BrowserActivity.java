@@ -4,6 +4,7 @@ import static com.sysu.edu.api.CommonUtil.trim;
 import static com.sysu.edu.api.DownloadManager.downloadFile;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -34,6 +35,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -258,10 +260,47 @@ public class BrowserActivity extends AppCompatActivity {
         jsDialog.setContentView(JSBinding.getRoot());
         jsDialog.setTitle(R.string.js);
         JSAdapter jsAdapter = new JSAdapter();
+
         jsAdapter.setListener(new AdapterListener() {
             @Override
             public void onBind(RecyclerView.Adapter<RecyclerView.ViewHolder> adapter, RecyclerView.ViewHolder holder, int position) {
-                holder.itemView.setOnClickListener(_ -> web.evaluateJavascript(jsAdapter.get(position).getString("script"), null));
+                JSONObject item = jsAdapter.get(position);
+                holder.itemView.setOnClickListener(_ -> web.evaluateJavascript(item.getString("script"), null));
+                holder.itemView.setOnLongClickListener(v -> {
+                    PopupMenu pop = new PopupMenu(BrowserActivity.this, v);
+                    pop.getMenuInflater().inflate(R.menu.js_item_menu, pop.getMenu());
+                    pop.getMenu().add(0,R.id.run,0,R.string.run);
+                    pop.show();
+
+                    pop.getMenu().findItem(R.id.ban).setTitle(item.getInteger("state") == 1 ? R.string.disable : R.string.enable);
+                    pop.setOnMenuItemClickListener(menuItem -> {
+                        int itemId = menuItem.getItemId();
+                        if (itemId == R.id.edit) {
+                            v.setTransitionName("script");
+                            Bundle bundle = new Bundle();
+                            bundle.putString("item", item.toString());
+                            startActivity(new Intent(BrowserActivity.this, JSActivity.class).putExtras(bundle).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                            return true;
+                        } else if (itemId == R.id.delete) {
+                            db.getWritableDatabase().delete("js", "id=?", new String[]{String.valueOf(item.getLong("id"))});
+                            jsAdapter.remove(position);
+                            return true;
+                        } else if (itemId == R.id.ban) {
+                            ContentValues value = new ContentValues();
+                            int state = 1 - item.getInteger("state");
+                            value.put("state", state);
+                            db.getWritableDatabase().update("js", value, "id=?", new String[]{String.valueOf(item.getLong("id"))});
+                            item.fluentPut("state", state);
+                            jsAdapter.notifyItemChanged(position);
+                            return true;
+                        } else if (itemId == R.id.run) {
+                            v.performClick();
+                            return true;
+                        }
+                        return false;
+                    });
+                    return false;
+                });
             }
 
             @Override

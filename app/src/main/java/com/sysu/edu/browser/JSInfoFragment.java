@@ -36,7 +36,6 @@ public class JSInfoFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.js_info, rootKey);
     }
 
-
     void save(ContentValues value, String id) {
         value.clear();
         getData().forEach((k, v) -> {
