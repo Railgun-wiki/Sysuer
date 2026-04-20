@@ -32,12 +32,12 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:hint="@string/phone"
-            android:inputType="number"
             app:startIconDrawable="@drawable/phone">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:inputType="number"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,13 +55,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/message_code"
-                android:inputType="number"
                 app:endIconMode="clear_text"
                 app:startIconDrawable="@drawable/message">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:inputType="number"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -111,8 +111,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:hint="@string/content"
-            app:helperText="@string/content_helper_text"
-            app:startIconDrawable="@drawable/text">
+            app:helperText="@string/content_helper_text">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
@@ -134,11 +133,12 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/captcha"
-                app:endIconMode="custom"
                 app:startIconDrawable="@drawable/version">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
+                    android:inputType="number"
+                    android:maxLines="1"
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
