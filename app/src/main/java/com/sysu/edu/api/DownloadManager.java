@@ -81,6 +81,8 @@ public class DownloadManager {
                 long length = response.body().contentLength();
 //                System.out.println("网络文件信息：" + String.format(Locale.getDefault(), "文件类型为%s，文件大小为%d", mediaType, length));
 //                System.out.println("下载网络文件到：" + path);
+                File parentFile = new File(path).getParentFile();
+                if (parentFile != null && !parentFile.isDirectory()) parentFile.mkdirs();
                 try (InputStream is = response.body().byteStream();
                      FileOutputStream fos = new FileOutputStream(path)) {
                     byte[] buf = new byte[100 * 1024];
@@ -98,7 +100,9 @@ public class DownloadManager {
 //                    System.out.println("下载完成");
                     if (listener != null) listener.onDownloadComplete(path);
 //                    openFile(context, path);
-                } catch (Exception _) {
+                } catch (Exception e) {
+                    System.out.println("下载网络文件报错：" + e.getMessage());
+                    context.runOnUiThread(() -> Toast.makeText(context, "下载网络文件报错：" + e.getMessage(), Toast.LENGTH_SHORT).show());
                 }
             }
         });

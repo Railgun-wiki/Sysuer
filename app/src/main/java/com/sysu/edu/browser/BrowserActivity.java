@@ -3,6 +3,7 @@ package com.sysu.edu.browser;
 import static android.text.TextUtils.isEmpty;
 import static com.sysu.edu.api.CommonUtil.trim;
 import static com.sysu.edu.api.DownloadManager.downloadFile;
+import static com.sysu.edu.api.DownloadManager.openFile;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -51,6 +52,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.sysu.edu.R;
 import com.sysu.edu.api.DownloadManager;
 import com.sysu.edu.api.Params;
@@ -310,7 +312,6 @@ public class BrowserActivity extends AppCompatActivity {
                     pop.getMenuInflater().inflate(R.menu.js_item_menu, pop.getMenu());
                     pop.getMenu().add(0, R.id.run, 0, R.string.run);
                     pop.show();
-
                     pop.getMenu().findItem(R.id.ban).setTitle(item.getInteger("state") == 1 ? R.string.disable : R.string.enable);
                     pop.setOnMenuItemClickListener(menuItem -> {
                         int itemId = menuItem.getItemId();
@@ -663,7 +664,7 @@ public class BrowserActivity extends AppCompatActivity {
 
                 @Override
                 public void onDownloadComplete(String path) {
-                    System.out.println(path);
+                    Snackbar.make(web, String.format("下载完成，保存到：%s", path), Snackbar.LENGTH_LONG).setAction(R.string.open, _ -> openFile(BrowserActivity.this, path)).show();
                 }
 
                 @Override
@@ -671,6 +672,10 @@ public class BrowserActivity extends AppCompatActivity {
                     System.out.println(code + " " + message);
                 }
             });
+            return true;
+        });
+        popup.getMenu().add(R.string.open_in_browser).setOnMenuItemClickListener(_ -> {
+            web.loadUrl(imageUrl);
             return true;
         });
         popup.getMenu().add(R.string.copy).setOnMenuItemClickListener(_ -> {
