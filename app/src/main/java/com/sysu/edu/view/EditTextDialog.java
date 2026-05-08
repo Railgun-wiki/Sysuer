@@ -19,10 +19,8 @@ import com.sysu.edu.databinding.DialogEditTextBinding;
 import java.util.Objects;
 
 public class EditTextDialog {
-
     private final AlertDialog dialog;
     private final @NonNull DialogEditTextBinding binding;
-
     String mValue = "";
     ValueChangeListener listener;
 
@@ -33,7 +31,7 @@ public class EditTextDialog {
                 .setPositiveButton(android.R.string.ok, (_, _) -> setValue(toStringOrDefault(binding.edit.getText())))
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
-        binding.edit.addTextChangedListener(new TextWatcher() {
+        getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
 
@@ -58,7 +56,8 @@ public class EditTextDialog {
     public void setValue(String value) {
         if (!Objects.equals(mValue, value)) {
             mValue = value;
-            binding.edit.setText(value);
+            if (!getText().equals(toStringOrDefault(value)))
+                getEditText().setText(toStringOrDefault(value));
             if (listener != null) listener.onValueChange(value);
         }
     }
@@ -84,7 +83,7 @@ public class EditTextDialog {
 
     public void setHint(String hint) {
         binding.getRoot().setHint(hint);
-        binding.edit.setContentDescription(hint);
+        getEditText().setContentDescription(hint);
     }
 
     public void setValueChangeListener(ValueChangeListener listener) {
@@ -92,7 +91,7 @@ public class EditTextDialog {
     }
 
     public String getText() {
-        return binding.edit.getText() == null ? "" : binding.edit.getText().toString();
+        return toStringOrDefault(getEditText().getText());
     }
 
     public AlertDialog getDialog() {
