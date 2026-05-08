@@ -41,13 +41,10 @@
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
-        style="@style/SYSUER.BottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         app:itemIconTint="?colorPrimary"
         app:itemTextColor="?colorPrimary"
         app:labelVisibilityMode="selected"
-        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
         app:menu="@menu/home" />
 </LinearLayout>

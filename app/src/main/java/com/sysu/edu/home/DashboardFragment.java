@@ -85,7 +85,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -168,7 +167,6 @@ public class DashboardFragment extends Fragment {
             binding.nextClass.setOnClickListener(gotoActivity(CourseScheduleActivity.class));
             binding.nextClassCard.setOnClickListener(gotoActivity(CourseScheduleActivity.class));
             binding.timeCard.setOnClickListener(gotoActivity(AgendaActivity.class));
-
             params = new Params(this);
             params.setCallback(this::getTerm);
             CourseAdapter courseAdapter = new CourseAdapter();
@@ -191,7 +189,7 @@ public class DashboardFragment extends Fragment {
                 }
             });
             String date = LocalDate.now().format(DateTimeFormatter.ofPattern("M月dd日", Locale.getDefault()));
-            binding.date.setText(String.format("%s/%s", date, getResources().getStringArray(R.array.weeks)[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+            binding.date.setText(String.format("%s/%s", date, getResources().getStringArray(R.array.weeks)[LocalDate.now().getDayOfWeek().getValue() - 1]));
             http = new HttpManager(new Handler(Looper.getMainLooper()) {
                 @Override
                 public void handleMessage(@NonNull Message msg) {
@@ -291,7 +289,7 @@ public class DashboardFragment extends Fragment {
                                 break;
                             case 3:
                                 String term = response.getJSONObject("data").getString("acadYearSemester");
-                                binding.date.setText(String.format("第%s学期\n%s\n%s", term, date, getResources().getStringArray(R.array.weeks)[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]));
+                                binding.date.setText(String.format("第%s学期\n%s\n%s", term, date, getResources().getStringArray(R.array.weeks)[LocalDate.now().getDayOfWeek().getValue() - 1]));
                                 getTodayCourses(term);
                                 getExams(term);
                                 getWeek(term);
@@ -318,7 +316,6 @@ public class DashboardFragment extends Fragment {
                 if (!a) getTerm();
             });
             preferenceViewModel.initLiveData();
-
             ConcatAdapter todoAdapter = new ConcatAdapter();
             binding.todoList.setLayoutManager(new LinearLayoutManager(requireActivity()));
             binding.todoList.setAdapter(todoAdapter);
@@ -435,7 +432,7 @@ public class DashboardFragment extends Fragment {
                     String activity = shortcut.getString("activity");
                     if (viewModel.actionMap.containsKey(id))
                         button.setOnClickListener(viewModel.actionMap.get(id));
-                     button.setOnClickListener(viewModel.actionMap.containsKey(id) ? viewModel.actionMap.get(id) : TextUtils.isEmpty(activity) ? TextUtils.isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()) : v -> {
+                    button.setOnClickListener(viewModel.actionMap.containsKey(id) ? viewModel.actionMap.get(id) : TextUtils.isEmpty(activity) ? TextUtils.isEmpty(url) ? _ -> params.toast(R.string.undeveloped) : v -> startActivity(new Intent(requireContext(), BrowserActivity.class).setData(Uri.parse(url)), ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), v, "miniapp").toBundle()) : v -> {
                         try {
                             Intent intent = new Intent(requireContext(), Class.forName(requireContext().getPackageName() + activity));
                             if (intent.resolveActivity(requireContext().getPackageManager()) != null)

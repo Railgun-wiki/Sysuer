@@ -64,9 +64,10 @@
             android:padding="8dp"
             app:constraint_referenced_ids="next_class_card,time_card"
             app:flow_horizontalGap="8dp"
+            app:flow_maxElementsWrap="2"
             app:flow_verticalAlign="top"
             app:flow_verticalGap="8dp"
-            app:flow_wrapMode="chain"
+            app:flow_wrapMode="chain2"
             app:layout_constraintTop_toBottomOf="@id/shortcut_group" />
 
 
@@ -114,6 +115,7 @@
                 android:id="@+id/next_class"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/next_class"
                 android:lineSpacingMultiplier="1.25"
                 android:textIsSelectable="true" />
         </com.google.android.material.card.MaterialCardView>
@@ -139,13 +141,6 @@
                     android:layout_marginBottom="2sp"
                     android:textColor="?colorPrimary"
                     android:textIsSelectable="true" />
-
-                <!--<com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/time"
-                    style="@style/TextAppearance.Material3.BodyMedium"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textIsSelectable="true" />-->
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -298,11 +293,10 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <com.google.android.material.button.MaterialButtonGroup
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
-                    android:layout_gravity="center_horizontal"
                     android:gravity="center">
 
                     <com.google.android.material.button.MaterialButton
@@ -310,12 +304,8 @@
                         style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/add"
                         app:icon="@drawable/add" />
-
-                    <com.google.android.material.divider.MaterialDivider
-                        style="@style/Widget.Material3.MaterialDivider"
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/todo_date"
@@ -324,14 +314,16 @@
                         android:layout_height="wrap_content"
                         android:text="@string/all"
                         app:icon="@drawable/calendar" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/todo_view"
                         style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/todo"
                         app:icon="@drawable/view" />
 
-                </com.google.android.material.button.MaterialButtonGroup>
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/todo_list"
