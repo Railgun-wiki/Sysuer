@@ -1,5 +1,7 @@
 package com.sysu.edu.api;
 
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -155,11 +157,21 @@ public class HttpManager {
      * @param what 消息标识
      */
     private void sendRequest(@NonNull String url, String data, String type, int what, String method) {
-        Request.Builder request = getRequest(url, data, type, method);
-        http.newCall(request.build()).enqueue(new Callback() {
+        Request.Builder request = generateRequest(url, data, type, method);
+        sendRequest(request.build(),what);
+    }
+
+    /**
+     * 发送网络请求
+     *
+     * @param request 请求对象
+     * @param what 消息标识
+     */
+    public void sendRequest(Request request,int what){
+        http.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                System.out.println(url);
+//                System.out.println(request.url());
                 sendFailure();
             }
 
@@ -195,7 +207,7 @@ public class HttpManager {
      * @param method 请求方法
      * @return 请求构建器
      */
-    public Request.Builder getRequest(@NonNull String url, String data, String type, String method) {
+    public Request.Builder generateRequest(@NonNull String url, String data, String type, String method) {
         Request.Builder request = new Request.Builder().url(url);
         String host = HttpUrl.get(url).host();
         if (params != null) request.header("Cookie", params.getCookie());
@@ -210,7 +222,7 @@ public class HttpManager {
         if (authorization != null) request.header("Authorization", authorization);
         if (referrer != null) request.header("Referer", referrer);
         if (ua != null) request.header("User-Agent", ua);
-        if (data != null) request.post(RequestBody.create(data, MediaType.get(type)));
+        if (data != null) request.post(RequestBody.create(data, MediaType.get(toStringOrDefault(type,"application/json"))));
         if (isTokenRequired && authorizationJar != null)
             request.header("token", authorizationJar.getToken(host));
         if (header != null) header.forEach(request::header);

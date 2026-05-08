@@ -16,7 +16,7 @@ public class TargetUrl {
 //    public static final String PJXT = "https://pjxt.sysu.edu.cn"; // 评教系统 URL
 
     public static final String JWXT = "https://jwxt.sysu.edu.cn/jwxt/api/sso/cas/login?pattern=student-login"; // 教务系统 URL
-    public static final String PORTAL = "https://mportal.sysu.edu.cn/newClient/shiro-cas"; // 统一门户 URL
+    public static final String PORTAL = "https://portal.sysu.edu.cn/newClient/shiro-cas"; // 统一门户 URL
     public static final String PAY = "https://pay.sysu.edu.cn/sso"; // 支付系统 URL
 
     public static final String GYM = "https://gym.sysu.edu.cn/authsport/Account/Auth?response_type=token&client_id=sysu_2021&redirect_uri=https%3A%2F%2gym.sysu.edu.cn%2F%23&client_id=unnc&scope=PE"; // 体育系统 URL

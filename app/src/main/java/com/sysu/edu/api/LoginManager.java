@@ -80,8 +80,12 @@ public class LoginManager {
         try {
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
             String a = response.body().string();
-            if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json"))
+            System.out.println(path + response.headers().toMultimap());
+            System.out.println(cookieJar.loadForRequest(HttpUrl.get(url)));
+//            System.out.println(a);
+            if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
                 request(redirect(a));
+            }
         } catch (IOException _) {
         }
     }
@@ -98,12 +102,26 @@ public class LoginManager {
         return a;
     }
 
+    /**
+     * 解析重定向 URL
+     *
+     * @param response 响应 JSON 字符串
+     * @return 重定向 URL
+     *
+     */
     private String redirect(String response) {
         JSONObject json = JSONObject.parse(response);
         if (json.containsKey("data")) return json.getJSONObject("data").getString("redirect");
         else return json.getString("redirect");
     }
 
+    /**
+     * 登录，使用 AuthorizationJar 中的用户名和密码登录
+     *
+     * @param service 登录服务
+     * @return 是否登录成功
+     *
+     */
     public boolean login(String service) {
         try {
             return authorizationJar != null && login(authorizationJar.getUserName(), authorizationJar.getPassword(), service);
@@ -113,19 +131,28 @@ public class LoginManager {
         }
     }
 
+    /**
+     * 登录，使用指定的用户名和密码登录
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param service  登录服务
+     * @return 是否登录成功
+     *
+     */
     public boolean login(String username, String password, String service) throws ExecutionException, InterruptedException {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String host = HttpUrl.get(service).host();
                 String targetBaseUrl = HttpUrl.get(service).scheme() + "://" + host + "/";
-                if (service.contains("webvpn")) {
+                if (service.contains("webvpn") || TargetUrl.PORTAL.equals(service)) {
                     casAuthorizationManager.setAccessible(false);
                     JSONObject publicKey = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
                     request(redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId"))) + "?service=https%3A%2F%2Fwebvpn.sysu.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl");
                     request("https://webvpn.sysu.edu.cn/vpn_key/update");
-                    List<Cookie> webvpn = cookieJar.loadForRequest(HttpUrl.get("https://webvpn.sysu.edu.cn/vpn_key/update")).stream().filter(e -> "_webvpn_key".equals(e.name())).collect(Collectors.toList());
-                    cookieJar.saveFromResponse(HttpUrl.get(service), webvpn);
-                    cookieJar.saveFromResponse(HttpUrl.get(casAuthorizationManager.getBaseUrl()), webvpn);
+                    List<Cookie> webvpnKey = cookieJar.loadForRequest(HttpUrl.get("https://webvpn.sysu.edu.cn/vpn_key/update")).stream().filter(e -> "_webvpn_key".equals(e.name())).collect(Collectors.toList());
+                    cookieJar.saveFromResponse(HttpUrl.get(service), webvpnKey);
+                    cookieJar.saveFromResponse(HttpUrl.get(casAuthorizationManager.getBaseUrl()), webvpnKey);
                     switch (service) {
                         case TargetUrl.NEWS_WEBVPN ->
                                 setAuthorization(host, getNewsAuthorization(service));
@@ -134,10 +161,35 @@ public class LoginManager {
                             cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
                             setAuthorization(host, getGymAuthorization(targetBaseUrl));
                         }
+                        case TargetUrl.PORTAL -> {
+                            cookieJar.saveFromResponse(HttpUrl.get("https://mportal.sysu.edu.cn"), webvpnKey);
+//                            System.out.println("重定向：" + doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId")));
+//                            Response response = new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://cas.sysu.edu.cn/esc-sso/login?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2Fshiro-cas")
+////                                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36")
+////                                            .header("Referer", "https://cas.sysu.edu.cn/esc-sso/login/page?isLogin=fail")
+//                                            .header("Cookie","TGC=eyJhbGciOiJIUzUxMiJ9.WlhsS05tRllRV2xQYVVwRlVsVlphVXhEU21oaVIyTnBUMmxLYTJGWVNXbE1RMHBzWW0xTmFVOXBTa0pOVkVrMFVUQktSRXhWYUZSTmFsVXlTVzR3TGk1bU16WjNiM1Z6WmtVd1YxTkhOMHQwVW1WNWNYWjNMbkV4VEVscFNHaE1VbmhKYjI1NVpXTlNSMDgwZGtsclV6ZDNRMkk1WWpSdExVNUxNR3N6UjNNdGNIZDJaVTkyZWtFMGEyWndlbXROTVZRelFsYzJkVXRmTld4alptOVlVbkY0Y0cxV2RsbGphMWQ1UVdoRlREQnNSVTh3UjNwaFluRk1TbGsxTVdwSlpWWnBNMll4TlRoV05pMU5TVmsxYkdoWVIzTmZiRWRCWmtKeFRYQjNPV0Y2YmpGTU5XczBjVGhtTVdkUlVTNDJWbEJRWTAxbFpGZHlRemhRUnpKeWRFSnlUVmxu.qmsTrsA9zAuKN-WsZH__SKUj5Byq8rztgzOEKGtn4XO8mClO9Idef_wx19HjSOFXkJGPIp-EUq9Fs0rz5IQfhA;")
+////                                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+//                                    .build()).execute();
+
+                            OkHttpClient client = new OkHttpClient();
+
+                            Request request = new Request.Builder()
+                                    .url("https://cas.sysu.edu.cn/esc-sso/login?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2Fshiro-cas")
+                                    .get()
+                                    .addHeader("Cookie", "TGC=eyJhbGciOiJIUzUxMiJ9.WlhsS05tRllRV2xQYVVwRlVsVlphVXhEU21oaVIyTnBUMmxLYTJGWVNXbE1RMHBzWW0xTmFVOXBTa0pOVkVrMFVUQktSRXhWYUZSTmFsVXlTVzR3TGk0d1puaHVaRjk1TkhKNE5FUmFYelp3Wm5nM1duZFJMblY1YVZsT1UwRkZTa1kyVTIwdGEwdzBjMGxwVGxKdWREaEZUV1UxZUhoeFJ6UnRWamRVYlZwWU0wbHliSEZOY1Y5RFVWbHJWbU5YU1dOVk5qQXhjMVp0WVRaVGJDMHpaR2N4UzNwNmRIWkhaM3A2Tmt4SWVtcE9jVWd5UzA0MVkweFpXRlp4YmpsU1ZFeGxRM1Z0T1RCU2N6YzVURUpWUVY4dFVrSTFOVWMzTWkwMWRVdGpMV1JKWDJSb2MzRmFOVVZqTVU1Q1FTNHpjWFk0TVVsUmJtSXpVVlYzUWxSaGRVMHhia1ZS._2RO9T8lnQwTw_rNP3vhXGSqXJLeclnhQJpU361yYPjNYs7rBbfWL1BgvFJMHryONATJXiqMuuA43UU41i3oLw;")
+                                    .build();
+
+                            Response res = client.newCall(request).execute();
+                            System.out.println("请求 "+res.body().string());
+                            System.out.println(res.headers().toMultimap());
+                        }
                         default -> request("/esc-sso/login?service=" + service);
                     }
-                    if (Objects.equals(service, TargetUrl.XGXT_WEBVPN))
-                        getXGXTToken(service, targetBaseUrl);
+                    switch (service) {
+                        case TargetUrl.XGXT_WEBVPN -> getXGXTToken(service, targetBaseUrl);
+                        case TargetUrl.PORTAL ->
+                                request("https://portal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
+                    }
                 } else {
                     JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
                     request(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
@@ -147,8 +199,6 @@ public class LoginManager {
 //                            cookieJar.copy(targetBaseUrl, "https://gym.webvpn.sysu.edu.cn");
                             setAuthorization(host, getGymAuthorization(targetBaseUrl));
                         }
-                        case TargetUrl.PORTAL ->
-                                request("https://mportal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
                         case TargetUrl.PAY -> {
                             String token = getPayToken(service);
                             setToken(host, token);
@@ -165,7 +215,7 @@ public class LoginManager {
 
                     }
                 }
-                return true;
+                return false;
             } catch (Exception e) {
                 Log.e("LoginManager", e.getMessage(), e);
             }

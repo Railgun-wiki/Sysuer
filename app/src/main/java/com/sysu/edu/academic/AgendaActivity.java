@@ -35,7 +35,6 @@ public class AgendaActivity extends AppCompatActivity {
 
     HttpManager http;
     ActivityAgendaBinding binding;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,9 +51,8 @@ public class AgendaActivity extends AppCompatActivity {
             public void handleMessage(@NonNull Message msg) {
 //                System.out.println(msg.obj);
                 super.handleMessage(msg);
-                if (msg.what == -1) {
-                    params.toast(R.string.no_net_connected);
-                } else if (!msg.getData().getBoolean("isJSON")) {
+                if (msg.what == -1) params.toast(R.string.no_net_connected);
+                else if (!msg.getData().getBoolean("isJSON")) {
                     params.toast(R.string.login_warning);
                     params.gotoLogin(TargetUrl.PORTAL);
                 } else {

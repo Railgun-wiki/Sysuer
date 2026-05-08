@@ -41,7 +41,7 @@ public class PrivacyFragment extends PreferenceFragmentCompat {
                         params.toast(R.string.no_net_connected);
                     } else {
                         JSONObject response = JSONObject.parseObject((String) msg.obj);
-                        System.out.println("response = " + response);
+//                        System.out.println("response = " + response);
                         if (response != null && response.getInteger("code").equals(200)) {
                             if (response.get("data") != null) {
                                 if (msg.what == 0) {

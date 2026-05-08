@@ -54,14 +54,12 @@ public class EnergyWaterFeeFragment extends Fragment {
     MutableLiveData<String> roomCode = new MutableLiveData<>();
     ConcatAdapter adapter;
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         Params params = new Params(this);
         ContextUtil contextUtil = new ContextUtil(requireContext());
         adapter = new ConcatAdapter();
-
         FragmentWaterFeeBinding binding = FragmentWaterFeeBinding.inflate(inflater, container, false);
         binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.list.setAdapter(adapter);
@@ -75,12 +73,10 @@ public class EnergyWaterFeeFragment extends Fragment {
                 if (msg.what == -1)
                     params.toast(R.string.no_net_connected);
                 else if (msg.getData().getBoolean("isJSON")) {
-                    System.out.println((String) msg.obj);
                     JSONObject response = JSONObject.parse((String) msg.obj);
                     if(msg.what == 5 && response.getInteger("status") == 404)
-                    {
                         params.toast(response.getString("error"));
-                    }else if (response.getInteger("code") == 200) {
+                    else if (response.getInteger("code") == 200) {
                         switch (msg.what) {
                             case 0 -> name = response.getJSONObject("data").getString("username");
                             case 1 -> {
