@@ -16,9 +16,9 @@ android {
     defaultConfig {
         applicationId = "com.sysu.edu"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1935
-        versionName = "1.1.3beta2"
+        versionName = "1.1.3beta3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
     }
@@ -26,6 +26,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -39,8 +40,10 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
         compose = true
         aidl = true
+        buildConfig = true
     }
     sourceSets {
         getByName("main") {
@@ -51,6 +54,8 @@ android {
             }
         }
     }
+    buildToolsVersion = "37.0.0"
+    ndkVersion = "28.0.12674087 rc2"
 }
 
 dependencies {
@@ -93,10 +98,8 @@ dependencies {
     implementation(libs.recycler)
     implementation(libs.recycler.table)
     implementation(libs.inline.parser)
-//    implementation(libs.core.remoteviews)
     implementation(libs.androidx.core.remoteviews)
     implementation(libs.androidx.fragment)
-//    implementation(libs.enro.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -112,10 +115,6 @@ dependencies {
     implementation(libs.language.textmate)
     implementation(project(":CalendarView"))
     implementation(libs.okhttp.java.net.cookiejar)
-//    implementation(libs.enro)
-//    ksp(libs.enro.processor) // both kapt and ksp are supported
-//    testImplementation(libs.enro.test)
-//    implementation(libs.dev.enro)
     /*configurations.all {
         exclude("androidx.appcompat", "appcompat")
     }*/
