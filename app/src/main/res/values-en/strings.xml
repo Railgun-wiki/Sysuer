@@ -636,4 +636,22 @@
     <string name="pause_time">Pause Time</string>
     <string name="error">Error</string>
     <string name="click_to_select">Click to Select</string>
+    <string name="content_helper_text">Please be sure to clearly state the key details of your request, including but not limited to the time, location, and reason. The text should not exceed 1,000 characters.</string>
+    <string name="attachment">Attachment</string>
+    <string name="optional">Optional</string>
+    <string name="invalid_phone">Wrong Phone Number</string>
+    <string name="upload_attachment">Upload Attachment</string>
+    <string name="message_code">Message Verification Code</string>
+    <string name="send">Send</string>
+    <string name="content">Content</string>
+    <string name="expand">Expand</string>
+    <string name="homework">Homework</string>
+    <string name="update">Update</string>
+    <string name="install">Install</string>
+    <string name="complaint">Complaint</string>
+    <string name="response">Response</string>
+    <string name="square">Square</string>
+    <string name="name_helper_text">Anonymous submissions are supported for tracking progress. \\nStatistics show that submitting reports using WeCom with real-name verification improves response efficiency, while anonymous submissions tend to have longer average response times.</string>
+    <string name="phone">Phone Number</string>
+    <string name="subject_helper_text">Example: Comments/suggestions/requests regarding XX matter at the XX campus</string>
 </resources>
