@@ -23,7 +23,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.CookieManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -310,10 +309,6 @@ public class DashboardFragment extends Fragment {
                 }
             });
             http.setParams(params);
-            http.setTarget(TargetUrl.JWXT);
-            System.out.println("cookie:"+ CookieManager.getInstance().getCookie(TargetUrl.JWXT));
-            System.out.println("cookie:"+ CookieManager.getInstance().getCookie("https://jwxt.sysu.edu.cn/"));
-            System.out.println("cookie:"+ CookieManager.getInstance().getCookie("https://cas.sysu.edu.cn/"));
             PreferenceViewModel preferenceViewModel = new ViewModelProvider(requireActivity()).get(PreferenceViewModel.class);
             preferenceViewModel.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireActivity()));
             preferenceViewModel.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {
@@ -373,6 +368,7 @@ public class DashboardFragment extends Fragment {
             initOrder(inflater);
             initAction(inflater);
             getShortcutCollection();
+//            params.gotoLogin(TargetUrl.JWXT);
         }
         return binding.getRoot();
     }

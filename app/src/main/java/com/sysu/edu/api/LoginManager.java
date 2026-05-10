@@ -54,6 +54,8 @@ public class LoginManager {
     AuthorizationJar authorizationJar;
     LoginListener loginListener;
 
+    boolean isLogin = false;
+
     private String getPublicKey() {
         try {
             return client.newCall(new Request.Builder()
@@ -86,8 +88,6 @@ public class LoginManager {
                 if (redirect == null) return;
                 request(redirect);
             }
-            System.out.println(response.headers().toMultimap());
-            System.out.println(body);
         } catch (IOException _) {
         }
     }
@@ -120,7 +120,8 @@ public class LoginManager {
             if (json.containsKey("data")) return json.getJSONObject("data").getString("redirect");
             else return json.getString("redirect");
         } else {
-            onError(Integer.parseInt(json.getString("code")), response);
+//            System.out.println("Login error: " + json.getString("code") + " " + json);
+            onError(json.getString("code"), response);
             return null;
         }
     }
@@ -190,8 +191,6 @@ public class LoginManager {
                     String redirect = redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId")));
                     if (redirect == null) return false;
                     request(redirect + "?service=" + service);
-                    cookieJar.copy(service, "https://jwxt.sysu.edu.cn/");
-                    System.out.println(cookieJar.cookieManager.getCookie("https://jwxt.sysu.edu.cn/"));
                     switch (service) {
                         case TargetUrl.GYM -> {
                             getGymToken(targetBaseUrl);
@@ -214,11 +213,10 @@ public class LoginManager {
                     }
                 }
                 onSuccess();
-                return true;
             } catch (Exception e) {
                 Log.e("LoginManager", e.getMessage(), e);
             }
-            return false;
+            return isLogin;
         }).get();
     }
 
@@ -226,12 +224,14 @@ public class LoginManager {
         this.loginListener = loginListener;
     }
 
-    public void onError(int code, String message) {
+    public void onError(String code, String message) {
+        isLogin = false;
         if (loginListener != null)
             loginListener.onError(code, message);
     }
 
     public void onSuccess() {
+        isLogin = true;
         if (loginListener != null)
             loginListener.onSuccess();
     }
@@ -240,7 +240,6 @@ public class LoginManager {
         /* Response response = */
         client.newCall(new Request.Builder().header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
                 .url("https://portal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex").build()).execute();
-//        System.out.println(response.body().string());
     }
 
     private void setToken(String host, String token) {
@@ -275,6 +274,7 @@ public class LoginManager {
                 .build()).execute().body().string();
         Matcher matcher = Pattern.compile("\"sesskey\":\"(.+?)\"").matcher(response);
         if (matcher.find()) return matcher.group(1);
+        else onError("403", "获取 LMS 会话密钥失败");
         return "";
     }
 
@@ -334,7 +334,7 @@ public class LoginManager {
     public interface LoginListener {
         void onSuccess();
 
-        void onError(int code, String message);
+        void onError(String code, String message);
     }
 
     static class CookieStore implements CookieJar {
@@ -357,7 +357,7 @@ public class LoginManager {
                     && !currentCookies.isEmpty())
                 currentCookies.stream().filter(currentCookie -> !responseCookies.contains(currentCookie) && (!currentCookie.value().isEmpty()) && (!keys.contains(currentCookie.name()))).forEach(responseCookies::add);
             _cookieStore.put(host, responseCookies);
-            responseCookies.forEach(e -> cookieManager.setCookie(url.toString(), String.format("%s=%s", e.name(), e.value())));
+            responseCookies.forEach(e -> cookieManager.setCookie(url.scheme()+"://"+host+"/", e.toString()));
         }
 
         @NonNull

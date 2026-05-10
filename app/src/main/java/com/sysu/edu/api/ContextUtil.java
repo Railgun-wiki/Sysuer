@@ -1,24 +1,34 @@
 package com.sysu.edu.api;
 
+import static android.text.TextUtils.isEmpty;
+import static com.sysu.edu.api.CommonUtil.toStringOrDefault;
+
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.text.Editable;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.widget.Toast;
 
-import androidx.preference.PreferenceManager;
+import androidx.appcompat.app.AlertDialog;
 
+import com.alibaba.fastjson2.JSONObject;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 import com.sysu.edu.R;
-import com.sysu.edu.view.EditTextDialog;
+import com.sysu.edu.databinding.DialogAccountBinding;
 
 import java.util.concurrent.ExecutionException;
 
 public class ContextUtil {
     private final Context context;
     private final SharedPreferences sharedPreferences;
+    private DialogAccountBinding binding;
+    private AlertDialog dialog;
 
     public ContextUtil(Context context) {
         this.context = context;
@@ -112,23 +122,23 @@ public class ContextUtil {
         return sharedPreferences;
     }
 
-    /**
-     * 获取 Token
-     *
-     * @return Token
-     */
-    public String getToken() {
-        return sharedPreferences.getString("token", "");
-    }
-
-    /**
-     * 设置 Token
-     *
-     * @param token Token
-     */
-    public void setToken(String token) {
-        sharedPreferences.edit().putString("token", token).apply();
-    }
+//    /**
+//     * 获取 Token
+//     *
+//     * @return Token
+//     */
+//    public String getToken() {
+//        return sharedPreferences.getString("token", "");
+//    }
+//
+//    /**
+//     * 设置 Token
+//     *
+//     * @param token Token
+//     */
+//    public void setToken(String token) {
+//        sharedPreferences.edit().putString("token", token).apply();
+//    }
 
     /**
      * 获取是否为开发者
@@ -177,14 +187,14 @@ public class ContextUtil {
         Toast.makeText(context, toast, Toast.LENGTH_LONG).show();
     }
 
-    /**
-     * 获取登录模式
-     *
-     * @return 登录模式（"0"：弹窗登录；"1"：主页弹窗、其他跳转登录；"2"：跳转登录；"3"：自动登录）
-     */
-    public String getLoginMode() {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString("loginMode", "2");
-    }
+//    /**
+//     * 获取登录模式
+//     *
+//     * @return 登录模式（"0"：弹窗登录；"1"：主页弹窗、其他跳转登录；"2"：跳转登录；"3"：自动登录）
+//     */
+//    public String getLoginMode() {
+//        return PreferenceManager.getDefaultSharedPreferences(context).getString("loginMode", "2");
+//    }
 
     /**
      * 登录
@@ -195,39 +205,59 @@ public class ContextUtil {
      */
 
     public void login(String url, Runnable afterLogin) {
-        if (getUserName().isEmpty()) {
-            EditTextDialog username = new EditTextDialog(context);
-            username.setHint(R.string.username);
-            username.setTitle(R.string.username);
-            username.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.confirm), (_, _) -> {
-                setUserName(username.getText());
-                login(url, afterLogin);
+        if (!getPassword().isEmpty() && !getUserName().isEmpty()) {
+            LoginManager loginManager = new LoginManager();
+            loginManager.setAuthorization(new AuthorizationJar(context));
+            loginManager.setOnLoginListener(new LoginManager.LoginListener() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onError(String code, String message) {
+                    if ("SSO10002".equals(code))
+                        ((Activity) context).runOnUiThread(() -> changeAccount(url, afterLogin));
+                    else if ("SSO10093".equals(code))
+                        toast(toStringOrDefault(JSONObject.parse(message).getString("msg")));
+                }
             });
-            username.show();
-            return;
-        }
-        if (getPassword().isEmpty()) {
-            EditTextDialog password = new EditTextDialog(context);
-            password.setHint(R.string.password);
-            password.setTitle(R.string.password);
-            password.setPasswordMode();
-            password.getDialog().setButton(DialogInterface.BUTTON_POSITIVE, context.getString(R.string.confirm), (_, _) -> {
-                setPassword(password.getText());
-                password.getDialog().dismiss();
-                login(url, afterLogin);
-            });
-            password.show();
-            return;
-        }
-        LoginManager loginManager = new LoginManager();
-        loginManager.setAuthorization(new AuthorizationJar(context));
-        boolean login = false;
-        try {
-            login = loginManager.login(getUserName(), getPassword(), url);
-        } catch (ExecutionException | InterruptedException e) {
-            Log.e("ContextUtil", "login: ", e);
-        }
-        System.out.println("Login result: " + login);
-        if (login && afterLogin != null) afterLogin.run();
+            if (isEmpty(url)) return;
+            boolean login = false;
+            try {
+                login = loginManager.login(getUserName(), getPassword(), url);
+            } catch (ExecutionException | InterruptedException e) {
+                Log.e("ContextUtil", "login: ", e);
+            }
+            System.out.println("Login result: " + login);
+            if (login && afterLogin != null) afterLogin.run();
+        } else changeAccount(url, afterLogin);
+    }
+
+    public void changeAccount(String url, Runnable afterLogin) {
+
+        if (binding == null)
+            binding = DialogAccountBinding.inflate(LayoutInflater.from(context));
+        if (dialog == null)
+            dialog = new MaterialAlertDialogBuilder(context)
+                    .setView(binding.getRoot())
+                    .setTitle(R.string.privacy)
+                    .setPositiveButton(android.R.string.ok, (_, _) -> {
+                        Editable username = binding.username.edit.getText();
+                        Editable password = binding.password.edit.getText();
+                        if (isEmpty(username) || isEmpty(password)) {
+                            toast(R.string.login_warning);
+                        } else {
+                            setUserName(username.toString());
+                            setPassword(password.toString());
+                            login(url, afterLogin);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .create();
+        binding.username.edit.setText(getUserName());
+        binding.password.edit.setText(getPassword());
+        binding.password.editLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
+        dialog.show();
     }
 }

@@ -68,9 +68,7 @@ public class HomeworkMainFragment extends Fragment {
                         } else {
                             item.getJSONObject("data").getJSONArray("events").forEach(event -> {
                                 JSONObject eventItem = (JSONObject) event;
-                                TitleAdapter titleAdapter = new TitleAdapter(eventItem.getString("popupname"));
-//                                titleAdapter.setHeader(1);
-                                adapter.addAdapter(titleAdapter);
+                                adapter.addAdapter(new TitleAdapter(eventItem.getString("popupname")));
                                 HomeworkAdapter homeworkAdapter = new HomeworkAdapter();
                                 homeworkAdapter.add(eventItem);
                                 homeworkAdapter.setListener(new AdapterListener() {
@@ -98,11 +96,15 @@ public class HomeworkMainFragment extends Fragment {
                 }
             }
         });
+//        http.setTarget(TargetUrl.LMS);
         getLmsTask(authorizationJar.getToken("lms.sysu.edu.cn"));
+        System.out.println(authorizationJar.getCookie("lms.sysu.edu.cn"));
+        System.out.println(authorizationJar.getCookie(TargetUrl.LMS));
         return binding.getRoot();
     }
 
     public void getLmsTask(String key) {
+
         http.postRequest(String.format("https://lms.sysu.edu.cn/lib/ajax/service.php?sesskey=%s&info=core_calendar_get_calendar_upcoming_view", key), "[{\"index\":0,\"methodname\":\"core_calendar_get_calendar_upcoming_view\",\"args\":{\"courseid\":\"1\",\"categoryid\":\"0\"}}]", 0);
     }
 
