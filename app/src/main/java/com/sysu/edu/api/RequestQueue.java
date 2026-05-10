@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.util.LinkedList;
 
 public class RequestQueue {
-    LinkedList<Runnable> queue = new LinkedList<>();
+    final LinkedList<Runnable> queue = new LinkedList<>();
     Runnable lastRequest;
 
     public void add(@NonNull Runnable runnable) {

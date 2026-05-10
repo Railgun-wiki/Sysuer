@@ -65,8 +65,7 @@ public class ComplaintMainFragment extends Fragment {
             public void handleMessage(@NonNull Message msg) {
                 switch (msg.what) {
                     case -1 -> params.toast(R.string.no_net_connected);
-                    case 0 -> System.out.println(msg.obj);
-                    case 1 -> System.out.println(msg.obj);
+                    case 0, 1 -> System.out.println(msg.obj);
                 }
             }
         });

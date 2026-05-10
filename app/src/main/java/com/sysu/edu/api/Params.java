@@ -251,11 +251,11 @@ public class Params {
 //                WebView web = initLoginWebView(activity, model, true);
 //                initLoginModel(activity, model, url, () -> {
 //                    afterLogin.run();
-////                    System.out.println("Login Successfully");
+//                    System.out.println("Login Successfully");
 //                    web.destroy();
 //                    toast(R.string.login_successfully);
 //                });
-////                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
+//                ((FrameLayout) activity.findViewById(android.R.id.content)).addView(web);
 //            }
 //            default -> gotoLogin(view, intent);
 //        }

@@ -48,10 +48,10 @@ public class EnergyWaterFeeFragment extends Fragment {
 
     HttpManager http;
     String name = "";
-    RequestQueue requestQueue = new RequestQueue();
+    final RequestQueue requestQueue = new RequestQueue();
 
-    ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
-    MutableLiveData<String> roomCode = new MutableLiveData<>();
+    final ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
+    final MutableLiveData<String> roomCode = new MutableLiveData<>();
     ConcatAdapter adapter;
 
     @Nullable

@@ -51,8 +51,8 @@ public class EnergyAccountFragment extends Fragment {
     String roomCode;
     String username;
     FragmentEnergyOrderBinding binding;
-    RequestQueue requestQueue = new RequestQueue();
-    ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
+    final RequestQueue requestQueue = new RequestQueue();
+    final ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
 
     @Nullable
     @Override

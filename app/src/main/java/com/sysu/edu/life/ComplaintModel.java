@@ -180,7 +180,7 @@ public class ComplaintModel {
 
         Request request = new Request.Builder()
                 .url(BASE_URL + SUBMIT_URL)
-                .post(RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonBody))
+                .post(RequestBody.create(jsonBody,MediaType.parse("application/json; charset=utf-8")))
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {

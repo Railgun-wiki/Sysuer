@@ -47,9 +47,9 @@ public class EnergyElectricityFeeFragment extends Fragment {
 
     HttpManager http;
     String name = "";
-    RequestQueue requestQueue = new RequestQueue();
-    ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
-    MutableLiveData<String> roomCode = new MutableLiveData<>();
+    final RequestQueue requestQueue = new RequestQueue();
+    final ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
+    final MutableLiveData<String> roomCode = new MutableLiveData<>();
 
     @Nullable
     @Override

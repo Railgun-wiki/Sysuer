@@ -51,7 +51,7 @@ public class NewsFragment extends Fragment {
     HttpManager http;
     RecyclerViewScrollBinding binding;
     int page = 1;
-    Runnable run;
+    final Runnable run;
 
     public NewsFragment(int pos) {
         position = pos;

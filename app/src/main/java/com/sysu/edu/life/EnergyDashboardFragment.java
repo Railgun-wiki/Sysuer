@@ -40,9 +40,9 @@ public class EnergyDashboardFragment extends Fragment {
 
     HttpManager http;
     String name;
-    RequestQueue requestQueue = new RequestQueue();
-    ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
-    ConcatAdapter adapter = new ConcatAdapter();
+    final RequestQueue requestQueue = new RequestQueue();
+    final ArraySet<CommonUtil.Tuple2<String, String>> rooms = new ArraySet<>();
+    final ConcatAdapter adapter = new ConcatAdapter();
     FragmentEnergyDashboardBinding binding;
 
     @Nullable

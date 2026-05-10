@@ -16,6 +16,6 @@ public class GymReservationViewModel extends ViewModel {
     final MutableLiveData<Integer> position = new MutableLiveData<>();
     long from = System.currentTimeMillis();
     long to = System.currentTimeMillis();
-    MutableLiveData<CommonUtil.Tuple2<Long, Long>> reservationFromTo = new MutableLiveData<>(new CommonUtil.Tuple2<>(System.currentTimeMillis(), LocalDateTime.now().plusDays(7).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()));
-    MutableLiveData<HashSet<Integer>> selected = new MutableLiveData<>();
+    final MutableLiveData<CommonUtil.Tuple2<Long, Long>> reservationFromTo = new MutableLiveData<>(new CommonUtil.Tuple2<>(System.currentTimeMillis(), LocalDateTime.now().plusDays(7).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()));
+    final MutableLiveData<HashSet<Integer>> selected = new MutableLiveData<>();
 }
