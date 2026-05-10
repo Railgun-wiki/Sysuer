@@ -376,7 +376,7 @@ class BlanketAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         DialogEditTextBinding binding = DialogEditTextBinding.bind(holder.itemView);
-        binding.getRoot().setHint(R.string.please_enter_content);
+        binding.editLayout.setHint(R.string.please_enter_content);
         if (content != null && !content.isEmpty()) {
             answer.set(0, content);
             binding.edit.setText(content);

@@ -87,7 +87,6 @@ public class SchoolBusActivity extends AppCompatActivity {
             }
         });
         http.setParams(params);
-        http.setTarget(TargetUrl.PORTAL);
         getData();
     }
 

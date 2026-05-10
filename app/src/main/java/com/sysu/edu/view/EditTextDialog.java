@@ -8,7 +8,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -20,7 +19,7 @@ import java.util.Objects;
 
 public class EditTextDialog {
     private final AlertDialog dialog;
-    private final @NonNull DialogEditTextBinding binding;
+    private final DialogEditTextBinding binding;
     String mValue = "";
     ValueChangeListener listener;
 
@@ -78,11 +77,11 @@ public class EditTextDialog {
     }
 
     public void setHint(int hint) {
-        binding.getRoot().setHint(hint);
+        binding.editLayout.setHint(hint);
     }
 
     public void setHint(String hint) {
-        binding.getRoot().setHint(hint);
+        binding.editLayout.setHint(hint);
         getEditText().setContentDescription(hint);
     }
 
@@ -105,7 +104,7 @@ public class EditTextDialog {
 
     public void setPasswordMode() {
         binding.edit.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        binding.getRoot().setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
+        binding.editLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
     }
 
     public interface ValueChangeListener {
