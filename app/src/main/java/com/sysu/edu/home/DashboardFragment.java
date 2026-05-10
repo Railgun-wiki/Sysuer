@@ -23,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -150,7 +151,7 @@ public class DashboardFragment extends Fragment {
                         if (intent.resolveActivity(requireContext().getPackageManager()) != null)
                             startActivity(intent);
                     } catch (ActivityNotFoundException e) {
-                        // Toast.makeText(requireContext(), R.string.no_app, Toast.LENGTH_LONG).show();
+                        params.toast("请在设置里配置逸仙码");
                     }
                 } /*else {
                     //new LaunchMiniProgram(requireActivity()).launchMiniProgram("gh_85575b9f544e");
@@ -301,15 +302,18 @@ public class DashboardFragment extends Fragment {
                                 binding.toggle2.check("19".equals(week) ? R.id.week_19 : R.id.week_18);
                                 break;
                         }
-                    } else if (response.get("code").equals(50043000)) {
-                        params.toast(response.getString("message"));
-                    } else {
+                    } else if (response.get("code").equals(53000007)) {
                         params.gotoLogin(TargetUrl.JWXT);
+                    } else /*if (response.get("code").equals(50043000))*/ {
+                        params.toast(response.getString("message"));
                     }
                 }
             });
             http.setParams(params);
-
+            http.setTarget(TargetUrl.JWXT);
+            System.out.println("cookie:"+ CookieManager.getInstance().getCookie(TargetUrl.JWXT));
+            System.out.println("cookie:"+ CookieManager.getInstance().getCookie("https://jwxt.sysu.edu.cn/"));
+            System.out.println("cookie:"+ CookieManager.getInstance().getCookie("https://cas.sysu.edu.cn/"));
             PreferenceViewModel preferenceViewModel = new ViewModelProvider(requireActivity()).get(PreferenceViewModel.class);
             preferenceViewModel.setPM(androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireActivity()));
             preferenceViewModel.getIsAgreeLiveData().observe(getViewLifecycleOwner(), a -> {

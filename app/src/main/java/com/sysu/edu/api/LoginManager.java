@@ -80,12 +80,14 @@ public class LoginManager {
         String url = path.startsWith("http") ? path : casAuthorizationManager.getBaseUrl() + path;
         try {
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
-            String a = response.body().string();
+            String body = response.body().string();
             if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
-                String redirect = redirect(a);
+                String redirect = redirect(body);
                 if (redirect == null) return;
                 request(redirect);
             }
+            System.out.println(response.headers().toMultimap());
+            System.out.println(body);
         } catch (IOException _) {
         }
     }
@@ -175,11 +177,7 @@ public class LoginManager {
                         case TargetUrl.PORTAL -> {
                             cookieJar.saveFromResponse(HttpUrl.get("https://mportal.sysu.edu.cn"), webvpnKey);
                             loginForPortal();
-//                            String cookie = cookieJar.cookieManager.getCookie(service);
                             cookieJar.copy("https://portal.sysu.edu.cn", "https://mportal.sysu.edu.cn");
-
-                            System.out.println(cookieJar.cookieManager.getCookie("https://mportal.sysu.edu.cn"));
-//                            return false;
                         }
                         case TargetUrl.XGXT_WEBVPN -> {
                             request("/esc-sso/login?service=" + service);
@@ -192,6 +190,8 @@ public class LoginManager {
                     String redirect = redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId")));
                     if (redirect == null) return false;
                     request(redirect + "?service=" + service);
+                    cookieJar.copy(service, "https://jwxt.sysu.edu.cn/");
+                    System.out.println(cookieJar.cookieManager.getCookie("https://jwxt.sysu.edu.cn/"));
                     switch (service) {
                         case TargetUrl.GYM -> {
                             getGymToken(targetBaseUrl);
@@ -213,7 +213,6 @@ public class LoginManager {
                         case TargetUrl.LMS -> setToken(host, getLmsToken());
                     }
                 }
-                System.out.println(cookieJar.cookieManager.getCookie("https://jwxt.sysu.edu.cn"));
                 onSuccess();
                 return true;
             } catch (Exception e) {
@@ -238,7 +237,8 @@ public class LoginManager {
     }
 
     private void loginForPortal() throws IOException {
-        Response response = client.newCall(new Request.Builder().header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+        /* Response response = */
+        client.newCall(new Request.Builder().header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
                 .url("https://portal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex").build()).execute();
 //        System.out.println(response.body().string());
     }
