@@ -35,6 +35,7 @@ public class AgendaActivity extends AppCompatActivity {
 
     HttpManager http;
     ActivityAgendaBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,7 +50,6 @@ public class AgendaActivity extends AppCompatActivity {
         http = new HttpManager(new Handler(getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-//                System.out.println(msg.obj);
                 super.handleMessage(msg);
                 if (msg.what == -1) params.toast(R.string.no_net_connected);
                 else if (!msg.getData().getBoolean("isJSON")) {
@@ -70,6 +70,8 @@ public class AgendaActivity extends AppCompatActivity {
                                     agendaAdapter.add(item);
                                 });
                         }
+                    } else if (response != null && response.getJSONObject("meta").getInteger("statusCode").equals(401)) {
+                        params.toast(response.getJSONObject("meta").getString("message"));
                     } else {
                         params.toast(getString(R.string.login_warning));
                         params.gotoLogin(TargetUrl.PORTAL);
@@ -78,7 +80,6 @@ public class AgendaActivity extends AppCompatActivity {
             }
         });
         http.setParams(params);
-        http.setTarget("https://mportal.sysu.edu.cn");
         getAgenda();
         binding.calendarView.setOnCalendarSelectListener(new CalendarView.OnCalendarSelectListener() {
             @Override
@@ -86,7 +87,8 @@ public class AgendaActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCalendarSelect(Calendar calendar, boolean isClick) {getAgenda();
+            public void onCalendarSelect(Calendar calendar, boolean isClick) {
+                getAgenda();
             }
         });
         binding.calendarView.setOnMonthChangeListener((year, month) -> binding.toolbar.setSubtitle(String.format(Locale.getDefault(), "%d年%d月", year, month)));
@@ -95,7 +97,7 @@ public class AgendaActivity extends AppCompatActivity {
     }
 
     void getAgenda() {
-        http.postRequest("https://mportal.sysu.edu.cn/newClient/api/schedule/newSchedule/getScheduleByTimeZone", getParam().toString(), 0);
+        http.postRequest("https://portal.sysu.edu.cn/newClient/api/schedule/newSchedule/getScheduleByTimeZone", getParam().toString(), 0);
     }
 
     JSONObject getParam() {

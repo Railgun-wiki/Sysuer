@@ -52,6 +52,7 @@ public class LoginManager {
     private final OkHttpClient directClient = new OkHttpClient.Builder().followRedirects(false).cookieJar(cookieJar).build();
     private final AuthorizationManager casAuthorizationManager = new AuthorizationManager("https://cas.sysu.edu.cn", "https://cas.sysu.edu.cn");
     AuthorizationJar authorizationJar;
+    LoginListener loginListener;
 
     private String getPublicKey() {
         try {
@@ -80,11 +81,10 @@ public class LoginManager {
         try {
             Response response = client.newCall(new Request.Builder().url(url).build()).execute();
             String a = response.body().string();
-            System.out.println(path + response.headers().toMultimap());
-            System.out.println(cookieJar.loadForRequest(HttpUrl.get(url)));
-//            System.out.println(a);
             if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
-                request(redirect(a));
+                String redirect = redirect(a);
+                if (redirect == null) return;
+                request(redirect);
             }
         } catch (IOException _) {
         }
@@ -97,10 +97,13 @@ public class LoginManager {
                 .url(url).build()).execute();
         String a = response.body().string();
         if (Objects.requireNonNull(response.header("Content-Type", "")).contains("application/json")) {
-            return loginForGym(redirect(a));
+            String redirect = redirect(a);
+            if (redirect == null) return a;
+            return loginForGym(redirect);
         }
         return a;
     }
+
 
     /**
      * 解析重定向 URL
@@ -111,8 +114,13 @@ public class LoginManager {
      */
     private String redirect(String response) {
         JSONObject json = JSONObject.parse(response);
-        if (json.containsKey("data")) return json.getJSONObject("data").getString("redirect");
-        else return json.getString("redirect");
+        if ("0".equals(json.getString("code"))) {
+            if (json.containsKey("data")) return json.getJSONObject("data").getString("redirect");
+            else return json.getString("redirect");
+        } else {
+            onError(Integer.parseInt(json.getString("code")), response);
+            return null;
+        }
     }
 
     /**
@@ -148,11 +156,14 @@ public class LoginManager {
                 if (service.contains("webvpn") || TargetUrl.PORTAL.equals(service)) {
                     casAuthorizationManager.setAccessible(false);
                     JSONObject publicKey = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
-                    request(redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId"))) + "?service=https%3A%2F%2Fwebvpn.sysu.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl");
+                    String redirect = redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId")));
+                    if (redirect == null) return false;
+                    request(redirect + "?service=https%3A%2F%2Fwebvpn.sysu.edu.cn%2Fusers%2Fauth%2Fcas%2Fcallback%3Furl");
                     request("https://webvpn.sysu.edu.cn/vpn_key/update");
                     List<Cookie> webvpnKey = cookieJar.loadForRequest(HttpUrl.get("https://webvpn.sysu.edu.cn/vpn_key/update")).stream().filter(e -> "_webvpn_key".equals(e.name())).collect(Collectors.toList());
                     cookieJar.saveFromResponse(HttpUrl.get(service), webvpnKey);
                     cookieJar.saveFromResponse(HttpUrl.get(casAuthorizationManager.getBaseUrl()), webvpnKey);
+                    cookieJar.add("https://cas.sysu.edu.cn", new Cookie.Builder().name("device_trust_Cookie").value("true").domain("cas.sysu.edu.cn").build());
                     switch (service) {
                         case TargetUrl.NEWS_WEBVPN ->
                                 setAuthorization(host, getNewsAuthorization(service));
@@ -163,36 +174,24 @@ public class LoginManager {
                         }
                         case TargetUrl.PORTAL -> {
                             cookieJar.saveFromResponse(HttpUrl.get("https://mportal.sysu.edu.cn"), webvpnKey);
-//                            System.out.println("重定向：" + doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId")));
-//                            Response response = new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://cas.sysu.edu.cn/esc-sso/login?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2Fshiro-cas")
-////                                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36")
-////                                            .header("Referer", "https://cas.sysu.edu.cn/esc-sso/login/page?isLogin=fail")
-//                                            .header("Cookie","TGC=eyJhbGciOiJIUzUxMiJ9.WlhsS05tRllRV2xQYVVwRlVsVlphVXhEU21oaVIyTnBUMmxLYTJGWVNXbE1RMHBzWW0xTmFVOXBTa0pOVkVrMFVUQktSRXhWYUZSTmFsVXlTVzR3TGk1bU16WjNiM1Z6WmtVd1YxTkhOMHQwVW1WNWNYWjNMbkV4VEVscFNHaE1VbmhKYjI1NVpXTlNSMDgwZGtsclV6ZDNRMkk1WWpSdExVNUxNR3N6UjNNdGNIZDJaVTkyZWtFMGEyWndlbXROTVZRelFsYzJkVXRmTld4alptOVlVbkY0Y0cxV2RsbGphMWQ1UVdoRlREQnNSVTh3UjNwaFluRk1TbGsxTVdwSlpWWnBNMll4TlRoV05pMU5TVmsxYkdoWVIzTmZiRWRCWmtKeFRYQjNPV0Y2YmpGTU5XczBjVGhtTVdkUlVTNDJWbEJRWTAxbFpGZHlRemhRUnpKeWRFSnlUVmxu.qmsTrsA9zAuKN-WsZH__SKUj5Byq8rztgzOEKGtn4XO8mClO9Idef_wx19HjSOFXkJGPIp-EUq9Fs0rz5IQfhA;")
-////                                            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
-//                                    .build()).execute();
+                            loginForPortal();
+//                            String cookie = cookieJar.cookieManager.getCookie(service);
+                            cookieJar.copy("https://portal.sysu.edu.cn", "https://mportal.sysu.edu.cn");
 
-                            OkHttpClient client = new OkHttpClient();
-
-                            Request request = new Request.Builder()
-                                    .url("https://cas.sysu.edu.cn/esc-sso/login?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2Fshiro-cas")
-                                    .get()
-                                    .addHeader("Cookie", "TGC=eyJhbGciOiJIUzUxMiJ9.WlhsS05tRllRV2xQYVVwRlVsVlphVXhEU21oaVIyTnBUMmxLYTJGWVNXbE1RMHBzWW0xTmFVOXBTa0pOVkVrMFVUQktSRXhWYUZSTmFsVXlTVzR3TGk0d1puaHVaRjk1TkhKNE5FUmFYelp3Wm5nM1duZFJMblY1YVZsT1UwRkZTa1kyVTIwdGEwdzBjMGxwVGxKdWREaEZUV1UxZUhoeFJ6UnRWamRVYlZwWU0wbHliSEZOY1Y5RFVWbHJWbU5YU1dOVk5qQXhjMVp0WVRaVGJDMHpaR2N4UzNwNmRIWkhaM3A2Tmt4SWVtcE9jVWd5UzA0MVkweFpXRlp4YmpsU1ZFeGxRM1Z0T1RCU2N6YzVURUpWUVY4dFVrSTFOVWMzTWkwMWRVdGpMV1JKWDJSb2MzRmFOVVZqTVU1Q1FTNHpjWFk0TVVsUmJtSXpVVlYzUWxSaGRVMHhia1ZS._2RO9T8lnQwTw_rNP3vhXGSqXJLeclnhQJpU361yYPjNYs7rBbfWL1BgvFJMHryONATJXiqMuuA43UU41i3oLw;")
-                                    .build();
-
-                            Response res = client.newCall(request).execute();
-                            System.out.println("请求 "+res.body().string());
-                            System.out.println(res.headers().toMultimap());
+                            System.out.println(cookieJar.cookieManager.getCookie("https://mportal.sysu.edu.cn"));
+//                            return false;
+                        }
+                        case TargetUrl.XGXT_WEBVPN -> {
+                            request("/esc-sso/login?service=" + service);
+                            getXGXTToken(service, targetBaseUrl);
                         }
                         default -> request("/esc-sso/login?service=" + service);
                     }
-                    switch (service) {
-                        case TargetUrl.XGXT_WEBVPN -> getXGXTToken(service, targetBaseUrl);
-                        case TargetUrl.PORTAL ->
-                                request("https://portal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fmportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex");
-                    }
                 } else {
-                    JSONObject keys = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
-                    request(redirect(doLogin(username, encrypt(keys.getString("publicKey"), password), keys.getString("publicKeyId"))) + "?service=" + service);
+                    JSONObject publicKey = JSONObject.parse(getPublicKey()).getJSONObject("data").getJSONObject("param");
+                    String redirect = redirect(doLogin(username, encrypt(publicKey.getString("publicKey"), password), publicKey.getString("publicKeyId")));
+                    if (redirect == null) return false;
+                    request(redirect + "?service=" + service);
                     switch (service) {
                         case TargetUrl.GYM -> {
                             getGymToken(targetBaseUrl);
@@ -212,15 +211,36 @@ public class LoginManager {
                         case TargetUrl.NEWS ->
                                 setAuthorization(host, getNewsAuthorization(service));
                         case TargetUrl.LMS -> setToken(host, getLmsToken());
-
                     }
                 }
-                return false;
+                System.out.println(cookieJar.cookieManager.getCookie("https://jwxt.sysu.edu.cn"));
+                onSuccess();
+                return true;
             } catch (Exception e) {
                 Log.e("LoginManager", e.getMessage(), e);
             }
             return false;
         }).get();
+    }
+
+    public void setOnLoginListener(LoginListener loginListener) {
+        this.loginListener = loginListener;
+    }
+
+    public void onError(int code, String message) {
+        if (loginListener != null)
+            loginListener.onError(code, message);
+    }
+
+    public void onSuccess() {
+        if (loginListener != null)
+            loginListener.onSuccess();
+    }
+
+    private void loginForPortal() throws IOException {
+        Response response = client.newCall(new Request.Builder().header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                .url("https://portal.sysu.edu.cn/newClient/auth?service=https%3A%2F%2Fportal.sysu.edu.cn%2FnewClient%2F%23%2FnewPortal%2Findex").build()).execute();
+//        System.out.println(response.body().string());
     }
 
     private void setToken(String host, String token) {
@@ -311,6 +331,12 @@ public class LoginManager {
         return "";
     }
 
+    public interface LoginListener {
+        void onSuccess();
+
+        void onError(int code, String message);
+    }
+
     static class CookieStore implements CookieJar {
 
         private final CookieManager cookieManager = CookieManager.getInstance();
@@ -331,7 +357,7 @@ public class LoginManager {
                     && !currentCookies.isEmpty())
                 currentCookies.stream().filter(currentCookie -> !responseCookies.contains(currentCookie) && (!currentCookie.value().isEmpty()) && (!keys.contains(currentCookie.name()))).forEach(responseCookies::add);
             _cookieStore.put(host, responseCookies);
-            responseCookies.forEach(e -> cookieManager.setCookie(url.toString(), e.toString()));
+            responseCookies.forEach(e -> cookieManager.setCookie(url.toString(), String.format("%s=%s", e.name(), e.value())));
         }
 
         @NonNull
@@ -350,6 +376,10 @@ public class LoginManager {
 
         public String toString(String url) {
             return loadForRequest(HttpUrl.get(url)).stream().map(Cookie::toString).collect(Collectors.joining("; "));
+        }
+
+        public void add(String url, Cookie cookie) {
+            saveFromResponse(HttpUrl.parse(url), List.of(cookie));
         }
     }
 
@@ -429,7 +459,7 @@ public class LoginManager {
             try {
                 return getFinalCookie(safelineBotChallenge, prefix, 9);
             } catch (NoSuchAlgorithmException e) {
-                System.err.println("SHA-1算法不可用: " + e.getMessage());
+                System.err.println("SHA-1 算法不可用: " + e.getMessage());
             } catch (Exception e) {
                 System.err.println("发生错误: " + e.getMessage());
             }
