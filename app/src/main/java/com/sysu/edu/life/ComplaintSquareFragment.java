@@ -42,15 +42,18 @@ public class ComplaintSquareFragment extends Fragment {
         http = new HttpManager(new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                switch (msg.what) {
-                    case -1 -> params.toast(R.string.no_net_connected);
-                    case 0 -> {
+                if (msg.what == -1) {
+                    params.toast(R.string.no_net_connected);
+                } else if (msg.getData().getBoolean("isJSON")) {
+                    if (msg.what == 0) {
                         JSONObject response = JSONObject.parse(msg.obj.toString());
                         if (response.getBoolean("ok"))
                             response.getJSONArray("data").forEach(v -> adapter.add((JSONObject) v));
                         else
                             params.toast(response.getString("msg"));
                     }
+                } else {
+                    params.toast(R.string.educational_wifi_warning);
                 }
             }
         });
